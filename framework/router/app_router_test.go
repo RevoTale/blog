@@ -1,4 +1,4 @@
-package web
+package router
 
 import (
 	"testing"
@@ -9,11 +9,11 @@ func TestAppRouterMatch(t *testing.T) {
 	router, err := NewAppRouter(fstest.MapFS{
 		"app/layout.templ":               {Data: []byte("package web")},
 		"app/notes/page.templ":           {Data: []byte("package web")},
-		"app/note/_slug/page.templ":      {Data: []byte("package web")},
-		"app/author/_slug/page.templ":    {Data: []byte("package web")},
-		"app/author/_slug/layout.templ":  {Data: []byte("package web")},
+		"app/note/[slug]/page.templ":     {Data: []byte("package web")},
+		"app/author/[slug]/page.templ":   {Data: []byte("package web")},
+		"app/author/[slug]/layout.templ": {Data: []byte("package web")},
 		"app/author/settings/page.templ": {Data: []byte("package web")},
-		"app/author/_slug/live/page.templ": {
+		"app/author/[slug]/live/page.templ": {
 			Data: []byte("package web"),
 		},
 	}, "app")
@@ -80,8 +80,8 @@ func TestAppRouterMatch(t *testing.T) {
 
 func TestAppRouterConflict(t *testing.T) {
 	_, err := NewAppRouter(fstest.MapFS{
-		"app/author/_slug/page.templ": {Data: []byte("package web")},
-		"app/author/_id/page.templ":   {Data: []byte("package web")},
+		"app/author/[slug]/page.templ": {Data: []byte("package web")},
+		"app/author/[id]/page.templ":   {Data: []byte("package web")},
 	}, "app")
 	if err == nil {
 		t.Fatal("expected conflict error, got nil")
@@ -89,7 +89,7 @@ func TestAppRouterConflict(t *testing.T) {
 }
 
 func TestMatchPathPattern(t *testing.T) {
-	params, ok := matchPathPattern("/author/[slug]/live", "/author/nina/live")
+	params, ok := MatchPathPattern("/author/[slug]/live", "/author/nina/live")
 	if !ok {
 		t.Fatal("expected wildcard pattern to match")
 	}
@@ -97,30 +97,16 @@ func TestMatchPathPattern(t *testing.T) {
 		t.Fatalf("expected slug to be %q, got %q", "nina", params["slug"])
 	}
 
-	if _, ok = matchPathPattern("/author/[slug]/live", "/author/nina"); ok {
+	if _, ok = MatchPathPattern("/author/[slug]/live", "/author/nina"); ok {
 		t.Fatal("expected mismatch for shorter path")
 	}
 }
 
-func TestEmbeddedAppRouterIncludesWildcardFolders(t *testing.T) {
-	router, err := NewAppRouter(embeddedAppFS, "app")
-	if err != nil {
-		t.Fatalf("new app router from embedded fs: %v", err)
+func TestIsValidSlug(t *testing.T) {
+	if !IsValidSlug("l-you") {
+		t.Fatal("expected l-you to be a valid slug")
 	}
-
-	match, ok := router.Match("/author/l-you")
-	if !ok {
-		t.Fatal("expected /author/l-you to match embedded app routes")
-	}
-	if match.ID != "author/[slug]" {
-		t.Fatalf("expected route id %q, got %q", "author/[slug]", match.ID)
-	}
-
-	slug, ok := match.Param("slug")
-	if !ok {
-		t.Fatal("expected slug param")
-	}
-	if slug != "l-you" {
-		t.Fatalf("expected slug %q, got %q", "l-you", slug)
+	if IsValidSlug("bad slug") {
+		t.Fatal("expected slug with spaces to be invalid")
 	}
 }

@@ -1,9 +1,9 @@
-package web
+package appcore
 
 import "blog/internal/notes"
 
 templ NoteCard(note notes.NoteSummary) {
-	<article class={ noteCardClass(note.Attachment != nil) }>
+	<article class={ NoteCardClass(note.Attachment != nil) }>
 		<div class="note-card-meta">
 			<h2 class="note-title"><a href={ "/note/" + note.Slug }>{ note.Title }</a></h2>
 			if note.PublishedAt != "" {
@@ -23,13 +23,13 @@ templ NoteCard(note notes.NoteSummary) {
 						<img
 							class="attachment-image"
 							src={ note.Attachment.URL }
-							alt={ attachmentAltText(note.Attachment.Alt, note.Title) }
+							alt={ AttachmentAltText(note.Attachment.Alt, note.Title) }
 							loading="lazy"
 							width={ note.Attachment.Width }
 							height={ note.Attachment.Height }
 						/>
 					} else {
-						<span class="attachment-file">attachment: { attachmentLabel(note.Attachment.Filename) }</span>
+						<span class="attachment-file">attachment: { AttachmentLabel(note.Attachment.Filename) }</span>
 					}
 				</a>
 			</div>
@@ -53,7 +53,7 @@ templ NoteCard(note notes.NoteSummary) {
 		if len(note.Tags) > 0 {
 			<ul class="tag-list">
 				for _, tag := range note.Tags {
-					<li><a class="tag" href={ buildNotesURL(1, tag.Name) }>#{ tag.Title }</a></li>
+					<li><a class="tag" href={ BuildNotesURL(1, tag.Name) }>#{ tag.Title }</a></li>
 				}
 			</ul>
 		}

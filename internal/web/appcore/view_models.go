@@ -1,6 +1,14 @@
-package web
+package appcore
 
 import "blog/internal/notes"
+
+type RootLayoutView interface {
+	LayoutPageTitle() string
+}
+
+type AuthorLayoutView interface {
+	AuthorDetails() notes.Author
+}
 
 type PaginationView struct {
 	Page       int
@@ -33,6 +41,22 @@ type AuthorPageView struct {
 	Pagination PaginationView
 }
 
+func (v NotesPageView) LayoutPageTitle() string {
+	return v.PageTitle
+}
+
+func (v NotePageView) LayoutPageTitle() string {
+	return v.PageTitle
+}
+
+func (v AuthorPageView) LayoutPageTitle() string {
+	return v.PageTitle
+}
+
+func (v AuthorPageView) AuthorDetails() notes.Author {
+	return v.Author
+}
+
 func newNotesPageView(result notes.NotesListResult) NotesPageView {
 	return NotesPageView{
 		PageTitle: "Notes",
@@ -42,8 +66,8 @@ func newNotesPageView(result notes.NotesListResult) NotesPageView {
 		Pagination: newPaginationView(
 			result.Page,
 			result.TotalPages,
-			buildNotesURL(result.Page-1, result.ActiveTag),
-			buildNotesURL(result.Page+1, result.ActiveTag),
+			BuildNotesURL(result.Page-1, result.ActiveTag),
+			BuildNotesURL(result.Page+1, result.ActiveTag),
 		),
 	}
 }
@@ -56,8 +80,8 @@ func newAuthorPageView(result *notes.AuthorPageResult) AuthorPageView {
 		Pagination: newPaginationView(
 			result.Page,
 			result.TotalPages,
-			buildAuthorURL(result.Author.Slug, result.Page-1),
-			buildAuthorURL(result.Author.Slug, result.Page+1),
+			BuildAuthorURL(result.Author.Slug, result.Page-1),
+			BuildAuthorURL(result.Author.Slug, result.Page+1),
 		),
 	}
 }

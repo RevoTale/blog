@@ -1,5 +1,47 @@
-package web
+package appsrc
 
-templ RouteLayout(child templ.Component) {
-	@child
+import (
+	"blog/internal/techstack"
+	"blog/internal/web/appcore"
+)
+
+templ Layout(view appcore.RootLayoutView, child templ.Component) {
+	<!doctype html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>{ view.LayoutPageTitle() } :: blog</title>
+			<meta name="color-scheme" content="light dark"/>
+			<link rel="stylesheet" href="/static/tui.css"/>
+			@templ.Raw(appcore.ChromaStyleTag())
+			<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-RC.6/bundles/datastar.js"></script>
+		</head>
+		<body>
+			<header class="panel header">
+				<div class="header-inner">
+					<a class="brand" href="/notes">blog</a>
+					<nav>
+						<a href="/notes">notes</a>
+					</nav>
+				</div>
+			</header>
+
+			<main class="container">
+				@child
+			</main>
+
+			<footer class="panel footer">
+				<p>
+					stack:
+					for idx, pkg := range techstack.Packages() {
+						if idx > 0 {
+							,
+						}
+						<a href={ pkg.URL } target="_blank" rel="noopener noreferrer">{ pkg.Name }</a>
+					}
+				</p>
+			</footer>
+		</body>
+	</html>
 }

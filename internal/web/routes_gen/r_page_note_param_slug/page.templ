@@ -1,10 +1,8 @@
-package web
+package r_page_note_param_slug
 
-templ NotePage(view NotePageView) {
-	@RootLayout(view.PageTitle, NoteContent(view))
-}
+import "blog/internal/web/appcore"
 
-templ NoteContent(view NotePageView) {
+templ Page(view appcore.NotePageView) {
 	<article class="panel note-detail">
 		<a class="muted" href="/notes">&lt;- back to notes</a>
 		<h1>{ view.Note.Title }</h1>
@@ -30,7 +28,7 @@ templ NoteContent(view NotePageView) {
 		if len(view.Note.Tags) > 0 {
 			<ul class="tag-list">
 				for _, tag := range view.Note.Tags {
-					<li><a class="tag" href={ buildNotesURL(1, tag.Name) }>#{ tag.Title }</a></li>
+					<li><a class="tag" href={ appcore.BuildNotesURL(1, tag.Name) }>#{ tag.Title }</a></li>
 				}
 			</ul>
 		}
@@ -47,13 +45,13 @@ templ NoteContent(view NotePageView) {
 						<img
 							class="attachment-image"
 							src={ view.Note.Attachment.URL }
-							alt={ attachmentAltText(view.Note.Attachment.Alt, view.Note.Title) }
+							alt={ appcore.AttachmentAltText(view.Note.Attachment.Alt, view.Note.Title) }
 							loading="lazy"
 							width={ view.Note.Attachment.Width }
 							height={ view.Note.Attachment.Height }
 						/>
 					} else {
-						<span class="attachment-file">attachment: { attachmentLabel(view.Note.Attachment.Filename) }</span>
+						<span class="attachment-file">attachment: { appcore.AttachmentLabel(view.Note.Attachment.Filename) }</span>
 					}
 				</a>
 			</section>

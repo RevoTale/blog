@@ -1,4 +1,4 @@
-package web
+package router
 
 import (
 	"errors"
@@ -13,6 +13,7 @@ import (
 const pageTemplateName = "page.templ"
 
 var dynamicSegmentNamePattern = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]*$`)
+var slugPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 
 type pathSegment struct {
 	name    string
@@ -236,7 +237,7 @@ func (router *AppRouter) Match(requestPath string) (AppRouteMatch, bool) {
 	return AppRouteMatch{}, false
 }
 
-func matchPathPattern(pattern string, requestPath string) (map[string]string, bool) {
+func MatchPathPattern(pattern string, requestPath string) (map[string]string, bool) {
 	patternSegments := splitPathSegments(pattern)
 	requestSegments := splitPathSegments(requestPath)
 	if len(patternSegments) != len(requestSegments) {
@@ -262,6 +263,10 @@ func matchPathPattern(pattern string, requestPath string) (map[string]string, bo
 	}
 
 	return params, true
+}
+
+func IsValidSlug(slug string) bool {
+	return slugPattern.MatchString(strings.TrimSpace(slug))
 }
 
 func splitPathSegments(raw string) []string {

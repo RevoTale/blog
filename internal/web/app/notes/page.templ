@@ -1,5 +1,72 @@
-package web
+package appsrc
 
-templ RoutePage() {
-	<div>notes route marker</div>
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.NotesPageView) {
+	<div id="notes-content" data-signals={ appcore.NotesSignalsJSON(view) }>
+		<section class="panel">
+			<h1>notes</h1>
+			<p class="muted">server-rendered notes feed with markdown content.</p>
+		</section>
+
+		<section class="panel">
+			<h2>tags</h2>
+			<div class="tag-filter">
+				<button type="button" class={ appcore.TagClass(view.Tag == "") } data-on:click={ appcore.NotesTagAction("") }>all</button>
+				for _, tag := range view.Tags {
+					<button type="button" class={ appcore.TagClass(view.Tag == tag.Name) } data-on:click={ appcore.NotesTagAction(tag.Name) }>{ tag.Title }</button>
+				}
+			</div>
+			<noscript>
+				<div class="tag-filter">
+					<a class={ appcore.TagClass(view.Tag == "") } href="/notes">all</a>
+					for _, tag := range view.Tags {
+						<a class={ appcore.TagClass(view.Tag == tag.Name) } href={ appcore.BuildNotesURL(1, tag.Name) }>{ tag.Title }</a>
+					}
+				</div>
+			</noscript>
+		</section>
+
+		<section>
+			if len(view.Notes) > 0 {
+				for _, note := range view.Notes {
+					@appcore.NoteCard(note)
+				}
+			} else {
+				<article class="panel">
+					<p>no notes found for this filter.</p>
+				</article>
+			}
+		</section>
+
+		<section class="panel pager">
+			<p>{ appcore.PagerStatusText(view.Pagination) }</p>
+			<div class="pager-controls">
+				if view.Pagination.HasPrev {
+					<button type="button" class="pager-link" data-on:click={ appcore.NotesPageAction(view.Pagination.PrevPage) }>[prev]</button>
+				} else {
+					<button type="button" class="pager-link" disabled>[prev]</button>
+				}
+				if view.Pagination.HasNext {
+					<button type="button" class="pager-link" data-on:click={ appcore.NotesPageAction(view.Pagination.NextPage) }>[next]</button>
+				} else {
+					<button type="button" class="pager-link" disabled>[next]</button>
+				}
+			</div>
+			<noscript>
+				<div>
+					if view.Pagination.HasPrev {
+						<a href={ view.Pagination.PrevURL }>[prev]</a>
+					} else {
+						<span class="muted">[prev]</span>
+					}
+					if view.Pagination.HasNext {
+						<a href={ view.Pagination.NextURL }>[next]</a>
+					} else {
+						<span class="muted">[next]</span>
+					}
+				</div>
+			</noscript>
+		</section>
+	</div>
 }
