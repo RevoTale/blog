@@ -1,0 +1,14 @@
+schema:
+  - ../../../cms/src/gql/schema.graphql
+operations:
+  - queries.graphql
+generated: generated.go
+package: gql
+optional: pointer
+bindings:
+  DateTime:
+    type: string
+  JSON:
+    type: string
+  JSONObject:
+    type: JSONObject

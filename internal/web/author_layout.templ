@@ -1,0 +1,22 @@
+package web
+
+templ AuthorLayout(view AuthorPageView, child templ.Component) {
+	<section class="panel author-box">
+		<a class="muted" href="/notes">&lt;- back to notes</a>
+		<div class="author-header">
+			if view.Author.Avatar != nil {
+				<img class="author-avatar large" src={ view.Author.Avatar.URL } alt={ view.Author.Avatar.Alt } loading="lazy" width="64" height="64"/>
+			} else {
+				<span class="author-avatar fallback large">&#64;</span>
+			}
+			<div>
+				<h1>{ view.Author.Name }</h1>
+				<p class="muted">{ "@" + view.Author.Slug }</p>
+				if view.Author.Bio != "" {
+					<p>{ view.Author.Bio }</p>
+				}
+			</div>
+		</div>
+	</section>
+	@child
+}

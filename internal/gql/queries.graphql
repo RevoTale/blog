@@ -1,0 +1,235 @@
+query ListNotes($page: Int!, $limit: Int!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      post_type: { equals: long }
+    }
+  ) {
+    totalPages
+    docs {
+      id
+      slug
+      title
+      content
+      publishedAt
+      authors {
+        name
+        slug
+        bio
+        avatar {
+          url
+          alt
+          width
+          height
+        }
+      }
+      tags {
+        id
+        name
+        title
+      }
+      attachment {
+        url
+        alt
+        width
+        height
+        filename
+        mimeType
+      }
+      meta {
+        description
+      }
+    }
+  }
+}
+
+query ListNotesByTagIDs($page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      post_type: { equals: long }
+      tags: { in: $tagIDs }
+    }
+  ) {
+    totalPages
+    docs {
+      id
+      slug
+      title
+      content
+      publishedAt
+      authors {
+        name
+        slug
+        bio
+        avatar {
+          url
+          alt
+          width
+          height
+        }
+      }
+      tags {
+        id
+        name
+        title
+      }
+      attachment {
+        url
+        alt
+        width
+        height
+        filename
+        mimeType
+      }
+      meta {
+        description
+      }
+    }
+  }
+}
+
+query TagIDsByNames($tagNames: [String!]!) {
+  Tags(where: { name: { in: $tagNames } }) {
+    docs {
+      id
+      name
+      title
+    }
+  }
+}
+
+query AvailableLongNoteTags {
+  availableTagsByMicroPostType(postType: "long") {
+    id
+    name
+    title
+  }
+}
+
+query NoteBySlug($slug: String!) {
+  Micro_posts(
+    limit: 1
+    where: {
+      _status: { equals: published }
+      slug: { equals: $slug }
+      post_type: { equals: long }
+    }
+  ) {
+    docs {
+      id
+      slug
+      title
+      content
+      publishedAt
+      authors {
+        name
+        slug
+        bio
+        avatar {
+          url
+          alt
+          width
+          height
+        }
+      }
+      tags {
+        id
+        name
+        title
+      }
+      attachment {
+        url
+        alt
+        width
+        height
+        filename
+        mimeType
+      }
+      externalLinks {
+        id
+        target_url
+      }
+      linkedMicroPosts {
+        id
+        slug
+      }
+      meta {
+        title
+        description
+      }
+    }
+  }
+}
+
+query AuthorBySlug($slug: String!) {
+  Authors(where: { slug: { equals: $slug } }, limit: 1) {
+    docs {
+      id
+      name
+      slug
+      bio
+      avatar {
+        url
+        alt
+        width
+        height
+      }
+    }
+  }
+}
+
+query NotesByAuthorSlug($slug: String!, $page: Int!, $limit: Int!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      post_type: { equals: long }
+      authorSlug: { equals: $slug }
+    }
+  ) {
+    totalPages
+    docs {
+      id
+      slug
+      title
+      content
+      publishedAt
+      authors {
+        name
+        slug
+        bio
+        avatar {
+          url
+          alt
+          width
+          height
+        }
+      }
+      tags {
+        id
+        name
+        title
+      }
+      attachment {
+        url
+        alt
+        width
+        height
+        filename
+        mimeType
+      }
+      meta {
+        description
+      }
+    }
+  }
+}
