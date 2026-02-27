@@ -613,13 +613,19 @@ p + p {
 }
 
 .message-author {
-  color: var(--text-primary);
+  color: var(--text-link);
   font-size: 0.98rem;
   font-weight: 600;
 }
 
-.message-author:hover {
-  color: var(--text-primary);
+.message-author:visited {
+  color: var(--text-link);
+}
+
+.message-author:hover,
+.message-author:focus-visible {
+  color: var(--text-link);
+  text-decoration: underline;
 }
 
 .message-time {
@@ -749,7 +755,6 @@ p + p {
 }
 
 .tag:hover,
-.author-pill:hover,
 .pager-link:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
@@ -769,8 +774,19 @@ p + p {
   border: 1px solid var(--divider);
   border-radius: var(--radius-pill);
   background: var(--bg-chip);
-  color: var(--text-secondary);
+  color: var(--text-link);
   padding: 0.18rem 0.52rem;
+}
+
+.author-pill:visited {
+  color: var(--text-link);
+}
+
+.author-pill:hover,
+.author-pill:focus-visible {
+  background: var(--bg-hover);
+  color: var(--text-link);
+  text-decoration: underline;
 }
 
 .empty-state {
