@@ -73,8 +73,10 @@ func LoadNotePage(
 	}
 
 	return NotePageView{
-		PageTitle: note.Title,
-		Note:      *note,
+		PageTitle:          note.Title,
+		Note:               *note,
+		SidebarAuthorItems: uniqueSortedAuthors(note.Authors),
+		SidebarTagItems:    uniqueSortedTags(note.Tags),
 	}, nil
 }
 

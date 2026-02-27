@@ -3,8 +3,10 @@ package appcore
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"blog/internal/markdown"
+	"blog/internal/notes"
 )
 
 type NotesSignalState struct {
@@ -41,6 +43,32 @@ func TagClass(active bool) string {
 		return "tag active"
 	}
 	return "tag"
+}
+
+func ChannelLinkClass(active bool) string {
+	if active {
+		return "channel-link active"
+	}
+
+	return "channel-link"
+}
+
+func AuthorChannelLabel(author notes.Author) string {
+	label := strings.TrimSpace(author.Name)
+	if label == "" {
+		label = strings.TrimSpace(author.Slug)
+	}
+
+	return "@" + label
+}
+
+func TagChannelLabel(tag notes.Tag) string {
+	label := strings.TrimSpace(tag.Title)
+	if label == "" {
+		label = strings.TrimSpace(tag.Name)
+	}
+
+	return "#" + label
 }
 
 func NoteCardClass(hasAttachment bool) string {

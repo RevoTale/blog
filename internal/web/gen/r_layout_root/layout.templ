@@ -12,36 +12,79 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<title>{ view.LayoutPageTitle() } :: blog</title>
-			<meta name="color-scheme" content="light dark"/>
+			<meta name="color-scheme" content="dark"/>
 			<link rel="stylesheet" href="/static/tui.css"/>
 			@templ.Raw(appcore.ChromaStyleTag())
 			<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-RC.6/bundles/datastar.js"></script>
 		</head>
 		<body>
-			<header class="panel header">
-				<div class="header-inner">
-					<a class="brand" href="/notes">blog</a>
-					<nav>
-						<a href="/notes">notes</a>
-					</nav>
+			<div class="app-shell">
+				<aside class="server-rail" aria-label="workspace navigation">
+					<a class="server-button server-button-home" href="/notes" aria-label="blog home">b</a>
+					<span class="server-divider" aria-hidden="true"></span>
+					<a class="server-button" href="/notes" aria-label="notes channel">#</a>
+				</aside>
+
+				<div class="workspace">
+					<header class="topbar">
+						<div class="topbar-title">
+							<span class="channel-marker">#</span>
+							<span>All</span>
+						</div>
+						<nav class="topbar-nav" aria-label="primary">
+							<a href="/notes">all notes</a>
+						</nav>
+					</header>
+
+						<div class="workspace-body">
+							<aside class="channel-panel" aria-label="channel list">
+								<p class="channel-panel-label">channels</p>
+								<a
+									class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "" && view.SidebarCurrentTagName() == "") }
+									href="/notes"
+								>
+									# All
+								</a>
+								<p class="channel-panel-label">authors</p>
+								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "") } href="/notes">ANY</a>
+								for _, author := range view.SidebarAuthors() {
+									<a
+										class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug) }
+										href={ appcore.BuildAuthorURL(author.Slug, 1) }
+									>
+										{ appcore.AuthorChannelLabel(author) }
+									</a>
+								}
+								<p class="channel-panel-label">tags</p>
+								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == "") } href={ appcore.BuildNotesURL(1, "") }>ANY</a>
+								for _, tag := range view.SidebarTags() {
+									<a
+										class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name) }
+										href={ appcore.BuildNotesURL(1, tag.Name) }
+									>
+										{ appcore.TagChannelLabel(tag) }
+									</a>
+								}
+							</aside>
+
+						<main class="container">
+							@child
+
+							<footer class="footer">
+								<p>
+									stack:
+									for idx, pkg := range techstack.Packages() {
+										if idx > 0 {
+											,
+										}
+										<a href={ pkg.URL } target="_blank" rel="noopener noreferrer">{ pkg.Name }</a>
+									}
+								</p>
+							</footer>
+						</main>
+					</div>
 				</div>
-			</header>
-
-			<main class="container">
-				@child
-			</main>
-
-			<footer class="panel footer">
-				<p>
-					stack:
-					for idx, pkg := range techstack.Packages() {
-						if idx > 0 {
-							,
-						}
-						<a href={ pkg.URL } target="_blank" rel="noopener noreferrer">{ pkg.Name }</a>
-					}
-				</p>
-			</footer>
+			</div>
 		</body>
 	</html>
 }
