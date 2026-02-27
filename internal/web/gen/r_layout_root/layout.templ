@@ -3,6 +3,7 @@ package r_layout_root
 import (
 	"blog/internal/techstack"
 	"blog/internal/web/appcore"
+	c_channel_list "blog/internal/web/gen/c_channel_list"
 )
 
 templ Layout(view appcore.RootLayoutView, child templ.Component) {
@@ -31,72 +32,42 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 					<aside class="channel-panel" aria-label="channel list">
 						<header class="guild-header">
 							<strong>Blog</strong>
+							<span class="guild-presence">
+								<span class="presence-dot" aria-hidden="true"></span>
+								<span class="guild-presence-label">online</span>
+							</span>
 							<span>Server</span>
 						</header>
 
 						<div class="channel-scroll">
-							<p class="channel-panel-label">note type</p>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "all") } href={ view.SidebarAnyTypeURL() }># All</a>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>Tales</a>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>Micro-tales</a>
-
-							<p class="channel-panel-label">channels</p>
-							<a class={ appcore.ChannelLinkClass(appcore.SidebarAllActive(view)) } href={ view.SidebarAllURL() }>
-								<span class="channel-prefix">#</span>
-								<span>All</span>
-							</a>
-
-							<p class="channel-panel-label">authors</p>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "") } href={ view.SidebarAnyAuthorURL() }># All</a>
-							for _, author := range view.SidebarAuthors() {
-								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug) } href={ view.SidebarAuthorURL(author.Slug) }>
-									{ appcore.AuthorChannelLabel(author) }
-								</a>
-							}
-
-							<p class="channel-panel-label">tags</p>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == "") } href={ view.SidebarAnyTagURL() }># All</a>
-							for _, tag := range view.SidebarTags() {
-								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name) } href={ view.SidebarTagURL(tag.Name) }>
-									{ appcore.TagChannelLabel(tag) }
-								</a>
-							}
-
+							@c_channel_list.ChannelList(view)
 						</div>
-
-						<footer class="channel-footer" aria-label="session status">
-							<span class="presence-dot" aria-hidden="true"></span>
-							<div class="channel-footer-meta">
-								<strong>blog</strong>
-								<span>Online</span>
-							</div>
-						</footer>
 					</aside>
 
 					<div class="workspace-main">
 						<header class="topbar" aria-label="channel header">
-							<div class="topbar-title">
-								if view.SidebarCurrentAuthorSlug() != "" {
-									<span class="channel-marker">&#64;</span>
-									<span>{ view.SidebarCurrentAuthorSlug() }</span>
-								} else if view.SidebarCurrentTagName() != "" {
-									<span class="channel-marker">#</span>
-									<span>{ view.SidebarCurrentTagName() }</span>
-								} else if view.SidebarCurrentType() == "long" {
-									<span class="channel-marker">#</span>
-									<span>Tales</span>
-								} else if view.SidebarCurrentType() == "short" {
-									<span class="channel-marker">#</span>
-									<span>Micro-tales</span>
-								} else {
-									<span class="channel-marker">#</span>
-									<span>All</span>
-								}
+							<div class="topbar-left">
+								<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>Channels</a>
+								<div class="topbar-title">
+									if view.SidebarCurrentAuthorSlug() != "" {
+										<span class="channel-marker">&#64;</span>
+										<span>{ view.SidebarCurrentAuthorSlug() }</span>
+									} else if view.SidebarCurrentTagName() != "" {
+										<span class="channel-marker">#</span>
+										<span>{ view.SidebarCurrentTagName() }</span>
+									} else if view.SidebarCurrentType() == "long" {
+										<span class="channel-marker">#</span>
+										<span>Tales</span>
+									} else if view.SidebarCurrentType() == "short" {
+										<span class="channel-marker">#</span>
+										<span>Micro-tales</span>
+									} else {
+										<span class="channel-marker">#</span>
+										<span>All</span>
+									}
+								</div>
 							</div>
 							<nav class="topbar-nav" aria-label="utility">
-								<span class="topbar-icon" aria-hidden="true"></span>
-								<span class="topbar-icon" aria-hidden="true"></span>
-								<span class="topbar-icon" aria-hidden="true"></span>
 								<div class="topbar-search" role="search">
 									<span>Search notes</span>
 								</div>

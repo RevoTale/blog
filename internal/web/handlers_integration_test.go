@@ -250,6 +250,7 @@ func TestHandlerPageRoutesRenderHTML(t *testing.T) {
 		path        string
 		mustContain string
 	}{
+		{path: "/channels", mustContain: "<title>Channels :: blog</title>"},
 		{path: "/notes", mustContain: "<title>Notes :: blog</title>"},
 		{path: "/notes?author=l-you&tag=go&type=short", mustContain: "<h1>L You</h1>"},
 		{path: "/note/hello-world", mustContain: "<title>Hello World :: blog</title>"},
@@ -289,6 +290,9 @@ func TestSidebarLinkBehavior(t *testing.T) {
 
 	root := performRequest(mux, http.MethodGet, "/notes")
 	rootBody := requireBody(t, root.Body)
+	if !strings.Contains(rootBody, `href="/channels"`) {
+		t.Fatalf("root page missing channels button link")
+	}
 	if !strings.Contains(rootBody, `href="/author/l-you"`) {
 		t.Fatalf("root notes missing canonical author link")
 	}
@@ -301,9 +305,18 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	if !strings.Contains(rootBody, `href="/notes/micro-tales"`) {
 		t.Fatalf("root notes missing micro-tales route link")
 	}
+	if strings.Contains(rootBody, `href="/notes?author=`) {
+		t.Fatalf("root notes should not render author # All clear link when no author filter")
+	}
+	if strings.Contains(rootBody, `href="/notes?tag=`) {
+		t.Fatalf("root notes should not render tag # All clear link when no tag filter")
+	}
 
 	filtered := performRequest(mux, http.MethodGet, "/author/l-you?tag=go&type=short")
 	filteredBody := requireBody(t, filtered.Body)
+	if !strings.Contains(filteredBody, `href="/channels?author=l-you&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("filtered page missing carried channels button link")
+	}
 	if !strings.Contains(filteredBody, `href="/notes"`) {
 		t.Fatalf("filtered page missing All link to /notes")
 	}
@@ -324,6 +337,27 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	}
 	if !strings.Contains(filteredBody, `href="/notes?author=l-you&amp;tag=go&amp;type=long"`) {
 		t.Fatalf("filtered page missing merged tales type link")
+	}
+	if !strings.Contains(filteredBody, `href="/notes?tag=go&amp;type=short"`) {
+		t.Fatalf("filtered page should render author # All clear link")
+	}
+	if !strings.Contains(filteredBody, `href="/notes?author=l-you&amp;type=short"`) {
+		t.Fatalf("filtered page should render tag # All clear link")
+	}
+
+	channelsFiltered := performRequest(mux, http.MethodGet, "/channels?author=l-you&tag=go&type=short")
+	channelsFilteredBody := requireBody(t, channelsFiltered.Body)
+	if !strings.Contains(channelsFilteredBody, `href="/notes?tag=go&amp;type=short"`) {
+		t.Fatalf("channels page missing author clear link")
+	}
+	if !strings.Contains(channelsFilteredBody, `href="/notes?author=zed&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("channels page missing merged author link")
+	}
+	if !strings.Contains(channelsFilteredBody, `channels-desktop-hint`) {
+		t.Fatalf("channels page missing desktop hint block")
+	}
+	if !strings.Contains(channelsFilteredBody, `channels-mobile-panel`) {
+		t.Fatalf("channels page missing mobile panel block")
 	}
 }
 

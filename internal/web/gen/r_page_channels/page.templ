@@ -1,0 +1,22 @@
+package r_page_channels
+
+import (
+	"blog/internal/web/appcore"
+	c_channel_list "blog/internal/web/gen/c_channel_list"
+)
+
+templ Page(view appcore.NotesPageView) {
+	<section class="channels-page">
+		<header class="channels-page-header channels-desktop-hint">
+			<h1>Channels</h1>
+			<p class="muted">Use the left channel list to navigate.</p>
+			<a class="back-link channels-back-button" href={ appcore.BuildNotesFilterURL(1, view.Filter.AuthorSlug, view.Filter.TagName, view.Filter.Type) }>Back to feed</a>
+		</header>
+
+		<section class="channel-panel-standalone channels-mobile-panel">
+			<div class="channel-scroll">
+				@c_channel_list.ChannelList(view)
+			</div>
+		</section>
+	</section>
+}

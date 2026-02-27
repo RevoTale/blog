@@ -4,6 +4,7 @@ package gen
 import (
 	"blog/internal/web/appcore"
 	rr_author_param_slug "blog/internal/web/appcore/resolvers/author/param_slug"
+	rr_channels "blog/internal/web/appcore/resolvers/channels"
 	rr_note_param_slug "blog/internal/web/appcore/resolvers/note/param_slug"
 	rr_notes "blog/internal/web/appcore/resolvers/notes"
 	rr_notes_micro_tales "blog/internal/web/appcore/resolvers/notes/micro-tales"
@@ -15,6 +16,7 @@ import (
 
 type generatedResolvers struct {
 	rAuthorParamSlug rr_author_param_slug.Resolver
+	rChannels        rr_channels.Resolver
 	rNoteParamSlug   rr_note_param_slug.Resolver
 	rNotes           rr_notes.Resolver
 	rNotesMicroTales rr_notes_micro_tales.Resolver
@@ -44,6 +46,15 @@ func toAuthorParamSlugParams(params AuthorParamSlugParams) rr_author_param_slug.
 	return rr_author_param_slug.Params{
 		Slug: params.Slug,
 	}
+}
+
+func (r *generatedResolvers) ResolveChannelsPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params ChannelsParams) (rr_channels.PageView, error) {
+	return r.rChannels.ResolvePage(ctx, appCtx, req, toChannelsParams(params))
+}
+
+func toChannelsParams(params ChannelsParams) rr_channels.Params {
+	_ = params
+	return rr_channels.Params{}
 }
 
 func (r *generatedResolvers) ResolveNoteParamSlugPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params NoteParamSlugParams) (rr_note_param_slug.PageView, error) {

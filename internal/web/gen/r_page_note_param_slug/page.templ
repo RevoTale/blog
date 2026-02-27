@@ -20,7 +20,9 @@ templ Page(view appcore.NotePageView) {
 				}
 			</div>
 			<div class="message-body">
-				<h1 class="note-detail-title">{ view.Note.Title }</h1>
+				if view.Note.Title != "" {
+					<h1 class="note-detail-title">{ view.Note.Title }</h1>
+				}
 				if len(view.Note.Authors) > 0 {
 					<section class="author-row">
 						for _, author := range view.Note.Authors {

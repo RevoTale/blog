@@ -120,6 +120,22 @@ func LoadNotesMicroTalesPage(
 	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
 }
 
+func LoadChannelsPage(
+	ctx context.Context,
+	appCtx *Context,
+	r *http.Request,
+	_ framework.EmptyParams,
+) (NotesPageView, error) {
+	filter := listFilterFromQuery(r, notes.ListFilter{})
+	view, err := loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, sidebarModeForFilter(filter))
+	if err != nil {
+		return NotesPageView{}, err
+	}
+
+	view.PageTitle = "Channels"
+	return view, nil
+}
+
 func loadNotesListPage(
 	ctx context.Context,
 	appCtx *Context,
@@ -155,9 +171,13 @@ func LoadNotePage(
 	if err != nil {
 		return NotePageView{}, err
 	}
+	pageTitle := strings.TrimSpace(note.Title)
+	if pageTitle == "" {
+		pageTitle = "Note"
+	}
 
 	return NotePageView{
-		PageTitle:          note.Title,
+		PageTitle:          pageTitle,
 		Note:               *note,
 		SidebarAuthorItems: uniqueSortedAuthors(note.Authors),
 		SidebarTagItems:    uniqueSortedTags(note.Tags),
@@ -292,6 +312,30 @@ func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType n
 	}
 
 	return "/notes?" + encoded
+}
+
+func BuildChannelsURL(authorSlug string, tagName string, noteType notes.NoteType) string {
+	noteType = notes.ParseNoteType(string(noteType))
+	authorSlug = strings.TrimSpace(authorSlug)
+	tagName = strings.TrimSpace(tagName)
+
+	q := make(url.Values)
+	if authorSlug != "" {
+		q.Set("author", authorSlug)
+	}
+	if tagName != "" {
+		q.Set("tag", tagName)
+	}
+	if noteType == notes.NoteTypeLong || noteType == notes.NoteTypeShort {
+		q.Set("type", noteType.QueryValue())
+	}
+
+	encoded := q.Encode()
+	if encoded == "" {
+		return "/channels"
+	}
+
+	return "/channels?" + encoded
 }
 
 func BuildAuthorURL(slug string, page int) string {

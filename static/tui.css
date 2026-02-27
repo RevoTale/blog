@@ -1,8 +1,32 @@
 @font-face {
   font-family: "Whitney";
+  src: url("/static/fonts/whitney-light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/static/fonts/whitney-light-italic.woff2") format("woff2");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
   src: url("/static/fonts/whitney-book.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/static/fonts/whitney-book-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
   font-display: swap;
 }
 
@@ -16,6 +40,14 @@
 
 @font-face {
   font-family: "Whitney";
+  src: url("/static/fonts/whitney-medium-italic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
   src: url("/static/fonts/whitney-semibold.woff2") format("woff2");
   font-weight: 600;
   font-style: normal;
@@ -24,9 +56,25 @@
 
 @font-face {
   font-family: "Whitney";
+  src: url("/static/fonts/whitney-semibold-italic.woff2") format("woff2");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
   src: url("/static/fonts/whitney-bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/static/fonts/whitney-bold-italic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
   font-display: swap;
 }
 
@@ -205,7 +253,7 @@ p + p {
   border-bottom: 1px solid var(--border-soft);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.5rem;
 }
 
@@ -220,6 +268,26 @@ p + p {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.guild-header > span:last-child {
+  margin-left: auto;
+}
+
+.guild-presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  margin-left: 0.25rem;
+  color: #b5bac1;
+}
+
+.guild-presence-label {
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: #b5bac1;
 }
 
 .channel-scroll {
@@ -270,37 +338,12 @@ p + p {
   background: #404249;
 }
 
-.channel-footer {
-  border-top: 1px solid var(--border-soft);
-  background: #232428;
-  padding: 0.52rem 0.65rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .presence-dot {
-  width: 11px;
-  height: 11px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--accent-green);
-  box-shadow: 0 0 0 2px #232428;
-}
-
-.channel-footer-meta {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.18;
-}
-
-.channel-footer-meta strong {
-  font-size: 0.86rem;
-  color: var(--text-secondary);
-}
-
-.channel-footer-meta span {
-  font-size: 0.74rem;
-  color: var(--text-muted);
+  background: #23a55a;
+  box-shadow: 0 0 0 1.5px #2b2d31;
 }
 
 .workspace-main {
@@ -322,6 +365,33 @@ p + p {
   gap: 0.7rem;
 }
 
+.topbar-left {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.mobile-channels-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--divider);
+  background: var(--bg-chip);
+  color: var(--text-secondary);
+  padding: 0.18rem 0.58rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.mobile-channels-button:hover {
+  text-decoration: none;
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
 .topbar-title {
   display: inline-flex;
   align-items: center;
@@ -339,14 +409,6 @@ p + p {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-}
-
-.topbar-icon {
-  width: 19px;
-  height: 19px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-input);
-  border: 1px solid #2b2d31;
 }
 
 .topbar-search {
@@ -374,7 +436,8 @@ p + p {
 .feed-toolbar,
 .composer,
 .note-detail,
-.footer {
+.footer,
+.channels-page {
   width: min(980px, calc(100% - 2rem));
   margin-left: auto;
   margin-right: auto;
@@ -401,6 +464,65 @@ p + p {
 .context-panel p:not(.muted) {
   margin-top: 0.48rem;
   color: var(--text-secondary);
+}
+
+.channels-page {
+  margin-top: 0.35rem;
+}
+
+.channels-page-header {
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0.08rem 0.1rem 0.8rem;
+}
+
+.channels-page-header h1 {
+  font-size: 1.24rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.channels-page-header p {
+  margin-top: 0.45rem;
+}
+
+.channels-page-header .back-link {
+  display: inline-flex;
+  margin-top: 0.55rem;
+}
+
+.channels-back-button {
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-pill);
+  background: var(--bg-chip);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.2rem 0.74rem;
+}
+
+.channels-back-button:hover {
+  text-decoration: none;
+  background: var(--bg-hover);
+  color: #fff;
+}
+
+.channel-panel-standalone {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-sidebar);
+  overflow: hidden;
+}
+
+.channels-desktop-hint {
+  display: block;
+}
+
+.channels-mobile-panel {
+  display: none;
 }
 
 .message-list {
@@ -879,8 +1001,30 @@ p + p {
   .feed-toolbar,
   .composer,
   .note-detail,
-  .footer {
+  .footer,
+  .channels-page {
     width: min(980px, calc(100% - 1.2rem));
+  }
+
+  .mobile-channels-button {
+    display: inline-flex;
+  }
+
+  .topbar-nav {
+    width: 100%;
+  }
+
+  .topbar-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .channels-desktop-hint {
+    display: none;
+  }
+
+  .channels-mobile-panel {
+    display: block;
   }
 }
 
@@ -930,6 +1074,11 @@ p + p {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+
+  .topbar-left {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .topbar-nav {

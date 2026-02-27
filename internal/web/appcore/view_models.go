@@ -21,6 +21,7 @@ type RootLayoutView interface {
 	SidebarCurrentAuthorSlug() string
 	SidebarCurrentTagName() string
 	SidebarCurrentType() notes.NoteType
+	SidebarChannelsURL() string
 	SidebarAllURL() string
 	SidebarAnyAuthorURL() string
 	SidebarAnyTagURL() string
@@ -87,6 +88,10 @@ func (v NotesPageView) SidebarCurrentTagName() string {
 
 func (v NotesPageView) SidebarCurrentType() notes.NoteType {
 	return v.Filter.Type
+}
+
+func (v NotesPageView) SidebarChannelsURL() string {
+	return BuildChannelsURL(v.Filter.AuthorSlug, v.Filter.TagName, v.Filter.Type)
 }
 
 func (v NotesPageView) SidebarAllURL() string {
@@ -184,6 +189,10 @@ func (v NotePageView) SidebarCurrentTagName() string {
 
 func (v NotePageView) SidebarCurrentType() notes.NoteType {
 	return notes.NoteTypeAll
+}
+
+func (v NotePageView) SidebarChannelsURL() string {
+	return "/channels"
 }
 
 func (v NotePageView) SidebarAllURL() string {

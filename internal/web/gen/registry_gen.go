@@ -6,6 +6,7 @@ import (
 	"blog/framework/router"
 	"blog/internal/web/appcore"
 	rr_author_param_slug "blog/internal/web/appcore/resolvers/author/param_slug"
+	rr_channels "blog/internal/web/appcore/resolvers/channels"
 	rr_note_param_slug "blog/internal/web/appcore/resolvers/note/param_slug"
 	rr_notes "blog/internal/web/appcore/resolvers/notes"
 	rr_notes_micro_tales "blog/internal/web/appcore/resolvers/notes/micro-tales"
@@ -14,6 +15,7 @@ import (
 	r_layout_author_param_slug "blog/internal/web/gen/r_layout_author_param_slug"
 	r_layout_root "blog/internal/web/gen/r_layout_root"
 	r_page_author_param_slug "blog/internal/web/gen/r_page_author_param_slug"
+	r_page_channels "blog/internal/web/gen/r_page_channels"
 	r_page_note_param_slug "blog/internal/web/gen/r_page_note_param_slug"
 	r_page_notes "blog/internal/web/gen/r_page_notes"
 	r_page_notes_micro_tales "blog/internal/web/gen/r_page_notes_micro_tales"
@@ -50,6 +52,19 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				Render:            r_page_author_param_slug.Page,
 				SelectorID:        "author-content",
 				BadRequestMessage: "invalid datastar signal payload",
+			},
+		},
+		framework.PageOnlyRouteHandler[*appcore.Context, ChannelsParams, rr_channels.PageView]{
+			Page: framework.PageModule[*appcore.Context, ChannelsParams, rr_channels.PageView]{
+				Pattern:     "/channels",
+				ParseParams: parseChannelsParams,
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (rr_channels.PageView, error) {
+					return resolvers.ResolveChannelsPage(ctx, appCtx, r, params)
+				},
+				Render: r_page_channels.Page,
+				Layouts: []framework.LayoutRenderer[rr_channels.PageView]{
+					wrapChannelsWithRootLayout,
+				},
 			},
 		},
 		framework.PageOnlyRouteHandler[*appcore.Context, NoteParamSlugParams, rr_note_param_slug.PageView]{
@@ -159,6 +174,14 @@ func parseAuthorParamSlugLiveParams(requestPath string) (AuthorParamSlugParams, 
 	return out, true
 }
 
+func parseChannelsParams(requestPath string) (ChannelsParams, bool) {
+	_, ok := router.MatchPathPattern("/channels", requestPath)
+	if !ok {
+		return ChannelsParams{}, false
+	}
+	return ChannelsParams{}, true
+}
+
 func parseNoteParamSlugParams(requestPath string) (NoteParamSlugParams, bool) {
 	params, ok := router.MatchPathPattern("/note/[slug]", requestPath)
 	if !ok {
@@ -224,6 +247,10 @@ func wrapAuthorParamSlugWithAuthorParamSlugLayout(view rr_author_param_slug.Page
 }
 
 func wrapAuthorParamSlugWithRootLayout(view rr_author_param_slug.PageView, child templ.Component) templ.Component {
+	return r_layout_root.Layout(view, child)
+}
+
+func wrapChannelsWithRootLayout(view rr_channels.PageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 

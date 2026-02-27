@@ -4,6 +4,7 @@ package gen
 import (
 	"blog/internal/web/appcore"
 	rr_author_param_slug "blog/internal/web/appcore/resolvers/author/param_slug"
+	rr_channels "blog/internal/web/appcore/resolvers/channels"
 	rr_note_param_slug "blog/internal/web/appcore/resolvers/note/param_slug"
 	rr_notes "blog/internal/web/appcore/resolvers/notes"
 	rr_notes_micro_tales "blog/internal/web/appcore/resolvers/notes/micro-tales"
@@ -15,6 +16,9 @@ import (
 
 type AuthorParamSlugParams struct {
 	Slug string
+}
+
+type ChannelsParams struct {
 }
 
 type NoteParamSlugParams struct {
@@ -38,6 +42,7 @@ type RouteResolvers interface {
 	ResolveAuthorParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (rr_author_param_slug.PageView, error)
 	ParseAuthorParamSlugLiveState(r *http.Request) (rr_author_param_slug.LiveState, error)
 	ResolveAuthorParamSlugLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams, state rr_author_param_slug.LiveState) (rr_author_param_slug.PageView, error)
+	ResolveChannelsPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (rr_channels.PageView, error)
 	ResolveNoteParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (rr_note_param_slug.PageView, error)
 	ResolveNotesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesParams) (rr_notes.PageView, error)
 	ParseNotesLiveState(r *http.Request) (rr_notes.LiveState, error)

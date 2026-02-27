@@ -407,7 +407,7 @@ func (s *Service) GetNoteBySlug(ctx context.Context, slug string) (*NoteDetail, 
 	note := NoteDetail{
 		ID:    doc.Id,
 		Slug:  strOr(doc.Slug, slug),
-		Title: pickTitle(doc.Title, doc.Slug, doc.Id),
+		Title: pickTitle(doc.Title),
 		BodyHTML: md.ToHTML(strOr(doc.Content, ""), md.Options{
 			TranslateLinks: translateLinks,
 			RootURL:        s.rootURL,
@@ -421,12 +421,8 @@ func (s *Service) GetNoteBySlug(ctx context.Context, slug string) (*NoteDetail, 
 	if doc.Meta != nil {
 		note.Description = strOr(doc.Meta.Description, "")
 		if strings.TrimSpace(note.Title) == "" {
-			note.Title = strOr(doc.Meta.Title, note.Slug)
+			note.Title = strOr(doc.Meta.Title, "")
 		}
-	}
-
-	if strings.TrimSpace(note.Title) == "" {
-		note.Title = note.Slug
 	}
 
 	return &note, nil
@@ -745,7 +741,7 @@ func summaryFromListDoc(
 	return NoteSummary{
 		ID:          id,
 		Slug:        strOr(slug, id),
-		Title:       pickTitle(title, slug, id),
+		Title:       pickTitle(title),
 		Excerpt:     md.Excerpt(contentText, 260),
 		PublishedAt: formatDate(publishedAt),
 		Description: description,
@@ -1123,14 +1119,11 @@ func filenameFromURL(rawURL string) string {
 	return base
 }
 
-func pickTitle(title *string, slug *string, fallback string) string {
+func pickTitle(title *string) string {
 	if v := strings.TrimSpace(strOr(title, "")); v != "" {
 		return v
 	}
-	if v := strings.TrimSpace(strOr(slug, "")); v != "" {
-		return v
-	}
-	return fallback
+	return ""
 }
 
 func formatDate(raw *string) string {

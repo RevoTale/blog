@@ -27,9 +27,11 @@ templ NoteCard(note notes.NoteSummary) {
 				}
 			</header>
 
-			<h2 class="note-title">
-				<a class="message-title-link" href={ "/note/" + note.Slug }>{ note.Title }</a>
-			</h2>
+			if note.Title != "" {
+				<h2 class="note-title">
+					<a class="message-title-link" href={ "/note/" + note.Slug }>{ note.Title }</a>
+				</h2>
+			}
 
 			if note.Description != "" {
 				<p class="message-content">{ note.Description }</p>
