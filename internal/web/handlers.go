@@ -9,7 +9,7 @@ import (
 	"blog/internal/config"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
-	"blog/internal/web/routes_gen"
+	webgen "blog/internal/web/gen"
 	"github.com/a-h/templ"
 	"github.com/starfederation/datastar-go/datastar"
 )
@@ -25,7 +25,7 @@ func NewHandler(cfg config.Config, service *notes.Service) (*Handler, error) {
 
 	routeEngine, err := engine.New(engine.Config[*appcore.Context]{
 		AppContext:        appCtx,
-		Handlers:          routes_gen.Handlers(),
+		Handlers:          webgen.Handlers(webgen.NewRouteResolvers()),
 		RenderPage:        renderComponent,
 		PatchLive:         patchComponent,
 		IsNotFoundError:   appcore.IsNotFoundError,

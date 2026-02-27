@@ -11,7 +11,7 @@ tasks:
     cmds:
       - go generate ./internal/gql
       - go generate ./internal/web
-      - go run ./cmd/techstackgen -in go.mod -out internal/techstack/generated.go
+      - go run ./internal/cmd/techstackgen -in go.mod -out internal/techstack/generated.go
 
   go:gen:code-diff:
     desc: Verify generated outputs are committed
@@ -20,35 +20,6 @@ tasks:
         set -euo pipefail
         templ_files="$(find internal/web -type f -name '*_templ.go' | sort)"
         git diff --exit-code -- go.mod go.sum internal/gql/generated.go internal/techstack/generated.go $templ_files
-
-  go:gen:check:
-    desc: Non-mutating generator freshness check
-    cmds:
-      - |
-        set -euo pipefail
-        templ_files="$(find internal/web -type f -name '*_templ.go' | sort)"
-        files="go.mod go.sum internal/gql/generated.go internal/techstack/generated.go $templ_files"
-        tmpdir="$(mktemp -d)"
-
-        cleanup() {
-          for f in $files; do
-            cp "$tmpdir/$f" "$f"
-          done
-          rm -rf "$tmpdir"
-        }
-
-        for f in $files; do
-          mkdir -p "$tmpdir/$(dirname "$f")"
-          cp "$f" "$tmpdir/$f"
-        done
-
-        trap cleanup EXIT
-
-        task go:gen
-        if ! git diff --quiet -- $files; then
-          echo "generated code is out of date; run 'task gen'"
-          exit 1
-        fi
 
   go:fmt:
     desc: Format Go sources
@@ -76,9 +47,9 @@ tasks:
       - task: go:gen
 
   gen:check:
-    desc: Check code generation freshness (non-mutating)
+    desc: Check code generation freshness (code diff)
     cmds:
-      - task: go:gen:check
+      - task: go:gen:code-diff
 
   gen:code-diff:
     desc: CI fallback generation diff check
