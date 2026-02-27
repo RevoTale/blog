@@ -2,51 +2,11 @@ package appsrc
 
 import (
 	"blog/internal/web/appcore"
-	c_note_card "blog/internal/web/gen/c_note_card"
+	c_notes_feed "blog/internal/web/gen/c_notes_feed"
 )
 
 templ Page(view appcore.AuthorPageView) {
 	<div id="author-content" data-signals={ appcore.AuthorSignalsJSON(view) }>
-		<section>
-			if len(view.Notes) > 0 {
-				for _, note := range view.Notes {
-					@c_note_card.NoteCard(note)
-				}
-			} else {
-				<article class="panel">
-					<p>this author has no published notes yet.</p>
-				</article>
-			}
-		</section>
-
-		<section class="panel pager">
-			<p>{ appcore.PagerStatusText(view.Pagination) }</p>
-			<div class="pager-controls">
-				if view.Pagination.HasPrev {
-					<button type="button" class="pager-link" data-on:click={ appcore.AuthorPageAction(view.Author.Slug, view.Pagination.PrevPage) }>[prev]</button>
-				} else {
-					<button type="button" class="pager-link" disabled>[prev]</button>
-				}
-				if view.Pagination.HasNext {
-					<button type="button" class="pager-link" data-on:click={ appcore.AuthorPageAction(view.Author.Slug, view.Pagination.NextPage) }>[next]</button>
-				} else {
-					<button type="button" class="pager-link" disabled>[next]</button>
-				}
-			</div>
-			<noscript>
-				<div>
-					if view.Pagination.HasPrev {
-						<a href={ view.Pagination.PrevURL }>[prev]</a>
-					} else {
-						<span class="muted">[prev]</span>
-					}
-					if view.Pagination.HasNext {
-						<a href={ view.Pagination.NextURL }>[next]</a>
-					} else {
-						<span class="muted">[next]</span>
-					}
-				</div>
-			</noscript>
-		</section>
+		@c_notes_feed.NotesFeed(view, "this author has no published notes yet.")
 	</div>
 }

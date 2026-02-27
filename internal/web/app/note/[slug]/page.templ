@@ -28,7 +28,7 @@ templ Page(view appcore.NotePageView) {
 		if len(view.Note.Tags) > 0 {
 			<ul class="tag-list">
 				for _, tag := range view.Note.Tags {
-					<li><a class="tag" href={ appcore.BuildNotesURL(1, tag.Name) }>#{ tag.Title }</a></li>
+					<li><a class="tag" href={ appcore.BuildTagURL(tag.Name) }>#{ tag.Title }</a></li>
 				}
 			</ul>
 		}

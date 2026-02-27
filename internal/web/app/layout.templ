@@ -36,36 +36,32 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 						</nav>
 					</header>
 
-						<div class="workspace-body">
-							<aside class="channel-panel" aria-label="channel list">
-								<p class="channel-panel-label">channels</p>
-								<a
-									class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "" && view.SidebarCurrentTagName() == "") }
-									href="/notes"
-								>
-									# All
+					<div class="workspace-body">
+						<aside class="channel-panel" aria-label="channel list">
+							<p class="channel-panel-label">channels</p>
+							<a class={ appcore.ChannelLinkClass(appcore.SidebarAllActive(view)) } href={ view.SidebarAllURL() }># All</a>
+
+							<p class="channel-panel-label">authors</p>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "") } href={ view.SidebarAnyAuthorURL() }>ANY</a>
+							for _, author := range view.SidebarAuthors() {
+								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug) } href={ view.SidebarAuthorURL(author.Slug) }>
+									{ appcore.AuthorChannelLabel(author) }
 								</a>
-								<p class="channel-panel-label">authors</p>
-								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "") } href="/notes">ANY</a>
-								for _, author := range view.SidebarAuthors() {
-									<a
-										class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug) }
-										href={ appcore.BuildAuthorURL(author.Slug, 1) }
-									>
-										{ appcore.AuthorChannelLabel(author) }
-									</a>
-								}
-								<p class="channel-panel-label">tags</p>
-								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == "") } href={ appcore.BuildNotesURL(1, "") }>ANY</a>
-								for _, tag := range view.SidebarTags() {
-									<a
-										class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name) }
-										href={ appcore.BuildNotesURL(1, tag.Name) }
-									>
-										{ appcore.TagChannelLabel(tag) }
-									</a>
-								}
-							</aside>
+							}
+
+							<p class="channel-panel-label">tags</p>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == "") } href={ view.SidebarAnyTagURL() }>ANY</a>
+							for _, tag := range view.SidebarTags() {
+								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name) } href={ view.SidebarTagURL(tag.Name) }>
+									{ appcore.TagChannelLabel(tag) }
+								</a>
+							}
+
+							<p class="channel-panel-label">types</p>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "all") } href={ view.SidebarAnyTypeURL() }>ANY</a>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>Tales</a>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>Micro-tales</a>
+						</aside>
 
 						<main class="container">
 							@child

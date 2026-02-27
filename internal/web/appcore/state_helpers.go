@@ -10,23 +10,33 @@ import (
 )
 
 type NotesSignalState struct {
-	Page int    `json:"page"`
-	Tag  string `json:"tag"`
+	Page   int    `json:"page"`
+	Author string `json:"author"`
+	Tag    string `json:"tag"`
+	Type   string `json:"type"`
 }
 
 type AuthorSignalState struct {
-	Page int `json:"page"`
+	Page int    `json:"page"`
+	Tag  string `json:"tag"`
+	Type string `json:"type"`
 }
 
 func NotesSignalsJSON(view NotesPageView) string {
 	return marshalSignals(NotesSignalState{
-		Page: view.Pagination.Page,
-		Tag:  view.Tag,
+		Page:   view.Pagination.Page,
+		Author: view.Filter.AuthorSlug,
+		Tag:    view.Filter.TagName,
+		Type:   string(view.Filter.Type),
 	})
 }
 
 func AuthorSignalsJSON(view AuthorPageView) string {
-	return marshalSignals(AuthorSignalState{Page: view.Pagination.Page})
+	return marshalSignals(AuthorSignalState{
+		Page: view.Pagination.Page,
+		Tag:  view.Filter.TagName,
+		Type: string(view.Filter.Type),
+	})
 }
 
 func marshalSignals[T interface{}](value T) string {
@@ -71,6 +81,27 @@ func TagChannelLabel(tag notes.Tag) string {
 	return "#" + label
 }
 
+func TypeChannelLabel(noteType notes.NoteType) string {
+	switch notes.ParseNoteType(string(noteType)) {
+	case notes.NoteTypeLong:
+		return "Tales"
+	case notes.NoteTypeShort:
+		return "Micro-tales"
+	default:
+		return "ANY"
+	}
+}
+
+func SidebarAllActive(view RootLayoutView) bool {
+	if view == nil {
+		return true
+	}
+
+	return strings.TrimSpace(view.SidebarCurrentAuthorSlug()) == "" &&
+		strings.TrimSpace(view.SidebarCurrentTagName()) == "" &&
+		notes.ParseNoteType(string(view.SidebarCurrentType())) == notes.NoteTypeAll
+}
+
 func NoteCardClass(hasAttachment bool) string {
 	if hasAttachment {
 		return "panel note-card has-attachment"
@@ -80,18 +111,6 @@ func NoteCardClass(hasAttachment bool) string {
 
 func PagerStatusText(p PaginationView) string {
 	return "page " + strconv.Itoa(p.Page) + " / " + strconv.Itoa(p.TotalPages)
-}
-
-func NotesTagAction(tag string) string {
-	return "$tag=" + strconv.Quote(tag) + "; $page=1; @get('/notes/live')"
-}
-
-func NotesPageAction(page int) string {
-	return "$page=" + strconv.Itoa(sanitizePage(page)) + "; @get('/notes/live')"
-}
-
-func AuthorPageAction(slug string, page int) string {
-	return "$page=" + strconv.Itoa(sanitizePage(page)) + "; @get('" + BuildAuthorLiveURL(slug) + "')"
 }
 
 func AttachmentAltText(alt string, fallbackTitle string) string {

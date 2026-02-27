@@ -4,6 +4,7 @@ package gql
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/Khan/genqlient/graphql"
 )
@@ -70,30 +71,514 @@ type AuthorBySlugResponse struct {
 // GetAuthors returns AuthorBySlugResponse.Authors, and is useful for accessing the field via an interface.
 func (v *AuthorBySlugResponse) GetAuthors() *AuthorBySlugAuthors { return v.Authors }
 
-// AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag includes the requested fields of the GraphQL type Tag.
-type AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag struct {
+// AvailableAuthorsAuthors includes the requested fields of the GraphQL type Authors.
+type AvailableAuthorsAuthors struct {
+	Docs []AvailableAuthorsAuthorsDocsAuthor `json:"docs"`
+}
+
+// GetDocs returns AvailableAuthorsAuthors.Docs, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthors) GetDocs() []AvailableAuthorsAuthorsDocsAuthor { return v.Docs }
+
+// AvailableAuthorsAuthorsDocsAuthor includes the requested fields of the GraphQL type Author.
+type AvailableAuthorsAuthorsDocsAuthor struct {
+	Id     string                                        `json:"id"`
+	Name   *string                                       `json:"name"`
+	Slug   string                                        `json:"slug"`
+	Bio    *string                                       `json:"bio"`
+	Avatar *AvailableAuthorsAuthorsDocsAuthorAvatarMedia `json:"avatar"`
+}
+
+// GetId returns AvailableAuthorsAuthorsDocsAuthor.Id, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthor) GetId() string { return v.Id }
+
+// GetName returns AvailableAuthorsAuthorsDocsAuthor.Name, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthor) GetName() *string { return v.Name }
+
+// GetSlug returns AvailableAuthorsAuthorsDocsAuthor.Slug, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthor) GetSlug() string { return v.Slug }
+
+// GetBio returns AvailableAuthorsAuthorsDocsAuthor.Bio, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthor) GetBio() *string { return v.Bio }
+
+// GetAvatar returns AvailableAuthorsAuthorsDocsAuthor.Avatar, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthor) GetAvatar() *AvailableAuthorsAuthorsDocsAuthorAvatarMedia {
+	return v.Avatar
+}
+
+// AvailableAuthorsAuthorsDocsAuthorAvatarMedia includes the requested fields of the GraphQL type Media.
+type AvailableAuthorsAuthorsDocsAuthorAvatarMedia struct {
+	Url    *string  `json:"url"`
+	Alt    *string  `json:"alt"`
+	Width  *float64 `json:"width"`
+	Height *float64 `json:"height"`
+}
+
+// GetUrl returns AvailableAuthorsAuthorsDocsAuthorAvatarMedia.Url, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthorAvatarMedia) GetUrl() *string { return v.Url }
+
+// GetAlt returns AvailableAuthorsAuthorsDocsAuthorAvatarMedia.Alt, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthorAvatarMedia) GetAlt() *string { return v.Alt }
+
+// GetWidth returns AvailableAuthorsAuthorsDocsAuthorAvatarMedia.Width, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthorAvatarMedia) GetWidth() *float64 { return v.Width }
+
+// GetHeight returns AvailableAuthorsAuthorsDocsAuthorAvatarMedia.Height, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsAuthorsDocsAuthorAvatarMedia) GetHeight() *float64 { return v.Height }
+
+// AvailableAuthorsResponse is returned by AvailableAuthors on success.
+type AvailableAuthorsResponse struct {
+	Authors *AvailableAuthorsAuthors `json:"Authors"`
+}
+
+// GetAuthors returns AvailableAuthorsResponse.Authors, and is useful for accessing the field via an interface.
+func (v *AvailableAuthorsResponse) GetAuthors() *AvailableAuthorsAuthors { return v.Authors }
+
+// AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag includes the requested fields of the GraphQL type Tag.
+type AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag struct {
 	Id    string  `json:"id"`
 	Name  string  `json:"name"`
 	Title *string `json:"title"`
 }
 
-// GetId returns AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag.Id, and is useful for accessing the field via an interface.
-func (v *AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag) GetId() string { return v.Id }
+// GetId returns AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag.Id, and is useful for accessing the field via an interface.
+func (v *AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag) GetId() string { return v.Id }
 
-// GetName returns AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag.Name, and is useful for accessing the field via an interface.
-func (v *AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag) GetName() string { return v.Name }
+// GetName returns AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag.Name, and is useful for accessing the field via an interface.
+func (v *AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag) GetName() string { return v.Name }
 
-// GetTitle returns AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag.Title, and is useful for accessing the field via an interface.
-func (v *AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag) GetTitle() *string { return v.Title }
+// GetTitle returns AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag.Title, and is useful for accessing the field via an interface.
+func (v *AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag) GetTitle() *string { return v.Title }
 
-// AvailableLongNoteTagsResponse is returned by AvailableLongNoteTags on success.
-type AvailableLongNoteTagsResponse struct {
-	AvailableTagsByMicroPostType []AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag `json:"availableTagsByMicroPostType"`
+// AvailableTagsByPostTypeResponse is returned by AvailableTagsByPostType on success.
+type AvailableTagsByPostTypeResponse struct {
+	AvailableTagsByMicroPostType []AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag `json:"availableTagsByMicroPostType"`
 }
 
-// GetAvailableTagsByMicroPostType returns AvailableLongNoteTagsResponse.AvailableTagsByMicroPostType, and is useful for accessing the field via an interface.
-func (v *AvailableLongNoteTagsResponse) GetAvailableTagsByMicroPostType() []AvailableLongNoteTagsAvailableTagsByMicroPostTypeTag {
+// GetAvailableTagsByMicroPostType returns AvailableTagsByPostTypeResponse.AvailableTagsByMicroPostType, and is useful for accessing the field via an interface.
+func (v *AvailableTagsByPostTypeResponse) GetAvailableTagsByMicroPostType() []AvailableTagsByPostTypeAvailableTagsByMicroPostTypeTag {
 	return v.AvailableTagsByMicroPostType
+}
+
+// ListNotesByAuthorAndTagIDsMicro_posts includes the requested fields of the GraphQL type Micro_posts.
+type ListNotesByAuthorAndTagIDsMicro_posts struct {
+	TotalPages int                                                   `json:"totalPages"`
+	Docs       []ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post `json:"docs"`
+}
+
+// GetTotalPages returns ListNotesByAuthorAndTagIDsMicro_posts.TotalPages, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_posts) GetTotalPages() int { return v.TotalPages }
+
+// GetDocs returns ListNotesByAuthorAndTagIDsMicro_posts.Docs, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_posts) GetDocs() []ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post {
+	return v.Docs
+}
+
+// ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post includes the requested fields of the GraphQL type Micro_post.
+type ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post struct {
+	NoteListDoc `json:"-"`
+}
+
+// GetId returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.Id, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetId() string { return v.NoteListDoc.Id }
+
+// GetSlug returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.Slug, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetSlug() *string {
+	return v.NoteListDoc.Slug
+}
+
+// GetTitle returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.Title, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetTitle() *string {
+	return v.NoteListDoc.Title
+}
+
+// GetContent returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.Content, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetContent() *string {
+	return v.NoteListDoc.Content
+}
+
+// GetPublishedAt returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.PublishedAt, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetPublishedAt() *string {
+	return v.NoteListDoc.PublishedAt
+}
+
+// GetAuthors returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.Authors, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetAuthors() []NoteListDocAuthorsAuthor {
+	return v.NoteListDoc.Authors
+}
+
+// GetTags returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.Tags, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetTags() []NoteListDocTagsTag {
+	return v.NoteListDoc.Tags
+}
+
+// GetAttachment returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.Attachment, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetAttachment() *NoteListDocAttachmentMedia {
+	return v.NoteListDoc.Attachment
+}
+
+// GetMeta returns ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post.Meta, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) GetMeta() *NoteListDocMetaMicro_post_Meta {
+	return v.NoteListDoc.Meta
+}
+
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.NoteListDoc)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post struct {
+	Id string `json:"id"`
+
+	Slug *string `json:"slug"`
+
+	Title *string `json:"title"`
+
+	Content *string `json:"content"`
+
+	PublishedAt *string `json:"publishedAt"`
+
+	Authors []NoteListDocAuthorsAuthor `json:"authors"`
+
+	Tags []NoteListDocTagsTag `json:"tags"`
+
+	Attachment *NoteListDocAttachmentMedia `json:"attachment"`
+
+	Meta *NoteListDocMetaMicro_post_Meta `json:"meta"`
+}
+
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *ListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post) __premarshalJSON() (*__premarshalListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post, error) {
+	var retval __premarshalListNotesByAuthorAndTagIDsMicro_postsDocsMicro_post
+
+	retval.Id = v.NoteListDoc.Id
+	retval.Slug = v.NoteListDoc.Slug
+	retval.Title = v.NoteListDoc.Title
+	retval.Content = v.NoteListDoc.Content
+	retval.PublishedAt = v.NoteListDoc.PublishedAt
+	retval.Authors = v.NoteListDoc.Authors
+	retval.Tags = v.NoteListDoc.Tags
+	retval.Attachment = v.NoteListDoc.Attachment
+	retval.Meta = v.NoteListDoc.Meta
+	return &retval, nil
+}
+
+// ListNotesByAuthorAndTagIDsResponse is returned by ListNotesByAuthorAndTagIDs on success.
+type ListNotesByAuthorAndTagIDsResponse struct {
+	Micro_posts *ListNotesByAuthorAndTagIDsMicro_posts `json:"Micro_posts"`
+}
+
+// GetMicro_posts returns ListNotesByAuthorAndTagIDsResponse.Micro_posts, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorAndTagIDsResponse) GetMicro_posts() *ListNotesByAuthorAndTagIDsMicro_posts {
+	return v.Micro_posts
+}
+
+// ListNotesByAuthorTagIDsAndTypeMicro_posts includes the requested fields of the GraphQL type Micro_posts.
+type ListNotesByAuthorTagIDsAndTypeMicro_posts struct {
+	TotalPages int                                                       `json:"totalPages"`
+	Docs       []ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post `json:"docs"`
+}
+
+// GetTotalPages returns ListNotesByAuthorTagIDsAndTypeMicro_posts.TotalPages, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_posts) GetTotalPages() int { return v.TotalPages }
+
+// GetDocs returns ListNotesByAuthorTagIDsAndTypeMicro_posts.Docs, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_posts) GetDocs() []ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post {
+	return v.Docs
+}
+
+// ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post includes the requested fields of the GraphQL type Micro_post.
+type ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post struct {
+	NoteListDoc `json:"-"`
+}
+
+// GetId returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.Id, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetId() string {
+	return v.NoteListDoc.Id
+}
+
+// GetSlug returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.Slug, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetSlug() *string {
+	return v.NoteListDoc.Slug
+}
+
+// GetTitle returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.Title, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetTitle() *string {
+	return v.NoteListDoc.Title
+}
+
+// GetContent returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.Content, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetContent() *string {
+	return v.NoteListDoc.Content
+}
+
+// GetPublishedAt returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.PublishedAt, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetPublishedAt() *string {
+	return v.NoteListDoc.PublishedAt
+}
+
+// GetAuthors returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.Authors, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetAuthors() []NoteListDocAuthorsAuthor {
+	return v.NoteListDoc.Authors
+}
+
+// GetTags returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.Tags, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetTags() []NoteListDocTagsTag {
+	return v.NoteListDoc.Tags
+}
+
+// GetAttachment returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.Attachment, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetAttachment() *NoteListDocAttachmentMedia {
+	return v.NoteListDoc.Attachment
+}
+
+// GetMeta returns ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post.Meta, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) GetMeta() *NoteListDocMetaMicro_post_Meta {
+	return v.NoteListDoc.Meta
+}
+
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.NoteListDoc)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post struct {
+	Id string `json:"id"`
+
+	Slug *string `json:"slug"`
+
+	Title *string `json:"title"`
+
+	Content *string `json:"content"`
+
+	PublishedAt *string `json:"publishedAt"`
+
+	Authors []NoteListDocAuthorsAuthor `json:"authors"`
+
+	Tags []NoteListDocTagsTag `json:"tags"`
+
+	Attachment *NoteListDocAttachmentMedia `json:"attachment"`
+
+	Meta *NoteListDocMetaMicro_post_Meta `json:"meta"`
+}
+
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *ListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post) __premarshalJSON() (*__premarshalListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post, error) {
+	var retval __premarshalListNotesByAuthorTagIDsAndTypeMicro_postsDocsMicro_post
+
+	retval.Id = v.NoteListDoc.Id
+	retval.Slug = v.NoteListDoc.Slug
+	retval.Title = v.NoteListDoc.Title
+	retval.Content = v.NoteListDoc.Content
+	retval.PublishedAt = v.NoteListDoc.PublishedAt
+	retval.Authors = v.NoteListDoc.Authors
+	retval.Tags = v.NoteListDoc.Tags
+	retval.Attachment = v.NoteListDoc.Attachment
+	retval.Meta = v.NoteListDoc.Meta
+	return &retval, nil
+}
+
+// ListNotesByAuthorTagIDsAndTypeResponse is returned by ListNotesByAuthorTagIDsAndType on success.
+type ListNotesByAuthorTagIDsAndTypeResponse struct {
+	Micro_posts *ListNotesByAuthorTagIDsAndTypeMicro_posts `json:"Micro_posts"`
+}
+
+// GetMicro_posts returns ListNotesByAuthorTagIDsAndTypeResponse.Micro_posts, and is useful for accessing the field via an interface.
+func (v *ListNotesByAuthorTagIDsAndTypeResponse) GetMicro_posts() *ListNotesByAuthorTagIDsAndTypeMicro_posts {
+	return v.Micro_posts
+}
+
+// ListNotesByTagIDsAndTypeMicro_posts includes the requested fields of the GraphQL type Micro_posts.
+type ListNotesByTagIDsAndTypeMicro_posts struct {
+	TotalPages int                                                 `json:"totalPages"`
+	Docs       []ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post `json:"docs"`
+}
+
+// GetTotalPages returns ListNotesByTagIDsAndTypeMicro_posts.TotalPages, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_posts) GetTotalPages() int { return v.TotalPages }
+
+// GetDocs returns ListNotesByTagIDsAndTypeMicro_posts.Docs, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_posts) GetDocs() []ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post {
+	return v.Docs
+}
+
+// ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post includes the requested fields of the GraphQL type Micro_post.
+type ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post struct {
+	NoteListDoc `json:"-"`
+}
+
+// GetId returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.Id, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetId() string { return v.NoteListDoc.Id }
+
+// GetSlug returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.Slug, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetSlug() *string {
+	return v.NoteListDoc.Slug
+}
+
+// GetTitle returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.Title, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetTitle() *string {
+	return v.NoteListDoc.Title
+}
+
+// GetContent returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.Content, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetContent() *string {
+	return v.NoteListDoc.Content
+}
+
+// GetPublishedAt returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.PublishedAt, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetPublishedAt() *string {
+	return v.NoteListDoc.PublishedAt
+}
+
+// GetAuthors returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.Authors, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetAuthors() []NoteListDocAuthorsAuthor {
+	return v.NoteListDoc.Authors
+}
+
+// GetTags returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.Tags, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetTags() []NoteListDocTagsTag {
+	return v.NoteListDoc.Tags
+}
+
+// GetAttachment returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.Attachment, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetAttachment() *NoteListDocAttachmentMedia {
+	return v.NoteListDoc.Attachment
+}
+
+// GetMeta returns ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post.Meta, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) GetMeta() *NoteListDocMetaMicro_post_Meta {
+	return v.NoteListDoc.Meta
+}
+
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.NoteListDoc)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalListNotesByTagIDsAndTypeMicro_postsDocsMicro_post struct {
+	Id string `json:"id"`
+
+	Slug *string `json:"slug"`
+
+	Title *string `json:"title"`
+
+	Content *string `json:"content"`
+
+	PublishedAt *string `json:"publishedAt"`
+
+	Authors []NoteListDocAuthorsAuthor `json:"authors"`
+
+	Tags []NoteListDocTagsTag `json:"tags"`
+
+	Attachment *NoteListDocAttachmentMedia `json:"attachment"`
+
+	Meta *NoteListDocMetaMicro_post_Meta `json:"meta"`
+}
+
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *ListNotesByTagIDsAndTypeMicro_postsDocsMicro_post) __premarshalJSON() (*__premarshalListNotesByTagIDsAndTypeMicro_postsDocsMicro_post, error) {
+	var retval __premarshalListNotesByTagIDsAndTypeMicro_postsDocsMicro_post
+
+	retval.Id = v.NoteListDoc.Id
+	retval.Slug = v.NoteListDoc.Slug
+	retval.Title = v.NoteListDoc.Title
+	retval.Content = v.NoteListDoc.Content
+	retval.PublishedAt = v.NoteListDoc.PublishedAt
+	retval.Authors = v.NoteListDoc.Authors
+	retval.Tags = v.NoteListDoc.Tags
+	retval.Attachment = v.NoteListDoc.Attachment
+	retval.Meta = v.NoteListDoc.Meta
+	return &retval, nil
+}
+
+// ListNotesByTagIDsAndTypeResponse is returned by ListNotesByTagIDsAndType on success.
+type ListNotesByTagIDsAndTypeResponse struct {
+	Micro_posts *ListNotesByTagIDsAndTypeMicro_posts `json:"Micro_posts"`
+}
+
+// GetMicro_posts returns ListNotesByTagIDsAndTypeResponse.Micro_posts, and is useful for accessing the field via an interface.
+func (v *ListNotesByTagIDsAndTypeResponse) GetMicro_posts() *ListNotesByTagIDsAndTypeMicro_posts {
+	return v.Micro_posts
 }
 
 // ListNotesByTagIDsMicro_posts includes the requested fields of the GraphQL type Micro_posts.
@@ -112,163 +597,115 @@ func (v *ListNotesByTagIDsMicro_posts) GetDocs() []ListNotesByTagIDsMicro_postsD
 
 // ListNotesByTagIDsMicro_postsDocsMicro_post includes the requested fields of the GraphQL type Micro_post.
 type ListNotesByTagIDsMicro_postsDocsMicro_post struct {
-	Id          string                                                         `json:"id"`
-	Slug        *string                                                        `json:"slug"`
-	Title       *string                                                        `json:"title"`
-	Content     *string                                                        `json:"content"`
-	PublishedAt *string                                                        `json:"publishedAt"`
-	Authors     []ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor      `json:"authors"`
-	Tags        []ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag            `json:"tags"`
-	Attachment  *ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia     `json:"attachment"`
-	Meta        *ListNotesByTagIDsMicro_postsDocsMicro_postMetaMicro_post_Meta `json:"meta"`
+	NoteListDoc `json:"-"`
 }
 
 // GetId returns ListNotesByTagIDsMicro_postsDocsMicro_post.Id, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetId() string { return v.Id }
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetId() string { return v.NoteListDoc.Id }
 
 // GetSlug returns ListNotesByTagIDsMicro_postsDocsMicro_post.Slug, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetSlug() *string { return v.Slug }
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetSlug() *string { return v.NoteListDoc.Slug }
 
 // GetTitle returns ListNotesByTagIDsMicro_postsDocsMicro_post.Title, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetTitle() *string { return v.Title }
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetTitle() *string { return v.NoteListDoc.Title }
 
 // GetContent returns ListNotesByTagIDsMicro_postsDocsMicro_post.Content, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetContent() *string { return v.Content }
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetContent() *string {
+	return v.NoteListDoc.Content
+}
 
 // GetPublishedAt returns ListNotesByTagIDsMicro_postsDocsMicro_post.PublishedAt, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetPublishedAt() *string { return v.PublishedAt }
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetPublishedAt() *string {
+	return v.NoteListDoc.PublishedAt
+}
 
 // GetAuthors returns ListNotesByTagIDsMicro_postsDocsMicro_post.Authors, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetAuthors() []ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor {
-	return v.Authors
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetAuthors() []NoteListDocAuthorsAuthor {
+	return v.NoteListDoc.Authors
 }
 
 // GetTags returns ListNotesByTagIDsMicro_postsDocsMicro_post.Tags, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetTags() []ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag {
-	return v.Tags
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetTags() []NoteListDocTagsTag {
+	return v.NoteListDoc.Tags
 }
 
 // GetAttachment returns ListNotesByTagIDsMicro_postsDocsMicro_post.Attachment, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetAttachment() *ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia {
-	return v.Attachment
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetAttachment() *NoteListDocAttachmentMedia {
+	return v.NoteListDoc.Attachment
 }
 
 // GetMeta returns ListNotesByTagIDsMicro_postsDocsMicro_post.Meta, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetMeta() *ListNotesByTagIDsMicro_postsDocsMicro_postMetaMicro_post_Meta {
-	return v.Meta
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) GetMeta() *NoteListDocMetaMicro_post_Meta {
+	return v.NoteListDoc.Meta
 }
 
-// ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia includes the requested fields of the GraphQL type Media.
-type ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia struct {
-	Url      *string  `json:"url"`
-	Alt      *string  `json:"alt"`
-	Width    *float64 `json:"width"`
-	Height   *float64 `json:"height"`
-	Filename *string  `json:"filename"`
-	MimeType *string  `json:"mimeType"`
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*ListNotesByTagIDsMicro_postsDocsMicro_post
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.ListNotesByTagIDsMicro_postsDocsMicro_post = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.NoteListDoc)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-// GetUrl returns ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia.Url, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia) GetUrl() *string { return v.Url }
+type __premarshalListNotesByTagIDsMicro_postsDocsMicro_post struct {
+	Id string `json:"id"`
 
-// GetAlt returns ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia.Alt, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia) GetAlt() *string { return v.Alt }
+	Slug *string `json:"slug"`
 
-// GetWidth returns ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia.Width, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia) GetWidth() *float64 {
-	return v.Width
-}
-
-// GetHeight returns ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia.Height, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia) GetHeight() *float64 {
-	return v.Height
-}
-
-// GetFilename returns ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia.Filename, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia) GetFilename() *string {
-	return v.Filename
-}
-
-// GetMimeType returns ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia.MimeType, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAttachmentMedia) GetMimeType() *string {
-	return v.MimeType
-}
-
-// ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor includes the requested fields of the GraphQL type Author.
-type ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor struct {
-	Name   *string                                                             `json:"name"`
-	Slug   string                                                              `json:"slug"`
-	Bio    *string                                                             `json:"bio"`
-	Avatar *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia `json:"avatar"`
-}
-
-// GetName returns ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor.Name, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor) GetName() *string { return v.Name }
-
-// GetSlug returns ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor.Slug, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor) GetSlug() string { return v.Slug }
-
-// GetBio returns ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor.Bio, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor) GetBio() *string { return v.Bio }
-
-// GetAvatar returns ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor.Avatar, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthor) GetAvatar() *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia {
-	return v.Avatar
-}
-
-// ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia includes the requested fields of the GraphQL type Media.
-type ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia struct {
-	Url    *string  `json:"url"`
-	Alt    *string  `json:"alt"`
-	Width  *float64 `json:"width"`
-	Height *float64 `json:"height"`
-}
-
-// GetUrl returns ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Url, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetUrl() *string {
-	return v.Url
-}
-
-// GetAlt returns ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Alt, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetAlt() *string {
-	return v.Alt
-}
-
-// GetWidth returns ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Width, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetWidth() *float64 {
-	return v.Width
-}
-
-// GetHeight returns ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Height, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetHeight() *float64 {
-	return v.Height
-}
-
-// ListNotesByTagIDsMicro_postsDocsMicro_postMetaMicro_post_Meta includes the requested fields of the GraphQL type Micro_post_Meta.
-type ListNotesByTagIDsMicro_postsDocsMicro_postMetaMicro_post_Meta struct {
-	Description *string `json:"description"`
-}
-
-// GetDescription returns ListNotesByTagIDsMicro_postsDocsMicro_postMetaMicro_post_Meta.Description, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postMetaMicro_post_Meta) GetDescription() *string {
-	return v.Description
-}
-
-// ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag includes the requested fields of the GraphQL type Tag.
-type ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag struct {
-	Id    string  `json:"id"`
-	Name  string  `json:"name"`
 	Title *string `json:"title"`
+
+	Content *string `json:"content"`
+
+	PublishedAt *string `json:"publishedAt"`
+
+	Authors []NoteListDocAuthorsAuthor `json:"authors"`
+
+	Tags []NoteListDocTagsTag `json:"tags"`
+
+	Attachment *NoteListDocAttachmentMedia `json:"attachment"`
+
+	Meta *NoteListDocMetaMicro_post_Meta `json:"meta"`
 }
 
-// GetId returns ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag.Id, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag) GetId() string { return v.Id }
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
 
-// GetName returns ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag.Name, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag) GetName() string { return v.Name }
+func (v *ListNotesByTagIDsMicro_postsDocsMicro_post) __premarshalJSON() (*__premarshalListNotesByTagIDsMicro_postsDocsMicro_post, error) {
+	var retval __premarshalListNotesByTagIDsMicro_postsDocsMicro_post
 
-// GetTitle returns ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag.Title, and is useful for accessing the field via an interface.
-func (v *ListNotesByTagIDsMicro_postsDocsMicro_postTagsTag) GetTitle() *string { return v.Title }
+	retval.Id = v.NoteListDoc.Id
+	retval.Slug = v.NoteListDoc.Slug
+	retval.Title = v.NoteListDoc.Title
+	retval.Content = v.NoteListDoc.Content
+	retval.PublishedAt = v.NoteListDoc.PublishedAt
+	retval.Authors = v.NoteListDoc.Authors
+	retval.Tags = v.NoteListDoc.Tags
+	retval.Attachment = v.NoteListDoc.Attachment
+	retval.Meta = v.NoteListDoc.Meta
+	return &retval, nil
+}
 
 // ListNotesByTagIDsResponse is returned by ListNotesByTagIDs on success.
 type ListNotesByTagIDsResponse struct {
@@ -279,6 +716,138 @@ type ListNotesByTagIDsResponse struct {
 func (v *ListNotesByTagIDsResponse) GetMicro_posts() *ListNotesByTagIDsMicro_posts {
 	return v.Micro_posts
 }
+
+// ListNotesByTypeMicro_posts includes the requested fields of the GraphQL type Micro_posts.
+type ListNotesByTypeMicro_posts struct {
+	TotalPages int                                        `json:"totalPages"`
+	Docs       []ListNotesByTypeMicro_postsDocsMicro_post `json:"docs"`
+}
+
+// GetTotalPages returns ListNotesByTypeMicro_posts.TotalPages, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_posts) GetTotalPages() int { return v.TotalPages }
+
+// GetDocs returns ListNotesByTypeMicro_posts.Docs, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_posts) GetDocs() []ListNotesByTypeMicro_postsDocsMicro_post {
+	return v.Docs
+}
+
+// ListNotesByTypeMicro_postsDocsMicro_post includes the requested fields of the GraphQL type Micro_post.
+type ListNotesByTypeMicro_postsDocsMicro_post struct {
+	NoteListDoc `json:"-"`
+}
+
+// GetId returns ListNotesByTypeMicro_postsDocsMicro_post.Id, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetId() string { return v.NoteListDoc.Id }
+
+// GetSlug returns ListNotesByTypeMicro_postsDocsMicro_post.Slug, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetSlug() *string { return v.NoteListDoc.Slug }
+
+// GetTitle returns ListNotesByTypeMicro_postsDocsMicro_post.Title, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetTitle() *string { return v.NoteListDoc.Title }
+
+// GetContent returns ListNotesByTypeMicro_postsDocsMicro_post.Content, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetContent() *string { return v.NoteListDoc.Content }
+
+// GetPublishedAt returns ListNotesByTypeMicro_postsDocsMicro_post.PublishedAt, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetPublishedAt() *string {
+	return v.NoteListDoc.PublishedAt
+}
+
+// GetAuthors returns ListNotesByTypeMicro_postsDocsMicro_post.Authors, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetAuthors() []NoteListDocAuthorsAuthor {
+	return v.NoteListDoc.Authors
+}
+
+// GetTags returns ListNotesByTypeMicro_postsDocsMicro_post.Tags, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetTags() []NoteListDocTagsTag {
+	return v.NoteListDoc.Tags
+}
+
+// GetAttachment returns ListNotesByTypeMicro_postsDocsMicro_post.Attachment, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetAttachment() *NoteListDocAttachmentMedia {
+	return v.NoteListDoc.Attachment
+}
+
+// GetMeta returns ListNotesByTypeMicro_postsDocsMicro_post.Meta, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) GetMeta() *NoteListDocMetaMicro_post_Meta {
+	return v.NoteListDoc.Meta
+}
+
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*ListNotesByTypeMicro_postsDocsMicro_post
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.ListNotesByTypeMicro_postsDocsMicro_post = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.NoteListDoc)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalListNotesByTypeMicro_postsDocsMicro_post struct {
+	Id string `json:"id"`
+
+	Slug *string `json:"slug"`
+
+	Title *string `json:"title"`
+
+	Content *string `json:"content"`
+
+	PublishedAt *string `json:"publishedAt"`
+
+	Authors []NoteListDocAuthorsAuthor `json:"authors"`
+
+	Tags []NoteListDocTagsTag `json:"tags"`
+
+	Attachment *NoteListDocAttachmentMedia `json:"attachment"`
+
+	Meta *NoteListDocMetaMicro_post_Meta `json:"meta"`
+}
+
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *ListNotesByTypeMicro_postsDocsMicro_post) __premarshalJSON() (*__premarshalListNotesByTypeMicro_postsDocsMicro_post, error) {
+	var retval __premarshalListNotesByTypeMicro_postsDocsMicro_post
+
+	retval.Id = v.NoteListDoc.Id
+	retval.Slug = v.NoteListDoc.Slug
+	retval.Title = v.NoteListDoc.Title
+	retval.Content = v.NoteListDoc.Content
+	retval.PublishedAt = v.NoteListDoc.PublishedAt
+	retval.Authors = v.NoteListDoc.Authors
+	retval.Tags = v.NoteListDoc.Tags
+	retval.Attachment = v.NoteListDoc.Attachment
+	retval.Meta = v.NoteListDoc.Meta
+	return &retval, nil
+}
+
+// ListNotesByTypeResponse is returned by ListNotesByType on success.
+type ListNotesByTypeResponse struct {
+	Micro_posts *ListNotesByTypeMicro_posts `json:"Micro_posts"`
+}
+
+// GetMicro_posts returns ListNotesByTypeResponse.Micro_posts, and is useful for accessing the field via an interface.
+func (v *ListNotesByTypeResponse) GetMicro_posts() *ListNotesByTypeMicro_posts { return v.Micro_posts }
 
 // ListNotesMicro_posts includes the requested fields of the GraphQL type Micro_posts.
 type ListNotesMicro_posts struct {
@@ -294,151 +863,113 @@ func (v *ListNotesMicro_posts) GetDocs() []ListNotesMicro_postsDocsMicro_post { 
 
 // ListNotesMicro_postsDocsMicro_post includes the requested fields of the GraphQL type Micro_post.
 type ListNotesMicro_postsDocsMicro_post struct {
-	Id          string                                                 `json:"id"`
-	Slug        *string                                                `json:"slug"`
-	Title       *string                                                `json:"title"`
-	Content     *string                                                `json:"content"`
-	PublishedAt *string                                                `json:"publishedAt"`
-	Authors     []ListNotesMicro_postsDocsMicro_postAuthorsAuthor      `json:"authors"`
-	Tags        []ListNotesMicro_postsDocsMicro_postTagsTag            `json:"tags"`
-	Attachment  *ListNotesMicro_postsDocsMicro_postAttachmentMedia     `json:"attachment"`
-	Meta        *ListNotesMicro_postsDocsMicro_postMetaMicro_post_Meta `json:"meta"`
+	NoteListDoc `json:"-"`
 }
 
 // GetId returns ListNotesMicro_postsDocsMicro_post.Id, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetId() string { return v.Id }
+func (v *ListNotesMicro_postsDocsMicro_post) GetId() string { return v.NoteListDoc.Id }
 
 // GetSlug returns ListNotesMicro_postsDocsMicro_post.Slug, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetSlug() *string { return v.Slug }
+func (v *ListNotesMicro_postsDocsMicro_post) GetSlug() *string { return v.NoteListDoc.Slug }
 
 // GetTitle returns ListNotesMicro_postsDocsMicro_post.Title, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetTitle() *string { return v.Title }
+func (v *ListNotesMicro_postsDocsMicro_post) GetTitle() *string { return v.NoteListDoc.Title }
 
 // GetContent returns ListNotesMicro_postsDocsMicro_post.Content, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetContent() *string { return v.Content }
+func (v *ListNotesMicro_postsDocsMicro_post) GetContent() *string { return v.NoteListDoc.Content }
 
 // GetPublishedAt returns ListNotesMicro_postsDocsMicro_post.PublishedAt, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetPublishedAt() *string { return v.PublishedAt }
+func (v *ListNotesMicro_postsDocsMicro_post) GetPublishedAt() *string {
+	return v.NoteListDoc.PublishedAt
+}
 
 // GetAuthors returns ListNotesMicro_postsDocsMicro_post.Authors, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetAuthors() []ListNotesMicro_postsDocsMicro_postAuthorsAuthor {
-	return v.Authors
+func (v *ListNotesMicro_postsDocsMicro_post) GetAuthors() []NoteListDocAuthorsAuthor {
+	return v.NoteListDoc.Authors
 }
 
 // GetTags returns ListNotesMicro_postsDocsMicro_post.Tags, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetTags() []ListNotesMicro_postsDocsMicro_postTagsTag {
-	return v.Tags
+func (v *ListNotesMicro_postsDocsMicro_post) GetTags() []NoteListDocTagsTag {
+	return v.NoteListDoc.Tags
 }
 
 // GetAttachment returns ListNotesMicro_postsDocsMicro_post.Attachment, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetAttachment() *ListNotesMicro_postsDocsMicro_postAttachmentMedia {
-	return v.Attachment
+func (v *ListNotesMicro_postsDocsMicro_post) GetAttachment() *NoteListDocAttachmentMedia {
+	return v.NoteListDoc.Attachment
 }
 
 // GetMeta returns ListNotesMicro_postsDocsMicro_post.Meta, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_post) GetMeta() *ListNotesMicro_postsDocsMicro_postMetaMicro_post_Meta {
-	return v.Meta
+func (v *ListNotesMicro_postsDocsMicro_post) GetMeta() *NoteListDocMetaMicro_post_Meta {
+	return v.NoteListDoc.Meta
 }
 
-// ListNotesMicro_postsDocsMicro_postAttachmentMedia includes the requested fields of the GraphQL type Media.
-type ListNotesMicro_postsDocsMicro_postAttachmentMedia struct {
-	Url      *string  `json:"url"`
-	Alt      *string  `json:"alt"`
-	Width    *float64 `json:"width"`
-	Height   *float64 `json:"height"`
-	Filename *string  `json:"filename"`
-	MimeType *string  `json:"mimeType"`
+func (v *ListNotesMicro_postsDocsMicro_post) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*ListNotesMicro_postsDocsMicro_post
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.ListNotesMicro_postsDocsMicro_post = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.NoteListDoc)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-// GetUrl returns ListNotesMicro_postsDocsMicro_postAttachmentMedia.Url, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAttachmentMedia) GetUrl() *string { return v.Url }
+type __premarshalListNotesMicro_postsDocsMicro_post struct {
+	Id string `json:"id"`
 
-// GetAlt returns ListNotesMicro_postsDocsMicro_postAttachmentMedia.Alt, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAttachmentMedia) GetAlt() *string { return v.Alt }
+	Slug *string `json:"slug"`
 
-// GetWidth returns ListNotesMicro_postsDocsMicro_postAttachmentMedia.Width, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAttachmentMedia) GetWidth() *float64 { return v.Width }
-
-// GetHeight returns ListNotesMicro_postsDocsMicro_postAttachmentMedia.Height, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAttachmentMedia) GetHeight() *float64 { return v.Height }
-
-// GetFilename returns ListNotesMicro_postsDocsMicro_postAttachmentMedia.Filename, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAttachmentMedia) GetFilename() *string { return v.Filename }
-
-// GetMimeType returns ListNotesMicro_postsDocsMicro_postAttachmentMedia.MimeType, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAttachmentMedia) GetMimeType() *string { return v.MimeType }
-
-// ListNotesMicro_postsDocsMicro_postAuthorsAuthor includes the requested fields of the GraphQL type Author.
-type ListNotesMicro_postsDocsMicro_postAuthorsAuthor struct {
-	Name   *string                                                     `json:"name"`
-	Slug   string                                                      `json:"slug"`
-	Bio    *string                                                     `json:"bio"`
-	Avatar *ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia `json:"avatar"`
-}
-
-// GetName returns ListNotesMicro_postsDocsMicro_postAuthorsAuthor.Name, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAuthorsAuthor) GetName() *string { return v.Name }
-
-// GetSlug returns ListNotesMicro_postsDocsMicro_postAuthorsAuthor.Slug, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAuthorsAuthor) GetSlug() string { return v.Slug }
-
-// GetBio returns ListNotesMicro_postsDocsMicro_postAuthorsAuthor.Bio, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAuthorsAuthor) GetBio() *string { return v.Bio }
-
-// GetAvatar returns ListNotesMicro_postsDocsMicro_postAuthorsAuthor.Avatar, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAuthorsAuthor) GetAvatar() *ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia {
-	return v.Avatar
-}
-
-// ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia includes the requested fields of the GraphQL type Media.
-type ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia struct {
-	Url    *string  `json:"url"`
-	Alt    *string  `json:"alt"`
-	Width  *float64 `json:"width"`
-	Height *float64 `json:"height"`
-}
-
-// GetUrl returns ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Url, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetUrl() *string { return v.Url }
-
-// GetAlt returns ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Alt, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetAlt() *string { return v.Alt }
-
-// GetWidth returns ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Width, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetWidth() *float64 {
-	return v.Width
-}
-
-// GetHeight returns ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Height, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetHeight() *float64 {
-	return v.Height
-}
-
-// ListNotesMicro_postsDocsMicro_postMetaMicro_post_Meta includes the requested fields of the GraphQL type Micro_post_Meta.
-type ListNotesMicro_postsDocsMicro_postMetaMicro_post_Meta struct {
-	Description *string `json:"description"`
-}
-
-// GetDescription returns ListNotesMicro_postsDocsMicro_postMetaMicro_post_Meta.Description, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postMetaMicro_post_Meta) GetDescription() *string {
-	return v.Description
-}
-
-// ListNotesMicro_postsDocsMicro_postTagsTag includes the requested fields of the GraphQL type Tag.
-type ListNotesMicro_postsDocsMicro_postTagsTag struct {
-	Id    string  `json:"id"`
-	Name  string  `json:"name"`
 	Title *string `json:"title"`
+
+	Content *string `json:"content"`
+
+	PublishedAt *string `json:"publishedAt"`
+
+	Authors []NoteListDocAuthorsAuthor `json:"authors"`
+
+	Tags []NoteListDocTagsTag `json:"tags"`
+
+	Attachment *NoteListDocAttachmentMedia `json:"attachment"`
+
+	Meta *NoteListDocMetaMicro_post_Meta `json:"meta"`
 }
 
-// GetId returns ListNotesMicro_postsDocsMicro_postTagsTag.Id, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postTagsTag) GetId() string { return v.Id }
+func (v *ListNotesMicro_postsDocsMicro_post) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
 
-// GetName returns ListNotesMicro_postsDocsMicro_postTagsTag.Name, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postTagsTag) GetName() string { return v.Name }
+func (v *ListNotesMicro_postsDocsMicro_post) __premarshalJSON() (*__premarshalListNotesMicro_postsDocsMicro_post, error) {
+	var retval __premarshalListNotesMicro_postsDocsMicro_post
 
-// GetTitle returns ListNotesMicro_postsDocsMicro_postTagsTag.Title, and is useful for accessing the field via an interface.
-func (v *ListNotesMicro_postsDocsMicro_postTagsTag) GetTitle() *string { return v.Title }
+	retval.Id = v.NoteListDoc.Id
+	retval.Slug = v.NoteListDoc.Slug
+	retval.Title = v.NoteListDoc.Title
+	retval.Content = v.NoteListDoc.Content
+	retval.PublishedAt = v.NoteListDoc.PublishedAt
+	retval.Authors = v.NoteListDoc.Authors
+	retval.Tags = v.NoteListDoc.Tags
+	retval.Attachment = v.NoteListDoc.Attachment
+	retval.Meta = v.NoteListDoc.Meta
+	return &retval, nil
+}
 
 // ListNotesResponse is returned by ListNotes on success.
 type ListNotesResponse struct {
@@ -447,6 +978,18 @@ type ListNotesResponse struct {
 
 // GetMicro_posts returns ListNotesResponse.Micro_posts, and is useful for accessing the field via an interface.
 func (v *ListNotesResponse) GetMicro_posts() *ListNotesMicro_posts { return v.Micro_posts }
+
+type Micro_post_post_type_Input string
+
+const (
+	Micro_post_post_type_InputShort Micro_post_post_type_Input = "short"
+	Micro_post_post_type_InputLong  Micro_post_post_type_Input = "long"
+)
+
+var AllMicro_post_post_type_Input = []Micro_post_post_type_Input{
+	Micro_post_post_type_InputShort,
+	Micro_post_post_type_InputLong,
+}
 
 // NoteBySlugMicro_posts includes the requested fields of the GraphQL type Micro_posts.
 type NoteBySlugMicro_posts struct {
@@ -658,6 +1201,278 @@ type NoteBySlugResponse struct {
 // GetMicro_posts returns NoteBySlugResponse.Micro_posts, and is useful for accessing the field via an interface.
 func (v *NoteBySlugResponse) GetMicro_posts() *NoteBySlugMicro_posts { return v.Micro_posts }
 
+// NoteListDoc includes the GraphQL fields of Micro_post requested by the fragment NoteListDoc.
+type NoteListDoc struct {
+	Id          string                          `json:"id"`
+	Slug        *string                         `json:"slug"`
+	Title       *string                         `json:"title"`
+	Content     *string                         `json:"content"`
+	PublishedAt *string                         `json:"publishedAt"`
+	Authors     []NoteListDocAuthorsAuthor      `json:"authors"`
+	Tags        []NoteListDocTagsTag            `json:"tags"`
+	Attachment  *NoteListDocAttachmentMedia     `json:"attachment"`
+	Meta        *NoteListDocMetaMicro_post_Meta `json:"meta"`
+}
+
+// GetId returns NoteListDoc.Id, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetId() string { return v.Id }
+
+// GetSlug returns NoteListDoc.Slug, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetSlug() *string { return v.Slug }
+
+// GetTitle returns NoteListDoc.Title, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetTitle() *string { return v.Title }
+
+// GetContent returns NoteListDoc.Content, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetContent() *string { return v.Content }
+
+// GetPublishedAt returns NoteListDoc.PublishedAt, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetPublishedAt() *string { return v.PublishedAt }
+
+// GetAuthors returns NoteListDoc.Authors, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetAuthors() []NoteListDocAuthorsAuthor { return v.Authors }
+
+// GetTags returns NoteListDoc.Tags, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetTags() []NoteListDocTagsTag { return v.Tags }
+
+// GetAttachment returns NoteListDoc.Attachment, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetAttachment() *NoteListDocAttachmentMedia { return v.Attachment }
+
+// GetMeta returns NoteListDoc.Meta, and is useful for accessing the field via an interface.
+func (v *NoteListDoc) GetMeta() *NoteListDocMetaMicro_post_Meta { return v.Meta }
+
+// NoteListDocAttachmentMedia includes the requested fields of the GraphQL type Media.
+type NoteListDocAttachmentMedia struct {
+	Url      *string  `json:"url"`
+	Alt      *string  `json:"alt"`
+	Width    *float64 `json:"width"`
+	Height   *float64 `json:"height"`
+	Filename *string  `json:"filename"`
+	MimeType *string  `json:"mimeType"`
+}
+
+// GetUrl returns NoteListDocAttachmentMedia.Url, and is useful for accessing the field via an interface.
+func (v *NoteListDocAttachmentMedia) GetUrl() *string { return v.Url }
+
+// GetAlt returns NoteListDocAttachmentMedia.Alt, and is useful for accessing the field via an interface.
+func (v *NoteListDocAttachmentMedia) GetAlt() *string { return v.Alt }
+
+// GetWidth returns NoteListDocAttachmentMedia.Width, and is useful for accessing the field via an interface.
+func (v *NoteListDocAttachmentMedia) GetWidth() *float64 { return v.Width }
+
+// GetHeight returns NoteListDocAttachmentMedia.Height, and is useful for accessing the field via an interface.
+func (v *NoteListDocAttachmentMedia) GetHeight() *float64 { return v.Height }
+
+// GetFilename returns NoteListDocAttachmentMedia.Filename, and is useful for accessing the field via an interface.
+func (v *NoteListDocAttachmentMedia) GetFilename() *string { return v.Filename }
+
+// GetMimeType returns NoteListDocAttachmentMedia.MimeType, and is useful for accessing the field via an interface.
+func (v *NoteListDocAttachmentMedia) GetMimeType() *string { return v.MimeType }
+
+// NoteListDocAuthorsAuthor includes the requested fields of the GraphQL type Author.
+type NoteListDocAuthorsAuthor struct {
+	Name   *string                              `json:"name"`
+	Slug   string                               `json:"slug"`
+	Bio    *string                              `json:"bio"`
+	Avatar *NoteListDocAuthorsAuthorAvatarMedia `json:"avatar"`
+}
+
+// GetName returns NoteListDocAuthorsAuthor.Name, and is useful for accessing the field via an interface.
+func (v *NoteListDocAuthorsAuthor) GetName() *string { return v.Name }
+
+// GetSlug returns NoteListDocAuthorsAuthor.Slug, and is useful for accessing the field via an interface.
+func (v *NoteListDocAuthorsAuthor) GetSlug() string { return v.Slug }
+
+// GetBio returns NoteListDocAuthorsAuthor.Bio, and is useful for accessing the field via an interface.
+func (v *NoteListDocAuthorsAuthor) GetBio() *string { return v.Bio }
+
+// GetAvatar returns NoteListDocAuthorsAuthor.Avatar, and is useful for accessing the field via an interface.
+func (v *NoteListDocAuthorsAuthor) GetAvatar() *NoteListDocAuthorsAuthorAvatarMedia { return v.Avatar }
+
+// NoteListDocAuthorsAuthorAvatarMedia includes the requested fields of the GraphQL type Media.
+type NoteListDocAuthorsAuthorAvatarMedia struct {
+	Url    *string  `json:"url"`
+	Alt    *string  `json:"alt"`
+	Width  *float64 `json:"width"`
+	Height *float64 `json:"height"`
+}
+
+// GetUrl returns NoteListDocAuthorsAuthorAvatarMedia.Url, and is useful for accessing the field via an interface.
+func (v *NoteListDocAuthorsAuthorAvatarMedia) GetUrl() *string { return v.Url }
+
+// GetAlt returns NoteListDocAuthorsAuthorAvatarMedia.Alt, and is useful for accessing the field via an interface.
+func (v *NoteListDocAuthorsAuthorAvatarMedia) GetAlt() *string { return v.Alt }
+
+// GetWidth returns NoteListDocAuthorsAuthorAvatarMedia.Width, and is useful for accessing the field via an interface.
+func (v *NoteListDocAuthorsAuthorAvatarMedia) GetWidth() *float64 { return v.Width }
+
+// GetHeight returns NoteListDocAuthorsAuthorAvatarMedia.Height, and is useful for accessing the field via an interface.
+func (v *NoteListDocAuthorsAuthorAvatarMedia) GetHeight() *float64 { return v.Height }
+
+// NoteListDocMetaMicro_post_Meta includes the requested fields of the GraphQL type Micro_post_Meta.
+type NoteListDocMetaMicro_post_Meta struct {
+	Description *string `json:"description"`
+}
+
+// GetDescription returns NoteListDocMetaMicro_post_Meta.Description, and is useful for accessing the field via an interface.
+func (v *NoteListDocMetaMicro_post_Meta) GetDescription() *string { return v.Description }
+
+// NoteListDocTagsTag includes the requested fields of the GraphQL type Tag.
+type NoteListDocTagsTag struct {
+	Id    string  `json:"id"`
+	Name  string  `json:"name"`
+	Title *string `json:"title"`
+}
+
+// GetId returns NoteListDocTagsTag.Id, and is useful for accessing the field via an interface.
+func (v *NoteListDocTagsTag) GetId() string { return v.Id }
+
+// GetName returns NoteListDocTagsTag.Name, and is useful for accessing the field via an interface.
+func (v *NoteListDocTagsTag) GetName() string { return v.Name }
+
+// GetTitle returns NoteListDocTagsTag.Title, and is useful for accessing the field via an interface.
+func (v *NoteListDocTagsTag) GetTitle() *string { return v.Title }
+
+// NotesByAuthorSlugAndTypeMicro_posts includes the requested fields of the GraphQL type Micro_posts.
+type NotesByAuthorSlugAndTypeMicro_posts struct {
+	TotalPages int                                                 `json:"totalPages"`
+	Docs       []NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post `json:"docs"`
+}
+
+// GetTotalPages returns NotesByAuthorSlugAndTypeMicro_posts.TotalPages, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_posts) GetTotalPages() int { return v.TotalPages }
+
+// GetDocs returns NotesByAuthorSlugAndTypeMicro_posts.Docs, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_posts) GetDocs() []NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post {
+	return v.Docs
+}
+
+// NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post includes the requested fields of the GraphQL type Micro_post.
+type NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post struct {
+	NoteListDoc `json:"-"`
+}
+
+// GetId returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.Id, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetId() string { return v.NoteListDoc.Id }
+
+// GetSlug returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.Slug, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetSlug() *string {
+	return v.NoteListDoc.Slug
+}
+
+// GetTitle returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.Title, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetTitle() *string {
+	return v.NoteListDoc.Title
+}
+
+// GetContent returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.Content, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetContent() *string {
+	return v.NoteListDoc.Content
+}
+
+// GetPublishedAt returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.PublishedAt, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetPublishedAt() *string {
+	return v.NoteListDoc.PublishedAt
+}
+
+// GetAuthors returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.Authors, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetAuthors() []NoteListDocAuthorsAuthor {
+	return v.NoteListDoc.Authors
+}
+
+// GetTags returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.Tags, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetTags() []NoteListDocTagsTag {
+	return v.NoteListDoc.Tags
+}
+
+// GetAttachment returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.Attachment, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetAttachment() *NoteListDocAttachmentMedia {
+	return v.NoteListDoc.Attachment
+}
+
+// GetMeta returns NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post.Meta, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) GetMeta() *NoteListDocMetaMicro_post_Meta {
+	return v.NoteListDoc.Meta
+}
+
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.NoteListDoc)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalNotesByAuthorSlugAndTypeMicro_postsDocsMicro_post struct {
+	Id string `json:"id"`
+
+	Slug *string `json:"slug"`
+
+	Title *string `json:"title"`
+
+	Content *string `json:"content"`
+
+	PublishedAt *string `json:"publishedAt"`
+
+	Authors []NoteListDocAuthorsAuthor `json:"authors"`
+
+	Tags []NoteListDocTagsTag `json:"tags"`
+
+	Attachment *NoteListDocAttachmentMedia `json:"attachment"`
+
+	Meta *NoteListDocMetaMicro_post_Meta `json:"meta"`
+}
+
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *NotesByAuthorSlugAndTypeMicro_postsDocsMicro_post) __premarshalJSON() (*__premarshalNotesByAuthorSlugAndTypeMicro_postsDocsMicro_post, error) {
+	var retval __premarshalNotesByAuthorSlugAndTypeMicro_postsDocsMicro_post
+
+	retval.Id = v.NoteListDoc.Id
+	retval.Slug = v.NoteListDoc.Slug
+	retval.Title = v.NoteListDoc.Title
+	retval.Content = v.NoteListDoc.Content
+	retval.PublishedAt = v.NoteListDoc.PublishedAt
+	retval.Authors = v.NoteListDoc.Authors
+	retval.Tags = v.NoteListDoc.Tags
+	retval.Attachment = v.NoteListDoc.Attachment
+	retval.Meta = v.NoteListDoc.Meta
+	return &retval, nil
+}
+
+// NotesByAuthorSlugAndTypeResponse is returned by NotesByAuthorSlugAndType on success.
+type NotesByAuthorSlugAndTypeResponse struct {
+	Micro_posts *NotesByAuthorSlugAndTypeMicro_posts `json:"Micro_posts"`
+}
+
+// GetMicro_posts returns NotesByAuthorSlugAndTypeResponse.Micro_posts, and is useful for accessing the field via an interface.
+func (v *NotesByAuthorSlugAndTypeResponse) GetMicro_posts() *NotesByAuthorSlugAndTypeMicro_posts {
+	return v.Micro_posts
+}
+
 // NotesByAuthorSlugMicro_posts includes the requested fields of the GraphQL type Micro_posts.
 type NotesByAuthorSlugMicro_posts struct {
 	TotalPages int                                          `json:"totalPages"`
@@ -674,163 +1489,115 @@ func (v *NotesByAuthorSlugMicro_posts) GetDocs() []NotesByAuthorSlugMicro_postsD
 
 // NotesByAuthorSlugMicro_postsDocsMicro_post includes the requested fields of the GraphQL type Micro_post.
 type NotesByAuthorSlugMicro_postsDocsMicro_post struct {
-	Id          string                                                         `json:"id"`
-	Slug        *string                                                        `json:"slug"`
-	Title       *string                                                        `json:"title"`
-	Content     *string                                                        `json:"content"`
-	PublishedAt *string                                                        `json:"publishedAt"`
-	Authors     []NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor      `json:"authors"`
-	Tags        []NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag            `json:"tags"`
-	Attachment  *NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia     `json:"attachment"`
-	Meta        *NotesByAuthorSlugMicro_postsDocsMicro_postMetaMicro_post_Meta `json:"meta"`
+	NoteListDoc `json:"-"`
 }
 
 // GetId returns NotesByAuthorSlugMicro_postsDocsMicro_post.Id, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetId() string { return v.Id }
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetId() string { return v.NoteListDoc.Id }
 
 // GetSlug returns NotesByAuthorSlugMicro_postsDocsMicro_post.Slug, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetSlug() *string { return v.Slug }
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetSlug() *string { return v.NoteListDoc.Slug }
 
 // GetTitle returns NotesByAuthorSlugMicro_postsDocsMicro_post.Title, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetTitle() *string { return v.Title }
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetTitle() *string { return v.NoteListDoc.Title }
 
 // GetContent returns NotesByAuthorSlugMicro_postsDocsMicro_post.Content, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetContent() *string { return v.Content }
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetContent() *string {
+	return v.NoteListDoc.Content
+}
 
 // GetPublishedAt returns NotesByAuthorSlugMicro_postsDocsMicro_post.PublishedAt, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetPublishedAt() *string { return v.PublishedAt }
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetPublishedAt() *string {
+	return v.NoteListDoc.PublishedAt
+}
 
 // GetAuthors returns NotesByAuthorSlugMicro_postsDocsMicro_post.Authors, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetAuthors() []NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor {
-	return v.Authors
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetAuthors() []NoteListDocAuthorsAuthor {
+	return v.NoteListDoc.Authors
 }
 
 // GetTags returns NotesByAuthorSlugMicro_postsDocsMicro_post.Tags, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetTags() []NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag {
-	return v.Tags
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetTags() []NoteListDocTagsTag {
+	return v.NoteListDoc.Tags
 }
 
 // GetAttachment returns NotesByAuthorSlugMicro_postsDocsMicro_post.Attachment, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetAttachment() *NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia {
-	return v.Attachment
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetAttachment() *NoteListDocAttachmentMedia {
+	return v.NoteListDoc.Attachment
 }
 
 // GetMeta returns NotesByAuthorSlugMicro_postsDocsMicro_post.Meta, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetMeta() *NotesByAuthorSlugMicro_postsDocsMicro_postMetaMicro_post_Meta {
-	return v.Meta
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) GetMeta() *NoteListDocMetaMicro_post_Meta {
+	return v.NoteListDoc.Meta
 }
 
-// NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia includes the requested fields of the GraphQL type Media.
-type NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia struct {
-	Url      *string  `json:"url"`
-	Alt      *string  `json:"alt"`
-	Width    *float64 `json:"width"`
-	Height   *float64 `json:"height"`
-	Filename *string  `json:"filename"`
-	MimeType *string  `json:"mimeType"`
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*NotesByAuthorSlugMicro_postsDocsMicro_post
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.NotesByAuthorSlugMicro_postsDocsMicro_post = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.NoteListDoc)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-// GetUrl returns NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia.Url, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia) GetUrl() *string { return v.Url }
+type __premarshalNotesByAuthorSlugMicro_postsDocsMicro_post struct {
+	Id string `json:"id"`
 
-// GetAlt returns NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia.Alt, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia) GetAlt() *string { return v.Alt }
+	Slug *string `json:"slug"`
 
-// GetWidth returns NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia.Width, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia) GetWidth() *float64 {
-	return v.Width
-}
-
-// GetHeight returns NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia.Height, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia) GetHeight() *float64 {
-	return v.Height
-}
-
-// GetFilename returns NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia.Filename, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia) GetFilename() *string {
-	return v.Filename
-}
-
-// GetMimeType returns NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia.MimeType, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAttachmentMedia) GetMimeType() *string {
-	return v.MimeType
-}
-
-// NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor includes the requested fields of the GraphQL type Author.
-type NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor struct {
-	Name   *string                                                             `json:"name"`
-	Slug   string                                                              `json:"slug"`
-	Bio    *string                                                             `json:"bio"`
-	Avatar *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia `json:"avatar"`
-}
-
-// GetName returns NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor.Name, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor) GetName() *string { return v.Name }
-
-// GetSlug returns NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor.Slug, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor) GetSlug() string { return v.Slug }
-
-// GetBio returns NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor.Bio, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor) GetBio() *string { return v.Bio }
-
-// GetAvatar returns NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor.Avatar, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthor) GetAvatar() *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia {
-	return v.Avatar
-}
-
-// NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia includes the requested fields of the GraphQL type Media.
-type NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia struct {
-	Url    *string  `json:"url"`
-	Alt    *string  `json:"alt"`
-	Width  *float64 `json:"width"`
-	Height *float64 `json:"height"`
-}
-
-// GetUrl returns NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Url, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetUrl() *string {
-	return v.Url
-}
-
-// GetAlt returns NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Alt, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetAlt() *string {
-	return v.Alt
-}
-
-// GetWidth returns NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Width, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetWidth() *float64 {
-	return v.Width
-}
-
-// GetHeight returns NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia.Height, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postAuthorsAuthorAvatarMedia) GetHeight() *float64 {
-	return v.Height
-}
-
-// NotesByAuthorSlugMicro_postsDocsMicro_postMetaMicro_post_Meta includes the requested fields of the GraphQL type Micro_post_Meta.
-type NotesByAuthorSlugMicro_postsDocsMicro_postMetaMicro_post_Meta struct {
-	Description *string `json:"description"`
-}
-
-// GetDescription returns NotesByAuthorSlugMicro_postsDocsMicro_postMetaMicro_post_Meta.Description, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postMetaMicro_post_Meta) GetDescription() *string {
-	return v.Description
-}
-
-// NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag includes the requested fields of the GraphQL type Tag.
-type NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag struct {
-	Id    string  `json:"id"`
-	Name  string  `json:"name"`
 	Title *string `json:"title"`
+
+	Content *string `json:"content"`
+
+	PublishedAt *string `json:"publishedAt"`
+
+	Authors []NoteListDocAuthorsAuthor `json:"authors"`
+
+	Tags []NoteListDocTagsTag `json:"tags"`
+
+	Attachment *NoteListDocAttachmentMedia `json:"attachment"`
+
+	Meta *NoteListDocMetaMicro_post_Meta `json:"meta"`
 }
 
-// GetId returns NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag.Id, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag) GetId() string { return v.Id }
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
 
-// GetName returns NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag.Name, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag) GetName() string { return v.Name }
+func (v *NotesByAuthorSlugMicro_postsDocsMicro_post) __premarshalJSON() (*__premarshalNotesByAuthorSlugMicro_postsDocsMicro_post, error) {
+	var retval __premarshalNotesByAuthorSlugMicro_postsDocsMicro_post
 
-// GetTitle returns NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag.Title, and is useful for accessing the field via an interface.
-func (v *NotesByAuthorSlugMicro_postsDocsMicro_postTagsTag) GetTitle() *string { return v.Title }
+	retval.Id = v.NoteListDoc.Id
+	retval.Slug = v.NoteListDoc.Slug
+	retval.Title = v.NoteListDoc.Title
+	retval.Content = v.NoteListDoc.Content
+	retval.PublishedAt = v.NoteListDoc.PublishedAt
+	retval.Authors = v.NoteListDoc.Authors
+	retval.Tags = v.NoteListDoc.Tags
+	retval.Attachment = v.NoteListDoc.Attachment
+	retval.Meta = v.NoteListDoc.Meta
+	return &retval, nil
+}
 
 // NotesByAuthorSlugResponse is returned by NotesByAuthorSlug on success.
 type NotesByAuthorSlugResponse struct {
@@ -841,6 +1608,38 @@ type NotesByAuthorSlugResponse struct {
 func (v *NotesByAuthorSlugResponse) GetMicro_posts() *NotesByAuthorSlugMicro_posts {
 	return v.Micro_posts
 }
+
+// TagByNameResponse is returned by TagByName on success.
+type TagByNameResponse struct {
+	Tags *TagByNameTags `json:"Tags"`
+}
+
+// GetTags returns TagByNameResponse.Tags, and is useful for accessing the field via an interface.
+func (v *TagByNameResponse) GetTags() *TagByNameTags { return v.Tags }
+
+// TagByNameTags includes the requested fields of the GraphQL type Tags.
+type TagByNameTags struct {
+	Docs []TagByNameTagsDocsTag `json:"docs"`
+}
+
+// GetDocs returns TagByNameTags.Docs, and is useful for accessing the field via an interface.
+func (v *TagByNameTags) GetDocs() []TagByNameTagsDocsTag { return v.Docs }
+
+// TagByNameTagsDocsTag includes the requested fields of the GraphQL type Tag.
+type TagByNameTagsDocsTag struct {
+	Id    string  `json:"id"`
+	Name  string  `json:"name"`
+	Title *string `json:"title"`
+}
+
+// GetId returns TagByNameTagsDocsTag.Id, and is useful for accessing the field via an interface.
+func (v *TagByNameTagsDocsTag) GetId() string { return v.Id }
+
+// GetName returns TagByNameTagsDocsTag.Name, and is useful for accessing the field via an interface.
+func (v *TagByNameTagsDocsTag) GetName() string { return v.Name }
+
+// GetTitle returns TagByNameTagsDocsTag.Title, and is useful for accessing the field via an interface.
+func (v *TagByNameTagsDocsTag) GetTitle() *string { return v.Title }
 
 // TagIDsByNamesResponse is returned by TagIDsByNames on success.
 type TagIDsByNamesResponse struct {
@@ -882,6 +1681,88 @@ type __AuthorBySlugInput struct {
 // GetSlug returns __AuthorBySlugInput.Slug, and is useful for accessing the field via an interface.
 func (v *__AuthorBySlugInput) GetSlug() string { return v.Slug }
 
+// __AvailableAuthorsInput is used internally by genqlient
+type __AvailableAuthorsInput struct {
+	Limit int `json:"limit"`
+}
+
+// GetLimit returns __AvailableAuthorsInput.Limit, and is useful for accessing the field via an interface.
+func (v *__AvailableAuthorsInput) GetLimit() int { return v.Limit }
+
+// __AvailableTagsByPostTypeInput is used internally by genqlient
+type __AvailableTagsByPostTypeInput struct {
+	PostType *string `json:"postType"`
+}
+
+// GetPostType returns __AvailableTagsByPostTypeInput.PostType, and is useful for accessing the field via an interface.
+func (v *__AvailableTagsByPostTypeInput) GetPostType() *string { return v.PostType }
+
+// __ListNotesByAuthorAndTagIDsInput is used internally by genqlient
+type __ListNotesByAuthorAndTagIDsInput struct {
+	Slug   string   `json:"slug"`
+	Page   int      `json:"page"`
+	Limit  int      `json:"limit"`
+	TagIDs []string `json:"tagIDs"`
+}
+
+// GetSlug returns __ListNotesByAuthorAndTagIDsInput.Slug, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorAndTagIDsInput) GetSlug() string { return v.Slug }
+
+// GetPage returns __ListNotesByAuthorAndTagIDsInput.Page, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorAndTagIDsInput) GetPage() int { return v.Page }
+
+// GetLimit returns __ListNotesByAuthorAndTagIDsInput.Limit, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorAndTagIDsInput) GetLimit() int { return v.Limit }
+
+// GetTagIDs returns __ListNotesByAuthorAndTagIDsInput.TagIDs, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorAndTagIDsInput) GetTagIDs() []string { return v.TagIDs }
+
+// __ListNotesByAuthorTagIDsAndTypeInput is used internally by genqlient
+type __ListNotesByAuthorTagIDsAndTypeInput struct {
+	Slug     string                     `json:"slug"`
+	Page     int                        `json:"page"`
+	Limit    int                        `json:"limit"`
+	TagIDs   []string                   `json:"tagIDs"`
+	PostType Micro_post_post_type_Input `json:"postType"`
+}
+
+// GetSlug returns __ListNotesByAuthorTagIDsAndTypeInput.Slug, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorTagIDsAndTypeInput) GetSlug() string { return v.Slug }
+
+// GetPage returns __ListNotesByAuthorTagIDsAndTypeInput.Page, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorTagIDsAndTypeInput) GetPage() int { return v.Page }
+
+// GetLimit returns __ListNotesByAuthorTagIDsAndTypeInput.Limit, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorTagIDsAndTypeInput) GetLimit() int { return v.Limit }
+
+// GetTagIDs returns __ListNotesByAuthorTagIDsAndTypeInput.TagIDs, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorTagIDsAndTypeInput) GetTagIDs() []string { return v.TagIDs }
+
+// GetPostType returns __ListNotesByAuthorTagIDsAndTypeInput.PostType, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorTagIDsAndTypeInput) GetPostType() Micro_post_post_type_Input {
+	return v.PostType
+}
+
+// __ListNotesByTagIDsAndTypeInput is used internally by genqlient
+type __ListNotesByTagIDsAndTypeInput struct {
+	Page     int                        `json:"page"`
+	Limit    int                        `json:"limit"`
+	TagIDs   []string                   `json:"tagIDs"`
+	PostType Micro_post_post_type_Input `json:"postType"`
+}
+
+// GetPage returns __ListNotesByTagIDsAndTypeInput.Page, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTagIDsAndTypeInput) GetPage() int { return v.Page }
+
+// GetLimit returns __ListNotesByTagIDsAndTypeInput.Limit, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTagIDsAndTypeInput) GetLimit() int { return v.Limit }
+
+// GetTagIDs returns __ListNotesByTagIDsAndTypeInput.TagIDs, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTagIDsAndTypeInput) GetTagIDs() []string { return v.TagIDs }
+
+// GetPostType returns __ListNotesByTagIDsAndTypeInput.PostType, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTagIDsAndTypeInput) GetPostType() Micro_post_post_type_Input { return v.PostType }
+
 // __ListNotesByTagIDsInput is used internally by genqlient
 type __ListNotesByTagIDsInput struct {
 	Page   int      `json:"page"`
@@ -897,6 +1778,22 @@ func (v *__ListNotesByTagIDsInput) GetLimit() int { return v.Limit }
 
 // GetTagIDs returns __ListNotesByTagIDsInput.TagIDs, and is useful for accessing the field via an interface.
 func (v *__ListNotesByTagIDsInput) GetTagIDs() []string { return v.TagIDs }
+
+// __ListNotesByTypeInput is used internally by genqlient
+type __ListNotesByTypeInput struct {
+	Page     int                        `json:"page"`
+	Limit    int                        `json:"limit"`
+	PostType Micro_post_post_type_Input `json:"postType"`
+}
+
+// GetPage returns __ListNotesByTypeInput.Page, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTypeInput) GetPage() int { return v.Page }
+
+// GetLimit returns __ListNotesByTypeInput.Limit, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTypeInput) GetLimit() int { return v.Limit }
+
+// GetPostType returns __ListNotesByTypeInput.PostType, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTypeInput) GetPostType() Micro_post_post_type_Input { return v.PostType }
 
 // __ListNotesInput is used internally by genqlient
 type __ListNotesInput struct {
@@ -918,6 +1815,26 @@ type __NoteBySlugInput struct {
 // GetSlug returns __NoteBySlugInput.Slug, and is useful for accessing the field via an interface.
 func (v *__NoteBySlugInput) GetSlug() string { return v.Slug }
 
+// __NotesByAuthorSlugAndTypeInput is used internally by genqlient
+type __NotesByAuthorSlugAndTypeInput struct {
+	Slug     string                     `json:"slug"`
+	Page     int                        `json:"page"`
+	Limit    int                        `json:"limit"`
+	PostType Micro_post_post_type_Input `json:"postType"`
+}
+
+// GetSlug returns __NotesByAuthorSlugAndTypeInput.Slug, and is useful for accessing the field via an interface.
+func (v *__NotesByAuthorSlugAndTypeInput) GetSlug() string { return v.Slug }
+
+// GetPage returns __NotesByAuthorSlugAndTypeInput.Page, and is useful for accessing the field via an interface.
+func (v *__NotesByAuthorSlugAndTypeInput) GetPage() int { return v.Page }
+
+// GetLimit returns __NotesByAuthorSlugAndTypeInput.Limit, and is useful for accessing the field via an interface.
+func (v *__NotesByAuthorSlugAndTypeInput) GetLimit() int { return v.Limit }
+
+// GetPostType returns __NotesByAuthorSlugAndTypeInput.PostType, and is useful for accessing the field via an interface.
+func (v *__NotesByAuthorSlugAndTypeInput) GetPostType() Micro_post_post_type_Input { return v.PostType }
+
 // __NotesByAuthorSlugInput is used internally by genqlient
 type __NotesByAuthorSlugInput struct {
 	Slug  string `json:"slug"`
@@ -933,6 +1850,14 @@ func (v *__NotesByAuthorSlugInput) GetPage() int { return v.Page }
 
 // GetLimit returns __NotesByAuthorSlugInput.Limit, and is useful for accessing the field via an interface.
 func (v *__NotesByAuthorSlugInput) GetLimit() int { return v.Limit }
+
+// __TagByNameInput is used internally by genqlient
+type __TagByNameInput struct {
+	Name string `json:"name"`
+}
+
+// GetName returns __TagByNameInput.Name, and is useful for accessing the field via an interface.
+func (v *__TagByNameInput) GetName() string { return v.Name }
 
 // __TagIDsByNamesInput is used internally by genqlient
 type __TagIDsByNamesInput struct {
@@ -987,10 +1912,55 @@ func AuthorBySlug(
 	return data_, err_
 }
 
-// The query executed by AvailableLongNoteTags.
-const AvailableLongNoteTags_Operation = `
-query AvailableLongNoteTags {
-	availableTagsByMicroPostType(postType: "long") {
+// The query executed by AvailableAuthors.
+const AvailableAuthors_Operation = `
+query AvailableAuthors ($limit: Int!) {
+	Authors(limit: $limit, sort: "name") {
+		docs {
+			id
+			name
+			slug
+			bio
+			avatar {
+				url
+				alt
+				width
+				height
+			}
+		}
+	}
+}
+`
+
+func AvailableAuthors(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	limit int,
+) (data_ *AvailableAuthorsResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "AvailableAuthors",
+		Query:  AvailableAuthors_Operation,
+		Variables: &__AvailableAuthorsInput{
+			Limit: limit,
+		},
+	}
+
+	data_ = &AvailableAuthorsResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by AvailableTagsByPostType.
+const AvailableTagsByPostType_Operation = `
+query AvailableTagsByPostType ($postType: String) {
+	availableTagsByMicroPostType(postType: $postType) {
 		id
 		name
 		title
@@ -998,16 +1968,20 @@ query AvailableLongNoteTags {
 }
 `
 
-func AvailableLongNoteTags(
+func AvailableTagsByPostType(
 	ctx_ context.Context,
 	client_ graphql.Client,
-) (data_ *AvailableLongNoteTagsResponse, err_ error) {
+	postType *string,
+) (data_ *AvailableTagsByPostTypeResponse, err_ error) {
 	req_ := &graphql.Request{
-		OpName: "AvailableLongNoteTags",
-		Query:  AvailableLongNoteTags_Operation,
+		OpName: "AvailableTagsByPostType",
+		Query:  AvailableTagsByPostType_Operation,
+		Variables: &__AvailableTagsByPostTypeInput{
+			PostType: postType,
+		},
 	}
 
-	data_ = &AvailableLongNoteTagsResponse{}
+	data_ = &AvailableTagsByPostTypeResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(
@@ -1022,42 +1996,45 @@ func AvailableLongNoteTags(
 // The query executed by ListNotes.
 const ListNotes_Operation = `
 query ListNotes ($page: Int!, $limit: Int!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},post_type:{equals:long}}) {
+	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published}}) {
 		totalPages
 		docs {
-			id
-			slug
-			title
-			content
-			publishedAt
-			authors {
-				name
-				slug
-				bio
-				avatar {
-					url
-					alt
-					width
-					height
-				}
-			}
-			tags {
-				id
-				name
-				title
-			}
-			attachment {
-				url
-				alt
-				width
-				height
-				filename
-				mimeType
-			}
-			meta {
-				description
-			}
+			... NoteListDoc
 		}
+	}
+}
+fragment NoteListDoc on Micro_post {
+	id
+	slug
+	title
+	content
+	publishedAt
+	authors {
+		name
+		slug
+		bio
+		avatar {
+			url
+			alt
+			width
+			height
+		}
+	}
+	tags {
+		id
+		name
+		title
+	}
+	attachment {
+		url
+		alt
+		width
+		height
+		filename
+		mimeType
+	}
+	meta {
+		description
 	}
 }
 `
@@ -1089,45 +2066,204 @@ func ListNotes(
 	return data_, err_
 }
 
+// The query executed by ListNotesByAuthorAndTagIDs.
+const ListNotesByAuthorAndTagIDs_Operation = `
+query ListNotesByAuthorAndTagIDs ($slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
+	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs}}) {
+		totalPages
+		docs {
+			... NoteListDoc
+		}
+	}
+}
+fragment NoteListDoc on Micro_post {
+	id
+	slug
+	title
+	content
+	publishedAt
+	authors {
+		name
+		slug
+		bio
+		avatar {
+			url
+			alt
+			width
+			height
+		}
+	}
+	tags {
+		id
+		name
+		title
+	}
+	attachment {
+		url
+		alt
+		width
+		height
+		filename
+		mimeType
+	}
+	meta {
+		description
+	}
+}
+`
+
+func ListNotesByAuthorAndTagIDs(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	slug string,
+	page int,
+	limit int,
+	tagIDs []string,
+) (data_ *ListNotesByAuthorAndTagIDsResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "ListNotesByAuthorAndTagIDs",
+		Query:  ListNotesByAuthorAndTagIDs_Operation,
+		Variables: &__ListNotesByAuthorAndTagIDsInput{
+			Slug:   slug,
+			Page:   page,
+			Limit:  limit,
+			TagIDs: tagIDs,
+		},
+	}
+
+	data_ = &ListNotesByAuthorAndTagIDsResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by ListNotesByAuthorTagIDsAndType.
+const ListNotesByAuthorTagIDsAndType_Operation = `
+query ListNotesByAuthorTagIDsAndType ($slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!) {
+	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs},post_type:{equals:$postType}}) {
+		totalPages
+		docs {
+			... NoteListDoc
+		}
+	}
+}
+fragment NoteListDoc on Micro_post {
+	id
+	slug
+	title
+	content
+	publishedAt
+	authors {
+		name
+		slug
+		bio
+		avatar {
+			url
+			alt
+			width
+			height
+		}
+	}
+	tags {
+		id
+		name
+		title
+	}
+	attachment {
+		url
+		alt
+		width
+		height
+		filename
+		mimeType
+	}
+	meta {
+		description
+	}
+}
+`
+
+func ListNotesByAuthorTagIDsAndType(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	slug string,
+	page int,
+	limit int,
+	tagIDs []string,
+	postType Micro_post_post_type_Input,
+) (data_ *ListNotesByAuthorTagIDsAndTypeResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "ListNotesByAuthorTagIDsAndType",
+		Query:  ListNotesByAuthorTagIDsAndType_Operation,
+		Variables: &__ListNotesByAuthorTagIDsAndTypeInput{
+			Slug:     slug,
+			Page:     page,
+			Limit:    limit,
+			TagIDs:   tagIDs,
+			PostType: postType,
+		},
+	}
+
+	data_ = &ListNotesByAuthorTagIDsAndTypeResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
 // The query executed by ListNotesByTagIDs.
 const ListNotesByTagIDs_Operation = `
 query ListNotesByTagIDs ($page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},post_type:{equals:long},tags:{in:$tagIDs}}) {
+	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs}}) {
 		totalPages
 		docs {
-			id
-			slug
-			title
-			content
-			publishedAt
-			authors {
-				name
-				slug
-				bio
-				avatar {
-					url
-					alt
-					width
-					height
-				}
-			}
-			tags {
-				id
-				name
-				title
-			}
-			attachment {
-				url
-				alt
-				width
-				height
-				filename
-				mimeType
-			}
-			meta {
-				description
-			}
+			... NoteListDoc
 		}
+	}
+}
+fragment NoteListDoc on Micro_post {
+	id
+	slug
+	title
+	content
+	publishedAt
+	authors {
+		name
+		slug
+		bio
+		avatar {
+			url
+			alt
+			width
+			height
+		}
+	}
+	tags {
+		id
+		name
+		title
+	}
+	attachment {
+		url
+		alt
+		width
+		height
+		filename
+		mimeType
+	}
+	meta {
+		description
 	}
 }
 `
@@ -1161,10 +2297,162 @@ func ListNotesByTagIDs(
 	return data_, err_
 }
 
+// The query executed by ListNotesByTagIDsAndType.
+const ListNotesByTagIDsAndType_Operation = `
+query ListNotesByTagIDsAndType ($page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!) {
+	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs},post_type:{equals:$postType}}) {
+		totalPages
+		docs {
+			... NoteListDoc
+		}
+	}
+}
+fragment NoteListDoc on Micro_post {
+	id
+	slug
+	title
+	content
+	publishedAt
+	authors {
+		name
+		slug
+		bio
+		avatar {
+			url
+			alt
+			width
+			height
+		}
+	}
+	tags {
+		id
+		name
+		title
+	}
+	attachment {
+		url
+		alt
+		width
+		height
+		filename
+		mimeType
+	}
+	meta {
+		description
+	}
+}
+`
+
+func ListNotesByTagIDsAndType(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	page int,
+	limit int,
+	tagIDs []string,
+	postType Micro_post_post_type_Input,
+) (data_ *ListNotesByTagIDsAndTypeResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "ListNotesByTagIDsAndType",
+		Query:  ListNotesByTagIDsAndType_Operation,
+		Variables: &__ListNotesByTagIDsAndTypeInput{
+			Page:     page,
+			Limit:    limit,
+			TagIDs:   tagIDs,
+			PostType: postType,
+		},
+	}
+
+	data_ = &ListNotesByTagIDsAndTypeResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by ListNotesByType.
+const ListNotesByType_Operation = `
+query ListNotesByType ($page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!) {
+	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},post_type:{equals:$postType}}) {
+		totalPages
+		docs {
+			... NoteListDoc
+		}
+	}
+}
+fragment NoteListDoc on Micro_post {
+	id
+	slug
+	title
+	content
+	publishedAt
+	authors {
+		name
+		slug
+		bio
+		avatar {
+			url
+			alt
+			width
+			height
+		}
+	}
+	tags {
+		id
+		name
+		title
+	}
+	attachment {
+		url
+		alt
+		width
+		height
+		filename
+		mimeType
+	}
+	meta {
+		description
+	}
+}
+`
+
+func ListNotesByType(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	page int,
+	limit int,
+	postType Micro_post_post_type_Input,
+) (data_ *ListNotesByTypeResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "ListNotesByType",
+		Query:  ListNotesByType_Operation,
+		Variables: &__ListNotesByTypeInput{
+			Page:     page,
+			Limit:    limit,
+			PostType: postType,
+		},
+	}
+
+	data_ = &ListNotesByTypeResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
 // The query executed by NoteBySlug.
 const NoteBySlug_Operation = `
 query NoteBySlug ($slug: String!) {
-	Micro_posts(limit: 1, where: {_status:{equals:published},slug:{equals:$slug},post_type:{equals:long}}) {
+	Micro_posts(limit: 1, where: {_status:{equals:published},slug:{equals:$slug}}) {
 		docs {
 			id
 			slug
@@ -1240,42 +2528,45 @@ func NoteBySlug(
 // The query executed by NotesByAuthorSlug.
 const NotesByAuthorSlug_Operation = `
 query NotesByAuthorSlug ($slug: String!, $page: Int!, $limit: Int!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},post_type:{equals:long},authorSlug:{equals:$slug}}) {
+	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug}}) {
 		totalPages
 		docs {
-			id
-			slug
-			title
-			content
-			publishedAt
-			authors {
-				name
-				slug
-				bio
-				avatar {
-					url
-					alt
-					width
-					height
-				}
-			}
-			tags {
-				id
-				name
-				title
-			}
-			attachment {
-				url
-				alt
-				width
-				height
-				filename
-				mimeType
-			}
-			meta {
-				description
-			}
+			... NoteListDoc
 		}
+	}
+}
+fragment NoteListDoc on Micro_post {
+	id
+	slug
+	title
+	content
+	publishedAt
+	authors {
+		name
+		slug
+		bio
+		avatar {
+			url
+			alt
+			width
+			height
+		}
+	}
+	tags {
+		id
+		name
+		title
+	}
+	attachment {
+		url
+		alt
+		width
+		height
+		filename
+		mimeType
+	}
+	meta {
+		description
 	}
 }
 `
@@ -1298,6 +2589,121 @@ func NotesByAuthorSlug(
 	}
 
 	data_ = &NotesByAuthorSlugResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by NotesByAuthorSlugAndType.
+const NotesByAuthorSlugAndType_Operation = `
+query NotesByAuthorSlugAndType ($slug: String!, $page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!) {
+	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},post_type:{equals:$postType}}) {
+		totalPages
+		docs {
+			... NoteListDoc
+		}
+	}
+}
+fragment NoteListDoc on Micro_post {
+	id
+	slug
+	title
+	content
+	publishedAt
+	authors {
+		name
+		slug
+		bio
+		avatar {
+			url
+			alt
+			width
+			height
+		}
+	}
+	tags {
+		id
+		name
+		title
+	}
+	attachment {
+		url
+		alt
+		width
+		height
+		filename
+		mimeType
+	}
+	meta {
+		description
+	}
+}
+`
+
+func NotesByAuthorSlugAndType(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	slug string,
+	page int,
+	limit int,
+	postType Micro_post_post_type_Input,
+) (data_ *NotesByAuthorSlugAndTypeResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "NotesByAuthorSlugAndType",
+		Query:  NotesByAuthorSlugAndType_Operation,
+		Variables: &__NotesByAuthorSlugAndTypeInput{
+			Slug:     slug,
+			Page:     page,
+			Limit:    limit,
+			PostType: postType,
+		},
+	}
+
+	data_ = &NotesByAuthorSlugAndTypeResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by TagByName.
+const TagByName_Operation = `
+query TagByName ($name: String!) {
+	Tags(where: {name:{equals:$name}}, limit: 1) {
+		docs {
+			id
+			name
+			title
+		}
+	}
+}
+`
+
+func TagByName(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	name string,
+) (data_ *TagByNameResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "TagByName",
+		Query:  TagByName_Operation,
+		Variables: &__TagByNameInput{
+			Name: name,
+		},
+	}
+
+	data_ = &TagByNameResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(

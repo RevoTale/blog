@@ -6,6 +6,9 @@ import (
 	rr_author_param_slug "blog/internal/web/appcore/resolvers/author/param_slug"
 	rr_note_param_slug "blog/internal/web/appcore/resolvers/note/param_slug"
 	rr_notes "blog/internal/web/appcore/resolvers/notes"
+	rr_notes_micro_tales "blog/internal/web/appcore/resolvers/notes/micro-tales"
+	rr_notes_tales "blog/internal/web/appcore/resolvers/notes/tales"
+	rr_tag_param_slug "blog/internal/web/appcore/resolvers/tag/param_slug"
 	"context"
 	"net/http"
 )
@@ -21,6 +24,16 @@ type NoteParamSlugParams struct {
 type NotesParams struct {
 }
 
+type NotesMicroTalesParams struct {
+}
+
+type NotesTalesParams struct {
+}
+
+type TagParamSlugParams struct {
+	Slug string
+}
+
 type RouteResolvers interface {
 	ResolveAuthorParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (rr_author_param_slug.PageView, error)
 	ParseAuthorParamSlugLiveState(r *http.Request) (rr_author_param_slug.LiveState, error)
@@ -29,4 +42,7 @@ type RouteResolvers interface {
 	ResolveNotesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesParams) (rr_notes.PageView, error)
 	ParseNotesLiveState(r *http.Request) (rr_notes.LiveState, error)
 	ResolveNotesLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesParams, state rr_notes.LiveState) (rr_notes.PageView, error)
+	ResolveNotesMicroTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesMicroTalesParams) (rr_notes_micro_tales.PageView, error)
+	ResolveNotesTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesTalesParams) (rr_notes_tales.PageView, error)
+	ResolveTagParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (rr_tag_param_slug.PageView, error)
 }

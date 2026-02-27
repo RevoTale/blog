@@ -2,23 +2,6 @@ package r_layout_author_param_slug
 
 import "blog/internal/web/appcore"
 
-templ Layout(view appcore.AuthorLayoutView, child templ.Component) {
-	<section class="panel author-box">
-		<a class="muted" href="/notes">&lt;- back to notes</a>
-		<div class="author-header">
-			if view.AuthorDetails().Avatar != nil {
-				<img class="author-avatar large" src={ view.AuthorDetails().Avatar.URL } alt={ view.AuthorDetails().Avatar.Alt } loading="lazy" width="64" height="64"/>
-			} else {
-				<span class="author-avatar fallback large">&#64;</span>
-			}
-			<div>
-				<h1>{ view.AuthorDetails().Name }</h1>
-				<p class="muted">{ "@" + view.AuthorDetails().Slug }</p>
-				if view.AuthorDetails().Bio != "" {
-					<p>{ view.AuthorDetails().Bio }</p>
-				}
-			</div>
-		</div>
-	</section>
+templ Layout(_ appcore.RootLayoutView, child templ.Component) {
 	@child
 }

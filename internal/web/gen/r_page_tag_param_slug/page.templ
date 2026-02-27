@@ -1,0 +1,10 @@
+package r_page_tag_param_slug
+
+import (
+	"blog/internal/web/appcore"
+	c_notes_feed "blog/internal/web/gen/c_notes_feed"
+)
+
+templ Page(view appcore.NotesPageView) {
+	@c_notes_feed.NotesFeed(view, "no notes found for this tag.")
+}

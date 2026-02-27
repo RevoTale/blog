@@ -7,16 +7,27 @@ import (
 	"blog/internal/notes"
 )
 
+type SidebarMode string
+
+const (
+	SidebarModeRoot     SidebarMode = "root"
+	SidebarModeFiltered SidebarMode = "filtered"
+)
+
 type RootLayoutView interface {
 	LayoutPageTitle() string
 	SidebarAuthors() []notes.Author
-	SidebarCurrentAuthorSlug() string
 	SidebarTags() []notes.Tag
+	SidebarCurrentAuthorSlug() string
 	SidebarCurrentTagName() string
-}
-
-type AuthorLayoutView interface {
-	AuthorDetails() notes.Author
+	SidebarCurrentType() notes.NoteType
+	SidebarAllURL() string
+	SidebarAnyAuthorURL() string
+	SidebarAnyTagURL() string
+	SidebarAnyTypeURL() string
+	SidebarAuthorURL(authorSlug string) string
+	SidebarTagURL(tagName string) string
+	SidebarTypeURL(noteType notes.NoteType) string
 }
 
 type PaginationView struct {
@@ -32,26 +43,24 @@ type PaginationView struct {
 
 type NotesPageView struct {
 	PageTitle          string
-	Tag                string
+	Filter             notes.ListFilter
+	SidebarMode        SidebarMode
 	Notes              []notes.NoteSummary
+	Authors            []notes.Author
 	Tags               []notes.Tag
+	ActiveAuthor       *notes.Author
+	ActiveTag          *notes.Tag
 	Pagination         PaginationView
-	SidebarAuthorItems []notes.Author
-	SidebarTagItems    []notes.Tag
+	ContextTitle       string
+	ContextSubtitle    string
+	ContextDescription string
 }
+
+type AuthorPageView = NotesPageView
 
 type NotePageView struct {
 	PageTitle          string
 	Note               notes.NoteDetail
-	SidebarAuthorItems []notes.Author
-	SidebarTagItems    []notes.Tag
-}
-
-type AuthorPageView struct {
-	PageTitle          string
-	Author             notes.Author
-	Notes              []notes.NoteSummary
-	Pagination         PaginationView
 	SidebarAuthorItems []notes.Author
 	SidebarTagItems    []notes.Tag
 }
@@ -61,19 +70,96 @@ func (v NotesPageView) LayoutPageTitle() string {
 }
 
 func (v NotesPageView) SidebarAuthors() []notes.Author {
-	return v.SidebarAuthorItems
-}
-
-func (v NotesPageView) SidebarCurrentAuthorSlug() string {
-	return ""
+	return v.Authors
 }
 
 func (v NotesPageView) SidebarTags() []notes.Tag {
-	return v.SidebarTagItems
+	return v.Tags
+}
+
+func (v NotesPageView) SidebarCurrentAuthorSlug() string {
+	return v.Filter.AuthorSlug
 }
 
 func (v NotesPageView) SidebarCurrentTagName() string {
-	return v.Tag
+	return v.Filter.TagName
+}
+
+func (v NotesPageView) SidebarCurrentType() notes.NoteType {
+	return v.Filter.Type
+}
+
+func (v NotesPageView) SidebarAllURL() string {
+	return "/notes"
+}
+
+func (v NotesPageView) SidebarAnyAuthorURL() string {
+	if v.SidebarMode == SidebarModeRoot {
+		return "/notes"
+	}
+
+	return BuildNotesFilterURL(1, "", v.Filter.TagName, v.Filter.Type)
+}
+
+func (v NotesPageView) SidebarAnyTagURL() string {
+	if v.SidebarMode == SidebarModeRoot {
+		return "/notes"
+	}
+
+	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, "", v.Filter.Type)
+}
+
+func (v NotesPageView) SidebarAnyTypeURL() string {
+	if v.SidebarMode == SidebarModeRoot {
+		return "/notes"
+	}
+
+	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, notes.NoteTypeAll)
+}
+
+func (v NotesPageView) SidebarAuthorURL(authorSlug string) string {
+	authorSlug = strings.TrimSpace(authorSlug)
+	if authorSlug == "" {
+		return v.SidebarAnyAuthorURL()
+	}
+
+	if v.SidebarMode == SidebarModeRoot {
+		return BuildAuthorURL(authorSlug, 1)
+	}
+
+	return BuildNotesFilterURL(1, authorSlug, v.Filter.TagName, v.Filter.Type)
+}
+
+func (v NotesPageView) SidebarTagURL(tagName string) string {
+	tagName = strings.TrimSpace(tagName)
+	if tagName == "" {
+		return v.SidebarAnyTagURL()
+	}
+
+	if v.SidebarMode == SidebarModeRoot {
+		return BuildTagURL(tagName)
+	}
+
+	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, tagName, v.Filter.Type)
+}
+
+func (v NotesPageView) SidebarTypeURL(noteType notes.NoteType) string {
+	noteType = notes.ParseNoteType(string(noteType))
+	if noteType == notes.NoteTypeAll {
+		return v.SidebarAnyTypeURL()
+	}
+
+	if v.SidebarMode == SidebarModeRoot {
+		if noteType == notes.NoteTypeLong {
+			return BuildTalesURL(1, "", "")
+		}
+
+		if noteType == notes.NoteTypeShort {
+			return BuildMicroTalesURL(1, "", "")
+		}
+	}
+
+	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, noteType)
 }
 
 func (v NotePageView) LayoutPageTitle() string {
@@ -84,94 +170,166 @@ func (v NotePageView) SidebarAuthors() []notes.Author {
 	return v.SidebarAuthorItems
 }
 
-func (v NotePageView) SidebarCurrentAuthorSlug() string {
-	return ""
-}
-
 func (v NotePageView) SidebarTags() []notes.Tag {
 	return v.SidebarTagItems
+}
+
+func (v NotePageView) SidebarCurrentAuthorSlug() string {
+	return ""
 }
 
 func (v NotePageView) SidebarCurrentTagName() string {
 	return ""
 }
 
-func (v AuthorPageView) LayoutPageTitle() string {
-	return v.PageTitle
+func (v NotePageView) SidebarCurrentType() notes.NoteType {
+	return notes.NoteTypeAll
 }
 
-func (v AuthorPageView) SidebarAuthors() []notes.Author {
-	return v.SidebarAuthorItems
+func (v NotePageView) SidebarAllURL() string {
+	return "/notes"
 }
 
-func (v AuthorPageView) SidebarCurrentAuthorSlug() string {
-	return v.Author.Slug
+func (v NotePageView) SidebarAnyAuthorURL() string {
+	return "/notes"
 }
 
-func (v AuthorPageView) SidebarTags() []notes.Tag {
-	return v.SidebarTagItems
+func (v NotePageView) SidebarAnyTagURL() string {
+	return "/notes"
 }
 
-func (v AuthorPageView) SidebarCurrentTagName() string {
-	return ""
+func (v NotePageView) SidebarAnyTypeURL() string {
+	return "/notes"
 }
 
-func (v AuthorPageView) AuthorDetails() notes.Author {
-	return v.Author
+func (v NotePageView) SidebarAuthorURL(authorSlug string) string {
+	return BuildAuthorURL(authorSlug, 1)
 }
 
-func newNotesPageView(result notes.NotesListResult) NotesPageView {
-	return NotesPageView{
-		PageTitle:          "Notes",
-		Tag:                result.ActiveTag,
-		Notes:              result.Notes,
-		Tags:               result.Tags,
-		SidebarAuthorItems: collectAuthorsFromNotes(result.Notes),
-		SidebarTagItems:    uniqueSortedTags(result.Tags),
-		Pagination: newPaginationView(
-			result.Page,
-			result.TotalPages,
-			BuildNotesURL(result.Page-1, result.ActiveTag),
-			BuildNotesURL(result.Page+1, result.ActiveTag),
-		),
+func (v NotePageView) SidebarTagURL(tagName string) string {
+	return BuildTagURL(tagName)
+}
+
+func (v NotePageView) SidebarTypeURL(noteType notes.NoteType) string {
+	noteType = notes.ParseNoteType(string(noteType))
+	if noteType == notes.NoteTypeLong {
+		return BuildTalesURL(1, "", "")
+	}
+	if noteType == notes.NoteTypeShort {
+		return BuildMicroTalesURL(1, "", "")
+	}
+
+	return "/notes"
+}
+
+func newNotesPageView(result notes.NotesListResult, mode SidebarMode) NotesPageView {
+	view := NotesPageView{
+		PageTitle:   notesPageTitle(result),
+		Filter:      result.ActiveFilter,
+		SidebarMode: mode,
+		Notes:       result.Notes,
+		Authors:     uniqueSortedAuthors(result.Authors),
+		Tags:        uniqueSortedTags(result.Tags),
+		ActiveAuthor: func() *notes.Author {
+			if result.ActiveAuthor == nil {
+				return nil
+			}
+			copy := *result.ActiveAuthor
+			return &copy
+		}(),
+		ActiveTag: func() *notes.Tag {
+			if result.ActiveTag == nil {
+				return nil
+			}
+			copy := *result.ActiveTag
+			return &copy
+		}(),
+		Pagination: newPaginationView(result.ActiveFilter, result.TotalPages),
+	}
+
+	applyContext(&view)
+	return view
+}
+
+func notesPageTitle(result notes.NotesListResult) string {
+	if result.ActiveAuthor != nil {
+		return result.ActiveAuthor.Name
+	}
+	if result.ActiveTag != nil {
+		return "#" + result.ActiveTag.Title
+	}
+	if result.ActiveFilter.Type == notes.NoteTypeLong {
+		return "Tales"
+	}
+	if result.ActiveFilter.Type == notes.NoteTypeShort {
+		return "Micro-tales"
+	}
+
+	return "Notes"
+}
+
+func applyContext(view *NotesPageView) {
+	if view == nil {
+		return
+	}
+
+	switch {
+	case view.ActiveAuthor != nil:
+		view.ContextTitle = view.ActiveAuthor.Name
+		view.ContextSubtitle = "@" + view.ActiveAuthor.Slug
+		view.ContextDescription = view.ActiveAuthor.Bio
+	case view.ActiveTag != nil:
+		view.ContextTitle = "#" + view.ActiveTag.Title
+		view.ContextSubtitle = "tag"
+		view.ContextDescription = "notes filtered by tag"
+	case view.Filter.Type == notes.NoteTypeLong:
+		view.ContextTitle = "Tales"
+		view.ContextSubtitle = "type"
+		view.ContextDescription = "long-form notes"
+	case view.Filter.Type == notes.NoteTypeShort:
+		view.ContextTitle = "Micro-tales"
+		view.ContextSubtitle = "type"
+		view.ContextDescription = "short notes"
+	default:
+		view.ContextTitle = "Notes"
+		view.ContextSubtitle = "feed"
+		view.ContextDescription = ""
 	}
 }
 
-func newAuthorPageView(result *notes.AuthorPageResult) AuthorPageView {
-	sidebarAuthors := collectAuthorsFromNotes(result.Notes)
-	sidebarAuthors = uniqueSortedAuthors(append(sidebarAuthors, result.Author))
-
-	return AuthorPageView{
-		PageTitle:          result.Author.Name,
-		Author:             result.Author,
-		Notes:              result.Notes,
-		SidebarAuthorItems: sidebarAuthors,
-		SidebarTagItems:    collectTagsFromNotes(result.Notes),
-		Pagination: newPaginationView(
-			result.Page,
-			result.TotalPages,
-			BuildAuthorURL(result.Author.Slug, result.Page-1),
-			BuildAuthorURL(result.Author.Slug, result.Page+1),
-		),
-	}
-}
-
-func collectAuthorsFromNotes(noteItems []notes.NoteSummary) []notes.Author {
-	authors := make([]notes.Author, 0)
-	for _, note := range noteItems {
-		authors = append(authors, note.Authors...)
+func newPaginationView(filter notes.ListFilter, totalPages int) PaginationView {
+	if totalPages < 1 {
+		totalPages = 1
 	}
 
-	return uniqueSortedAuthors(authors)
-}
-
-func collectTagsFromNotes(noteItems []notes.NoteSummary) []notes.Tag {
-	tags := make([]notes.Tag, 0)
-	for _, note := range noteItems {
-		tags = append(tags, note.Tags...)
+	page := filter.Page
+	if page < 1 {
+		page = 1
 	}
 
-	return uniqueSortedTags(tags)
+	hasPrev := page > 1
+	hasNext := page < totalPages
+
+	prevPage := page - 1
+	if prevPage < 1 {
+		prevPage = 1
+	}
+
+	nextPage := page + 1
+	if nextPage < 1 {
+		nextPage = 1
+	}
+
+	return PaginationView{
+		Page:       page,
+		TotalPages: totalPages,
+		HasPrev:    hasPrev,
+		HasNext:    hasNext,
+		PrevPage:   prevPage,
+		NextPage:   nextPage,
+		PrevURL:    BuildNotesFilterURL(prevPage, filter.AuthorSlug, filter.TagName, filter.Type),
+		NextURL:    BuildNotesFilterURL(nextPage, filter.AuthorSlug, filter.TagName, filter.Type),
+	}
 }
 
 func uniqueSortedAuthors(authors []notes.Author) []notes.Author {
@@ -288,42 +446,4 @@ func tagSortKey(tag notes.Tag) string {
 	}
 
 	return strings.TrimSpace(tag.Name)
-}
-
-func newPaginationView(page int, totalPages int, prevURL string, nextURL string) PaginationView {
-	if totalPages < 1 {
-		totalPages = 1
-	}
-
-	hasPrev := page > 1
-	hasNext := page < totalPages
-
-	prevPage := page - 1
-	if prevPage < 1 {
-		prevPage = 1
-	}
-
-	nextPage := page + 1
-	if nextPage < 1 {
-		nextPage = 1
-	}
-
-	return PaginationView{
-		Page:       page,
-		TotalPages: totalPages,
-		HasPrev:    hasPrev,
-		HasNext:    hasNext,
-		PrevPage:   prevPage,
-		NextPage:   nextPage,
-		PrevURL:    prevURL,
-		NextURL:    nextURL,
-	}
-}
-
-func sanitizePage(page int) int {
-	if page < 1 {
-		return 1
-	}
-
-	return page
 }

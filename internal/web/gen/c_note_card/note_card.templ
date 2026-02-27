@@ -56,7 +56,7 @@ templ NoteCard(note notes.NoteSummary) {
 		if len(note.Tags) > 0 {
 			<ul class="tag-list">
 				for _, tag := range note.Tags {
-					<li><a class="tag" href={ appcore.BuildNotesURL(1, tag.Name) }>#{ tag.Title }</a></li>
+					<li><a class="tag" href={ appcore.BuildTagURL(tag.Name) }>#{ tag.Title }</a></li>
 				}
 			</ul>
 		}

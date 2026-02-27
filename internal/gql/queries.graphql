@@ -1,3 +1,38 @@
+fragment NoteListDoc on Micro_post {
+  id
+  slug
+  title
+  content
+  publishedAt
+  authors {
+    name
+    slug
+    bio
+    avatar {
+      url
+      alt
+      width
+      height
+    }
+  }
+  tags {
+    id
+    name
+    title
+  }
+  attachment {
+    url
+    alt
+    width
+    height
+    filename
+    mimeType
+  }
+  meta {
+    description
+  }
+}
+
 query ListNotes($page: Int!, $limit: Int!) {
   Micro_posts(
     page: $page
@@ -5,43 +40,28 @@ query ListNotes($page: Int!, $limit: Int!) {
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
-      post_type: { equals: long }
     }
   ) {
     totalPages
     docs {
-      id
-      slug
-      title
-      content
-      publishedAt
-      authors {
-        name
-        slug
-        bio
-        avatar {
-          url
-          alt
-          width
-          height
-        }
-      }
-      tags {
-        id
-        name
-        title
-      }
-      attachment {
-        url
-        alt
-        width
-        height
-        filename
-        mimeType
-      }
-      meta {
-        description
-      }
+      ...NoteListDoc
+    }
+  }
+}
+
+query ListNotesByType($page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      post_type: { equals: $postType }
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
     }
   }
 }
@@ -53,44 +73,118 @@ query ListNotesByTagIDs($page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
-      post_type: { equals: long }
       tags: { in: $tagIDs }
     }
   ) {
     totalPages
     docs {
-      id
-      slug
-      title
-      content
-      publishedAt
-      authors {
-        name
-        slug
-        bio
-        avatar {
-          url
-          alt
-          width
-          height
-        }
-      }
-      tags {
-        id
-        name
-        title
-      }
-      attachment {
-        url
-        alt
-        width
-        height
-        filename
-        mimeType
-      }
-      meta {
-        description
-      }
+      ...NoteListDoc
+    }
+  }
+}
+
+query ListNotesByTagIDsAndType(
+  $page: Int!
+  $limit: Int!
+  $tagIDs: [JSON!]!
+  $postType: Micro_post_post_type_Input!
+) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      tags: { in: $tagIDs }
+      post_type: { equals: $postType }
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query NotesByAuthorSlug($slug: String!, $page: Int!, $limit: Int!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      authorSlug: { equals: $slug }
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query NotesByAuthorSlugAndType(
+  $slug: String!
+  $page: Int!
+  $limit: Int!
+  $postType: Micro_post_post_type_Input!
+) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      authorSlug: { equals: $slug }
+      post_type: { equals: $postType }
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query ListNotesByAuthorAndTagIDs($slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      authorSlug: { equals: $slug }
+      tags: { in: $tagIDs }
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query ListNotesByAuthorTagIDsAndType(
+  $slug: String!
+  $page: Int!
+  $limit: Int!
+  $tagIDs: [JSON!]!
+  $postType: Micro_post_post_type_Input!
+) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      authorSlug: { equals: $slug }
+      tags: { in: $tagIDs }
+      post_type: { equals: $postType }
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
     }
   }
 }
@@ -105,11 +199,55 @@ query TagIDsByNames($tagNames: [String!]!) {
   }
 }
 
-query AvailableLongNoteTags {
-  availableTagsByMicroPostType(postType: "long") {
+query AvailableTagsByPostType($postType: String) {
+  availableTagsByMicroPostType(postType: $postType) {
     id
     name
     title
+  }
+}
+
+query AvailableAuthors($limit: Int!) {
+  Authors(limit: $limit, sort: "name") {
+    docs {
+      id
+      name
+      slug
+      bio
+      avatar {
+        url
+        alt
+        width
+        height
+      }
+    }
+  }
+}
+
+query AuthorBySlug($slug: String!) {
+  Authors(where: { slug: { equals: $slug } }, limit: 1) {
+    docs {
+      id
+      name
+      slug
+      bio
+      avatar {
+        url
+        alt
+        width
+        height
+      }
+    }
+  }
+}
+
+query TagByName($name: String!) {
+  Tags(where: { name: { equals: $name } }, limit: 1) {
+    docs {
+      id
+      name
+      title
+    }
   }
 }
 
@@ -119,7 +257,6 @@ query NoteBySlug($slug: String!) {
     where: {
       _status: { equals: published }
       slug: { equals: $slug }
-      post_type: { equals: long }
     }
   ) {
     docs {
@@ -162,72 +299,6 @@ query NoteBySlug($slug: String!) {
       }
       meta {
         title
-        description
-      }
-    }
-  }
-}
-
-query AuthorBySlug($slug: String!) {
-  Authors(where: { slug: { equals: $slug } }, limit: 1) {
-    docs {
-      id
-      name
-      slug
-      bio
-      avatar {
-        url
-        alt
-        width
-        height
-      }
-    }
-  }
-}
-
-query NotesByAuthorSlug($slug: String!, $page: Int!, $limit: Int!) {
-  Micro_posts(
-    page: $page
-    limit: $limit
-    sort: "-publishedAt"
-    where: {
-      _status: { equals: published }
-      post_type: { equals: long }
-      authorSlug: { equals: $slug }
-    }
-  ) {
-    totalPages
-    docs {
-      id
-      slug
-      title
-      content
-      publishedAt
-      authors {
-        name
-        slug
-        bio
-        avatar {
-          url
-          alt
-          width
-          height
-        }
-      }
-      tags {
-        id
-        name
-        title
-      }
-      attachment {
-        url
-        alt
-        width
-        height
-        filename
-        mimeType
-      }
-      meta {
         description
       }
     }

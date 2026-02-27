@@ -6,7 +6,5 @@ import (
 )
 
 templ Page(view appcore.NotesPageView) {
-	<div id="notes-content" data-signals={ appcore.NotesSignalsJSON(view) }>
-		@c_notes_feed.NotesFeed(view, "no notes found for this filter.")
-	</div>
+	@c_notes_feed.NotesFeed(view, "no tales found for this filter.")
 }
