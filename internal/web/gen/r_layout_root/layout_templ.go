@@ -140,7 +140,7 @@ func Layout(view appcore.RootLayoutView, child templ.Component) templ.Component 
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<footer class=\"footer\"><p>stack: ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<footer class=\"footer\"><p># public-code: <a href=\"https://github.com/RevoTale/blog\" target=\"_blank\" rel=\"noopener noreferrer\">Browse the source on GitHub</a></p><p>stack: ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -158,7 +158,7 @@ func Layout(view appcore.RootLayoutView, child templ.Component) templ.Component 
 			var templ_7745c5c3_Var6 templ.SafeURL
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(pkg.URL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `gen/r_layout_root/layout.templ`, Line: 87, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `gen/r_layout_root/layout.templ`, Line: 91, Col: 27}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -171,7 +171,7 @@ func Layout(view appcore.RootLayoutView, child templ.Component) templ.Component 
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(pkg.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `gen/r_layout_root/layout.templ`, Line: 87, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `gen/r_layout_root/layout.templ`, Line: 91, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {

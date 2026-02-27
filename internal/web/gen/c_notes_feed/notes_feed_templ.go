@@ -183,7 +183,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div></section><section class=\"composer\" aria-disabled=\"true\"><p>You do not have permission to send messages in this channel. It is read-only! :)</p></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div></section><section class=\"composer\" aria-disabled=\"true\"><p>You do not have permission to send messages in this channel. It is READ-only! :)</p></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
