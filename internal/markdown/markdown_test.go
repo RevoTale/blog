@@ -73,3 +73,24 @@ func TestToHTML_RendersInlineCodeClass(t *testing.T) {
 		t.Fatalf("expected inline code class, got %s", html)
 	}
 }
+
+func TestExcerpt_RemovesTokenizedMarkdownLinkTargets(t *testing.T) {
+	input := "I'm tired of heavy NextJs runtime for a simple blog. " +
+		"Rewriting the RevoTale blog to the custom Go + GoTempl framework: " +
+		"[https://github.com/RevoTale/blog](external_link://dea8fb62-8df8-4301-b1b3-b30791abeaf8)"
+	got := Excerpt(input, 300)
+
+	if strings.Contains(got, "external_link://") {
+		t.Fatalf("expected no external_link token in excerpt, got %s", got)
+	}
+	if !strings.Contains(got, "https://github.com/RevoTale/blog") {
+		t.Fatalf("expected human-readable link text to stay in excerpt, got %s", got)
+	}
+}
+
+func TestExcerpt_TruncatesOnWordBoundary(t *testing.T) {
+	got := Excerpt("alpha beta gamma delta", 12)
+	if got != "alpha beta..." {
+		t.Fatalf("expected graceful word truncation, got %q", got)
+	}
+}

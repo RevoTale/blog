@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/alecthomas/chroma/v2"
@@ -29,7 +30,28 @@ type Options struct {
 	RootURL        string
 }
 
-var markdownNoise = regexp.MustCompile(`(?m)(` + "`{1,3}" + `|\*\*?|__?|#{1,6}\s?|\[|\]|\(|\)|>|!|\|)`)
+const lastGoodBreakRatio = 0.8
+
+var (
+	markdownCodeBlockPattern          = regexp.MustCompile("(?s)```.*?```")
+	markdownTablePattern              = regexp.MustCompile(`(?m)^\|.*\|.*$`)
+	markdownImagePattern              = regexp.MustCompile(`!\[.*?\]\(.*?\)`)
+	markdownHorizontalRulePattern     = regexp.MustCompile(`(?m)^---+$`)
+	markdownFootnoteDefinitionPattern = regexp.MustCompile(`(?m)^\[\^[^\]]+\]: .*$`)
+	markdownFootnoteReferencePattern  = regexp.MustCompile(`\[\^[^\]]+\]`)
+	markdownBoldItalicPattern         = regexp.MustCompile(`\*\*\*(.*?)\*\*\*`)
+	markdownBoldPattern               = regexp.MustCompile(`\*\*(.*?)\*\*`)
+	markdownItalicAsteriskPattern     = regexp.MustCompile(`\*(.*?)\*`)
+	markdownItalicUnderscorePattern   = regexp.MustCompile(`_(.*?)_`)
+	markdownHeadingPattern            = regexp.MustCompile(`(?m)^#{1,6}\s+(.*?)$`)
+	markdownStrikethroughPattern      = regexp.MustCompile(`~~(.*?)~~`)
+	markdownInlineCodePattern         = regexp.MustCompile("`(.*?)`")
+	markdownLinkPattern               = regexp.MustCompile(`\[(.*?)\]\(.*?\)`)
+	markdownBlockquotePattern         = regexp.MustCompile(`(?m)^\s*>\s*(.*?)$`)
+	markdownTaskListPattern           = regexp.MustCompile(`(?m)^\s*-\s\[[ x]\]\s+`)
+	markdownOrderedListPattern        = regexp.MustCompile(`(?m)^\s*\d+\.\s+`)
+	htmlTagPattern                    = regexp.MustCompile(`<[^>]*>`)
+)
 
 func ToHTML(input string, opts Options) template.HTML {
 	if strings.TrimSpace(input) == "" {
@@ -53,8 +75,7 @@ func Excerpt(input string, maxChars int) string {
 		return ""
 	}
 
-	clean := markdownNoise.ReplaceAllString(input, "")
-	clean = strings.Join(strings.Fields(clean), " ")
+	clean := markdownToPlainText(input)
 	if clean == "" {
 		return ""
 	}
@@ -63,8 +84,60 @@ func Excerpt(input string, maxChars int) string {
 		return clean
 	}
 
-	runes := []rune(clean)
-	return strings.TrimSpace(string(runes[:maxChars])) + "..."
+	return truncateRunes(clean, maxChars)
+}
+
+func markdownToPlainText(markdown string) string {
+	text := markdown
+	text = markdownCodeBlockPattern.ReplaceAllString(text, " ")
+	text = markdownTablePattern.ReplaceAllString(text, " ")
+	text = markdownImagePattern.ReplaceAllString(text, " ")
+	text = markdownHorizontalRulePattern.ReplaceAllString(text, " ")
+	text = markdownFootnoteDefinitionPattern.ReplaceAllString(text, " ")
+	text = markdownFootnoteReferencePattern.ReplaceAllString(text, "")
+
+	text = markdownBoldItalicPattern.ReplaceAllString(text, "$1")
+	text = markdownBoldPattern.ReplaceAllString(text, "$1")
+	text = markdownItalicAsteriskPattern.ReplaceAllString(text, "$1")
+	text = markdownItalicUnderscorePattern.ReplaceAllString(text, "$1")
+	text = markdownHeadingPattern.ReplaceAllString(text, "\n$1\n")
+	text = markdownStrikethroughPattern.ReplaceAllString(text, "$1")
+	text = markdownInlineCodePattern.ReplaceAllString(text, "$1")
+	text = markdownLinkPattern.ReplaceAllString(text, "$1")
+	text = markdownBlockquotePattern.ReplaceAllString(text, "$1")
+	text = markdownTaskListPattern.ReplaceAllString(text, "- ")
+	text = markdownOrderedListPattern.ReplaceAllString(text, "- ")
+	text = htmlTagPattern.ReplaceAllString(text, "")
+
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return ""
+	}
+
+	return strings.Join(strings.Fields(text), " ")
+}
+
+func truncateRunes(text string, maxChars int) string {
+	runes := []rune(text)
+	if len(runes) <= maxChars {
+		return text
+	}
+
+	truncateAt := maxChars
+	minBreak := int(float64(maxChars) * lastGoodBreakRatio)
+	for idx := maxChars - 1; idx >= minBreak; idx-- {
+		if unicode.IsSpace(runes[idx]) {
+			truncateAt = idx
+			break
+		}
+	}
+
+	truncated := strings.TrimSpace(string(runes[:truncateAt]))
+	if truncated == "" {
+		truncated = strings.TrimSpace(string(runes[:maxChars]))
+	}
+
+	return truncated + "..."
 }
 
 func normalizeLinks(doc ast.Node, opts Options) {
