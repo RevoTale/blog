@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"blog/framework/engine"
 	"blog/internal/config"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
+	c_not_found "blog/internal/web/gen/c_not_found"
+	r_layout_root "blog/internal/web/gen/r_layout_root"
 	"github.com/a-h/templ"
 	"github.com/starfederation/datastar-go/datastar"
 )
@@ -29,6 +32,7 @@ func NewHandler(cfg config.Config, service *notes.Service) (*Handler, error) {
 		RenderPage:        renderComponent,
 		PatchLive:         patchComponent,
 		IsNotFoundError:   appcore.IsNotFoundError,
+		HandleNotFound:    handler.notFound,
 		HandleServerError: handler.serverError,
 	})
 	if err != nil {
@@ -55,7 +59,7 @@ func (h *Handler) handleRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.NotFound(w, r)
+	h.notFound(w, r)
 }
 
 func (h *Handler) handleHealth(w http.ResponseWriter) {
@@ -69,9 +73,40 @@ func (h *Handler) serverError(w http.ResponseWriter, err error) {
 	log.Printf("blog server error: %v", err)
 }
 
+func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
+	path := strings.TrimSpace(r.URL.Path)
+	if path == "" {
+		path = "/"
+	}
+
+	view := appcore.NotesPageView{
+		PageTitle:   "404 Not Found",
+		SidebarMode: appcore.SidebarModeRoot,
+		Filter: notes.ListFilter{
+			Type: notes.NoteTypeAll,
+		},
+	}
+	component := r_layout_root.Layout(view, c_not_found.NotFound(path))
+	if err := renderComponentWithStatus(r, w, component, http.StatusNotFound); err != nil {
+		h.serverError(w, fmt.Errorf("render not found page: %w", err))
+	}
+}
+
 func renderComponent(r *http.Request, w http.ResponseWriter, component templ.Component) error {
+	return renderComponentWithStatus(r, w, component, 0)
+}
+
+func renderComponentWithStatus(
+	r *http.Request,
+	w http.ResponseWriter,
+	component templ.Component,
+	statusCode int,
+) error {
 	setCacheControlPublicHour(w)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if statusCode > 0 {
+		w.WriteHeader(statusCode)
+	}
 	return component.Render(r.Context(), w)
 }
 

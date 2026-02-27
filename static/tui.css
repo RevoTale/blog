@@ -449,7 +449,8 @@ p + p {
 .composer,
 .note-detail,
 .footer,
-.channels-page {
+.channels-page,
+.not-found-page {
   width: min(980px, calc(100% - 2rem));
   margin-left: auto;
   margin-right: auto;
@@ -484,6 +485,83 @@ p + p {
   margin-top: 0.35rem;
 }
 
+.not-found-page {
+  margin-top: 1.15rem;
+}
+
+.not-found-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at 4% 4%, rgba(88, 101, 242, 0.2), transparent 46%),
+    linear-gradient(145deg, rgba(28, 30, 35, 0.95), rgba(23, 25, 29, 0.85));
+  box-shadow: var(--shadow-soft);
+  padding: 1rem 1rem 1.1rem;
+}
+
+.not-found-card::after {
+  content: "404";
+  position: absolute;
+  right: 0.9rem;
+  top: -0.15rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.45rem, 8vw, 4.6rem);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  letter-spacing: 0.04em;
+}
+
+.not-found-kicker {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #8ea4ff;
+}
+
+.not-found-title {
+  margin-top: 0.28rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.34rem, 4vw, 1.95rem);
+  line-height: 1.16;
+  letter-spacing: 0.01em;
+}
+
+.not-found-summary {
+  margin-top: 0.5rem;
+  max-width: 60ch;
+  color: var(--text-secondary);
+}
+
+.not-found-path {
+  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+  background: rgba(17, 19, 23, 0.8);
+  border: 1px solid var(--divider);
+  border-radius: 5px;
+  padding: 0.08rem 0.36rem;
+  color: #b6d7ff;
+  word-break: break-word;
+}
+
+.not-found-actions {
+  margin-top: 0.82rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.48rem;
+}
+
+.not-found-alt-action {
+  background: rgba(88, 101, 242, 0.18);
+  border-color: rgba(88, 101, 242, 0.45);
+}
+
+.not-found-alt-action:hover {
+  background: rgba(88, 101, 242, 0.34);
+}
+
 .channels-page-header {
   border-bottom: 1px solid var(--border-soft);
   padding: 0.08rem 0.1rem 0.8rem;
@@ -507,6 +585,7 @@ p + p {
 }
 
 .channels-back-button {
+  display: inline-flex;
   min-height: 34px;
   align-items: center;
   justify-content: center;
@@ -1119,7 +1198,8 @@ p + p {
   .composer,
   .note-detail,
   .footer,
-  .channels-page {
+  .channels-page,
+  .not-found-page {
     width: min(980px, calc(100% - 1.2rem));
   }
 

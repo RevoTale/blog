@@ -404,23 +404,47 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	if recMissingNote.Code != http.StatusNotFound {
 		t.Fatalf("missing note status: expected %d, got %d", http.StatusNotFound, recMissingNote.Code)
 	}
-	_ = requireBody(t, recMissingNote.Body)
+	missingNoteBody := requireBody(t, recMissingNote.Body)
+	if !strings.Contains(missingNoteBody, "<title>404 Not Found :: blog</title>") {
+		t.Fatalf("missing note page should render custom 404 title")
+	}
+	if !strings.Contains(missingNoteBody, "/note/missing") {
+		t.Fatalf("missing note page should include requested path")
+	}
 
 	recMissingAuthor := performRequest(mux, http.MethodGet, "/author/missing")
 	if recMissingAuthor.Code != http.StatusNotFound {
 		t.Fatalf("missing author status: expected %d, got %d", http.StatusNotFound, recMissingAuthor.Code)
 	}
-	_ = requireBody(t, recMissingAuthor.Body)
+	missingAuthorBody := requireBody(t, recMissingAuthor.Body)
+	if !strings.Contains(missingAuthorBody, "Signal lost") {
+		t.Fatalf("missing author page should render custom 404 body")
+	}
 
 	recMissingTag := performRequest(mux, http.MethodGet, "/tag/missing")
 	if recMissingTag.Code != http.StatusNotFound {
 		t.Fatalf("missing tag status: expected %d, got %d", http.StatusNotFound, recMissingTag.Code)
 	}
-	_ = requireBody(t, recMissingTag.Body)
+	missingTagBody := requireBody(t, recMissingTag.Body)
+	if !strings.Contains(missingTagBody, "/tag/missing") {
+		t.Fatalf("missing tag page should include requested path")
+	}
 
 	recNoLive := performRequest(mux, http.MethodGet, "/note/hello-world/live")
 	if recNoLive.Code != http.StatusNotFound {
 		t.Fatalf("note live status: expected %d, got %d", http.StatusNotFound, recNoLive.Code)
 	}
-	_ = requireBody(t, recNoLive.Body)
+	noLiveBody := requireBody(t, recNoLive.Body)
+	if !strings.Contains(noLiveBody, "/note/hello-world/live") {
+		t.Fatalf("note live fallback should render requested path")
+	}
+
+	recMissingRoute := performRequest(mux, http.MethodGet, "/missing-route")
+	if recMissingRoute.Code != http.StatusNotFound {
+		t.Fatalf("missing route status: expected %d, got %d", http.StatusNotFound, recMissingRoute.Code)
+	}
+	missingRouteBody := requireBody(t, recMissingRoute.Body)
+	if !strings.Contains(missingRouteBody, "/missing-route") {
+		t.Fatalf("missing route page should include requested path")
+	}
 }
