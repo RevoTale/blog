@@ -12,32 +12,23 @@ templ Page(view appcore.NotePageView) {
 		</header>
 
 		<section class="note-thread-head">
-			<div class="message-avatar">
-				if appcore.HasFirstAuthorAvatar(view.Note.Authors) {
-					<img class="author-avatar large" src={ appcore.FirstAuthorAvatarURL(view.Note.Authors) } alt={ appcore.FirstAuthorAvatarAlt(view.Note.Authors) } loading="lazy" width="40" height="40"/>
-				} else {
-					<span class="author-avatar large fallback">&#64;</span>
-				}
-			</div>
-			<div class="message-body">
-				if view.Note.Title != "" {
-					<h1 class="note-detail-title">{ view.Note.Title }</h1>
-				}
-				if len(view.Note.Authors) > 0 {
-					<section class="author-row">
-						for _, author := range view.Note.Authors {
-							<a href={ "/author/" + author.Slug } class="author-pill">
-								if author.Avatar != nil {
-									<img class="author-avatar" src={ author.Avatar.URL } alt={ author.Avatar.Alt } loading="lazy" width="24" height="24"/>
-								} else {
-									<span class="author-avatar fallback">&#64;</span>
-								}
-								<span>{ author.Name }</span>
-							</a>
-						}
-					</section>
-				}
-			</div>
+			if view.Note.Title != "" {
+				<h1 class="note-detail-title">{ view.Note.Title }</h1>
+			}
+			if len(view.Note.Authors) > 0 {
+				<section class="author-row">
+					for _, author := range view.Note.Authors {
+						<a href={ "/author/" + author.Slug } class="author-pill">
+							if author.Avatar != nil {
+								<img class="author-avatar" src={ author.Avatar.URL } alt={ author.Avatar.Alt } loading="lazy" width="24" height="24"/>
+							} else {
+								<span class="author-avatar fallback">&#64;</span>
+							}
+							<span>{ author.Name }</span>
+						</a>
+					}
+				</section>
+			}
 		</section>
 
 		if len(view.Note.Tags) > 0 {

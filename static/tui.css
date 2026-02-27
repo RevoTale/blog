@@ -812,7 +812,7 @@ p + p {
 }
 
 .note-detail {
-  margin-top: 0.1rem;
+  margin: 0.1rem auto 0;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-md);
   background: rgba(34, 36, 41, 0.6);
@@ -838,9 +838,9 @@ p + p {
 }
 
 .note-thread-head {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 0.72rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.48rem;
 }
 
 .note-detail-title {
@@ -1107,10 +1107,6 @@ p + p {
   .author-avatar.large {
     width: 34px;
     height: 34px;
-  }
-
-  .note-thread-head {
-    grid-template-columns: 36px minmax(0, 1fr);
   }
 
   .note-detail-title {
