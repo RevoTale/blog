@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/alecthomas/chroma/v2"
@@ -21,8 +21,14 @@ import (
 )
 
 const (
-	externalLinkPrefix = "external_link://"
-	internalLinkPrefix = "micro_post://"
+	externalLinkPrefix   = "external_link://"
+	internalLinkPrefix   = "micro_post://"
+	codeBlockPlaceholder = "PHCODEBLOCKABC123QEWWEWQEWAEFREWRQQWE"
+	tablePlaceholder     = "PHTABLEDEF456EWRRQWER123123"
+	imagePlaceholder     = "PHIMAGEGHI789RQWEQWERRQEW123123123213"
+	codeBlockLabel       = "[code block]"
+	tableLabel           = "[table]"
+	imageLabel           = "[image]"
 )
 
 type Options struct {
@@ -51,6 +57,16 @@ var (
 	markdownTaskListPattern           = regexp.MustCompile(`(?m)^\s*-\s\[[ x]\]\s+`)
 	markdownOrderedListPattern        = regexp.MustCompile(`(?m)^\s*\d+\.\s+`)
 	htmlTagPattern                    = regexp.MustCompile(`<[^>]*>`)
+	markdownSpaceTabPattern           = regexp.MustCompile(`[ \t]{2,}`)
+	markdownTripleNewLinePattern      = regexp.MustCompile(`\n{3,}`)
+	markdownLeadingNewLinePattern     = regexp.MustCompile(`^\n+`)
+	markdownTrailingNewLinePattern    = regexp.MustCompile(`\n+$`)
+	excerptPlaceholders               = []string{codeBlockPlaceholder, tablePlaceholder, imagePlaceholder}
+	excerptPlaceholderReplacer        = strings.NewReplacer(
+		codeBlockPlaceholder, codeBlockLabel,
+		tablePlaceholder, tableLabel,
+		imagePlaceholder, imageLabel,
+	)
 )
 
 func ToHTML(input string, opts Options) template.HTML {
@@ -81,19 +97,19 @@ func Excerpt(input string, maxChars int) string {
 	}
 
 	if utf8.RuneCountInString(clean) <= maxChars {
-		return clean
+		return replaceExcerptPlaceholders(clean)
 	}
 
-	return truncateRunes(clean, maxChars)
+	return replaceExcerptPlaceholders(safeTruncate(clean, maxChars))
 }
 
 func markdownToPlainText(markdown string) string {
 	text := markdown
-	text = markdownCodeBlockPattern.ReplaceAllString(text, " ")
-	text = markdownTablePattern.ReplaceAllString(text, " ")
-	text = markdownImagePattern.ReplaceAllString(text, " ")
-	text = markdownHorizontalRulePattern.ReplaceAllString(text, " ")
-	text = markdownFootnoteDefinitionPattern.ReplaceAllString(text, " ")
+	text = markdownCodeBlockPattern.ReplaceAllString(text, codeBlockPlaceholder)
+	text = markdownTablePattern.ReplaceAllString(text, tablePlaceholder)
+	text = markdownImagePattern.ReplaceAllString(text, imagePlaceholder)
+	text = markdownHorizontalRulePattern.ReplaceAllString(text, "")
+	text = markdownFootnoteDefinitionPattern.ReplaceAllString(text, "")
 	text = markdownFootnoteReferencePattern.ReplaceAllString(text, "")
 
 	text = markdownBoldItalicPattern.ReplaceAllString(text, "$1")
@@ -102,42 +118,94 @@ func markdownToPlainText(markdown string) string {
 	text = markdownItalicUnderscorePattern.ReplaceAllString(text, "$1")
 	text = markdownHeadingPattern.ReplaceAllString(text, "\n$1\n")
 	text = markdownStrikethroughPattern.ReplaceAllString(text, "$1")
-	text = markdownInlineCodePattern.ReplaceAllString(text, "$1")
+	text = markdownInlineCodePattern.ReplaceAllString(text, "`$1`")
 	text = markdownLinkPattern.ReplaceAllString(text, "$1")
 	text = markdownBlockquotePattern.ReplaceAllString(text, "$1")
 	text = markdownTaskListPattern.ReplaceAllString(text, "- ")
 	text = markdownOrderedListPattern.ReplaceAllString(text, "- ")
 	text = htmlTagPattern.ReplaceAllString(text, "")
-
+	text = markdownSpaceTabPattern.ReplaceAllString(text, " ")
+	text = markdownTripleNewLinePattern.ReplaceAllString(text, "\n\n")
+	text = markdownLeadingNewLinePattern.ReplaceAllString(text, "")
+	text = markdownTrailingNewLinePattern.ReplaceAllString(text, "")
 	text = strings.TrimSpace(text)
-	if text == "" {
-		return ""
-	}
 
-	return strings.Join(strings.Fields(text), " ")
+	return text
 }
 
-func truncateRunes(text string, maxChars int) string {
+func safeTruncate(text string, maxChars int) string {
 	runes := []rune(text)
 	if len(runes) <= maxChars {
 		return text
 	}
 
 	truncateAt := maxChars
-	minBreak := int(float64(maxChars) * lastGoodBreakRatio)
-	for idx := maxChars - 1; idx >= minBreak; idx-- {
-		if unicode.IsSpace(runes[idx]) {
-			truncateAt = idx
+
+	positions := findPlaceholderPositions(text)
+	for _, pos := range positions {
+		if pos.start < maxChars && pos.end > maxChars {
+			truncateAt = pos.start
 			break
 		}
 	}
 
-	truncated := strings.TrimSpace(string(runes[:truncateAt]))
-	if truncated == "" {
-		truncated = strings.TrimSpace(string(runes[:maxChars]))
+	if truncateAt > 0 {
+		lastGoodBreak := lastGoodBreakIndex(runes[:truncateAt])
+		minBreak := int(float64(maxChars) * lastGoodBreakRatio)
+		if lastGoodBreak > 0 && lastGoodBreak >= minBreak {
+			return strings.TrimSpace(string(runes[:lastGoodBreak])) + "..."
+		}
 	}
 
-	return truncated + "..."
+	return strings.TrimSpace(string(runes[:truncateAt])) + "..."
+}
+
+func replaceExcerptPlaceholders(text string) string {
+	return excerptPlaceholderReplacer.Replace(text)
+}
+
+type placeholderPosition struct {
+	start int
+	end   int
+}
+
+func findPlaceholderPositions(text string) []placeholderPosition {
+	positions := make([]placeholderPosition, 0, 4)
+
+	for _, placeholder := range excerptPlaceholders {
+		searchFrom := 0
+		for {
+			next := strings.Index(text[searchFrom:], placeholder)
+			if next == -1 {
+				break
+			}
+
+			startByte := searchFrom + next
+			endByte := startByte + len(placeholder)
+			positions = append(positions, placeholderPosition{
+				start: utf8.RuneCountInString(text[:startByte]),
+				end:   utf8.RuneCountInString(text[:endByte]),
+			})
+
+			searchFrom = endByte
+		}
+	}
+
+	sort.Slice(positions, func(i int, j int) bool {
+		return positions[i].start < positions[j].start
+	})
+
+	return positions
+}
+
+func lastGoodBreakIndex(runes []rune) int {
+	for idx := len(runes) - 1; idx >= 0; idx-- {
+		if runes[idx] == ' ' || runes[idx] == '\n' {
+			return idx
+		}
+	}
+
+	return -1
 }
 
 func normalizeLinks(doc ast.Node, opts Options) {

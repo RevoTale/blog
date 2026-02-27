@@ -94,3 +94,35 @@ func TestExcerpt_TruncatesOnWordBoundary(t *testing.T) {
 		t.Fatalf("expected graceful word truncation, got %q", got)
 	}
 }
+
+func TestExcerpt_ReplacesSpecialMarkdownBlocksWithLabels(t *testing.T) {
+	input := "" +
+		"before\n" +
+		"```go\nfmt.Println(\"x\")\n```\n" +
+		"![img](https://example.com/p.png)\n" +
+		"| a | b |\n" +
+		"| - | - |\n" +
+		"after"
+
+	got := Excerpt(input, 500)
+
+	if !strings.Contains(got, "[code block]") {
+		t.Fatalf("expected code block label in excerpt, got %q", got)
+	}
+	if !strings.Contains(got, "[image]") {
+		t.Fatalf("expected image label in excerpt, got %q", got)
+	}
+	if !strings.Contains(got, "[table]") {
+		t.Fatalf("expected table label in excerpt, got %q", got)
+	}
+	if strings.Contains(got, "PHCODEBLOCK") {
+		t.Fatalf("expected no raw placeholder token, got %q", got)
+	}
+}
+
+func TestExcerpt_DoesNotCutPlaceholderToken(t *testing.T) {
+	got := Excerpt("alpha ![img](https://example.com/p.png) omega", 10)
+	if got != "alpha..." {
+		t.Fatalf("expected truncation before placeholder boundary, got %q", got)
+	}
+}
