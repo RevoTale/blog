@@ -80,6 +80,9 @@
 
 :root {
   color-scheme: dark;
+  --font-primary: "Whitney", "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Whitney", "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-headline: "Whitney", "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bg-app: #1e1f22;
   --bg-rail: #111214;
   --bg-sidebar: #2b2d31;
@@ -120,8 +123,13 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--text-primary);
-  font-family: "Whitney", "gg sans", "Noto Sans", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
+  font-weight: 400;
   line-height: 1.45;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background:
     radial-gradient(circle at 8% 6%, rgba(88, 101, 242, 0.2), transparent 24%),
     radial-gradient(circle at 95% -2%, rgba(0, 168, 252, 0.14), transparent 26%),
@@ -258,8 +266,10 @@ p + p {
 }
 
 .guild-header strong {
+  font-family: var(--font-display);
   font-size: 0.98rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 
@@ -267,7 +277,7 @@ p + p {
   font-size: 0.75rem;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .guild-header > span:last-child {
@@ -302,7 +312,7 @@ p + p {
   font-size: 0.73rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.035em;
   color: var(--text-muted);
 }
 
@@ -396,8 +406,10 @@ p + p {
   display: inline-flex;
   align-items: center;
   gap: 0.36rem;
+  font-family: var(--font-display);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 
@@ -449,8 +461,10 @@ p + p {
 }
 
 .context-panel h1 {
+  font-family: var(--font-display);
   font-size: 1.34rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 
@@ -476,8 +490,10 @@ p + p {
 }
 
 .channels-page-header h1 {
+  font-family: var(--font-display);
   font-size: 1.24rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 
@@ -615,7 +631,7 @@ p + p {
 .message-author {
   color: var(--text-link);
   font-size: 0.98rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .message-author:visited {
@@ -640,20 +656,102 @@ p + p {
 }
 
 .message-title-link {
+  font-family: var(--font-display);
   color: var(--text-secondary);
   font-size: 1rem;
   font-weight: 600;
+  line-height: 1.32;
 }
 
-.message-title-link:hover {
+.message-title-link:visited {
+  color: var(--text-secondary);
+}
+
+.message-title-link:hover,
+.message-title-link:focus-visible {
   color: #fff;
   text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.14em;
 }
 
 .message-content {
+  font-family: var(--font-primary);
   max-width: 78ch;
   color: var(--text-secondary);
+  font-size: 1rem;
   line-height: 1.42;
+}
+
+.message-content-link {
+  display: block;
+  text-decoration: none;
+}
+
+.message-content-link:visited {
+  color: var(--text-secondary);
+}
+
+.message-content-link:hover,
+.message-content-link:focus-visible {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.14em;
+}
+
+.note-open-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.34rem;
+  min-height: 30px;
+  padding: 0.18rem 0.66rem;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-pill);
+  background: var(--bg-chip);
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.note-open-link::before {
+  content: "";
+  display: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #23a55a;
+  box-shadow: 0 0 0 1.5px #2b2d31;
+}
+
+.note-open-link:link::before {
+  display: inline-block;
+}
+
+.note-open-link:visited {
+  color: var(--text-muted);
+}
+
+.note-open-link:hover,
+.note-open-link:focus-visible {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.note-open-link::after {
+  content: "→";
+  font-size: 0.9em;
+}
+
+.note-card-footer {
+  grid-column: 2 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 0.18rem;
 }
 
 .attachment-block {
@@ -860,9 +958,11 @@ p + p {
 }
 
 .note-detail-title {
+  font-family: var(--font-headline);
   font-size: 1.46rem;
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: 0.008em;
 }
 
 .markdown-body {

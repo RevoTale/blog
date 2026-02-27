@@ -34,9 +34,9 @@ templ NoteCard(note notes.NoteSummary) {
 			}
 
 			if note.Description != "" {
-				<p class="message-content">{ note.Description }</p>
+				<a class="message-content message-content-link" href={ "/note/" + note.Slug }>{ note.Description }</a>
 			} else if note.Excerpt != "" {
-				<p class="message-content">{ note.Excerpt }</p>
+				<a class="message-content message-content-link" href={ "/note/" + note.Slug }>{ note.Excerpt }</a>
 			}
 
 			if len(note.Tags) > 0 {
@@ -66,5 +66,9 @@ templ NoteCard(note notes.NoteSummary) {
 				</a>
 			</div>
 		}
+
+		<footer class="note-card-footer">
+			<a class="note-open-link" href={ "/note/" + note.Slug }>Open full note</a>
+		</footer>
 	</article>
 }
