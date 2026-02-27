@@ -679,8 +679,8 @@ p + p {
   font-family: var(--font-primary);
   max-width: 78ch;
   color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.42;
+  font-size: 1.0625rem;
+  line-height: 1.58;
 }
 
 .message-content-link {
@@ -716,22 +716,21 @@ p + p {
   text-decoration: none;
 }
 
-.note-open-link::before {
-  content: "";
-  display: none;
+.note-open-badge {
+  display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #23a55a;
+  background: #80848e;
   box-shadow: 0 0 0 1.5px #2b2d31;
-}
-
-.note-open-link:link::before {
-  display: inline-block;
 }
 
 .note-open-link:visited {
   color: var(--text-muted);
+}
+
+.note-open-link:link .note-open-badge {
+  background: #23a55a;
 }
 
 .note-open-link:hover,
@@ -966,8 +965,10 @@ p + p {
 }
 
 .markdown-body {
-  max-width: 76ch;
+  max-width: 68ch;
   color: var(--text-secondary);
+  font-size: 1.25rem;
+  line-height: 1.68;
 }
 
 .markdown-body p {
@@ -1183,6 +1184,16 @@ p + p {
     grid-row: auto;
     margin-top: 0.62rem;
   }
+
+  .message-content {
+    font-size: 1rem;
+    line-height: 1.52;
+  }
+
+  .markdown-body {
+    font-size: 1.125rem;
+    line-height: 1.62;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1223,6 +1234,16 @@ p + p {
   .author-avatar.large {
     width: 34px;
     height: 34px;
+  }
+
+  .message-content {
+    font-size: 0.98rem;
+    line-height: 1.5;
+  }
+
+  .markdown-body {
+    font-size: 1.02rem;
+    line-height: 1.58;
   }
 
   .note-detail-title {

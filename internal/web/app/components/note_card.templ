@@ -68,7 +68,10 @@ templ NoteCard(note notes.NoteSummary) {
 		}
 
 		<footer class="note-card-footer">
-			<a class="note-open-link" href={ "/note/" + note.Slug }>Open full note</a>
+			<a class="note-open-link" href={ "/note/" + note.Slug }>
+				<span class="note-open-badge" aria-hidden="true"></span>
+				<span>Open full note</span>
+			</a>
 		</footer>
 	</article>
 }
