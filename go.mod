@@ -8,6 +8,7 @@ require (
 	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/gomarkdown/markdown v0.0.0-20260217112301-37c66b85d6ab
 	github.com/starfederation/datastar-go v1.1.0
+	golang.org/x/mod v0.26.0
 )
 
 require (

@@ -7,16 +7,15 @@ import (
 	"go/format"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
+
+	"golang.org/x/mod/modfile"
 )
 
 type packageEntry struct {
 	Name string
 	URL  string
 }
-
-var majorVersionSegment = regexp.MustCompile(`^v[0-9]+$`)
 
 func main() {
 	var inPath string
@@ -50,111 +49,43 @@ func parseDirectModules(path string) ([]string, error) {
 		return nil, err
 	}
 
-	lines := strings.Split(string(data), "\n")
-	modules := make([]string, 0, 8)
-	seen := make(map[string]struct{})
-	inRequireBlock := false
+	file, err := modfile.Parse(path, data, nil)
+	if err != nil {
+		return nil, err
+	}
 
-	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || strings.HasPrefix(trimmed, "//") {
+	modules := make([]string, 0, len(file.Require))
+	seen := make(map[string]struct{}, len(file.Require))
+	for _, req := range file.Require {
+		if req == nil || req.Indirect {
 			continue
 		}
 
-		switch {
-		case strings.HasPrefix(trimmed, "require ("):
-			inRequireBlock = true
-			continue
-		case inRequireBlock && trimmed == ")":
-			inRequireBlock = false
+		module := strings.TrimSpace(req.Mod.Path)
+		if module == "" {
 			continue
 		}
-
-		if inRequireBlock {
-			module, indirect := parseRequireEntry(trimmed)
-			appendModule(module, indirect, seen, &modules)
+		if _, ok := seen[module]; ok {
 			continue
 		}
 
-		if strings.HasPrefix(trimmed, "require ") {
-			entry := strings.TrimSpace(strings.TrimPrefix(trimmed, "require "))
-			module, indirect := parseRequireEntry(entry)
-			appendModule(module, indirect, seen, &modules)
-		}
+		seen[module] = struct{}{}
+		modules = append(modules, module)
 	}
 
 	return modules, nil
-}
-
-func parseRequireEntry(entry string) (module string, indirect bool) {
-	raw := entry
-	comment := ""
-	if index := strings.Index(raw, "//"); index >= 0 {
-		comment = strings.TrimSpace(raw[index+2:])
-		raw = strings.TrimSpace(raw[:index])
-	}
-
-	fields := strings.Fields(raw)
-	if len(fields) < 2 {
-		return "", false
-	}
-
-	if strings.Contains(comment, "indirect") {
-		indirect = true
-	}
-
-	return fields[0], indirect
-}
-
-func appendModule(module string, indirect bool, seen map[string]struct{}, modules *[]string) {
-	if module == "" || indirect {
-		return
-	}
-	if _, ok := seen[module]; ok {
-		return
-	}
-	seen[module] = struct{}{}
-	*modules = append(*modules, module)
 }
 
 func buildPackageList(modules []string) []packageEntry {
 	items := make([]packageEntry, 0, len(modules))
 	for _, module := range modules {
 		items = append(items, packageEntry{
-			Name: packageName(module),
-			URL:  repositoryURL(module),
+			Name: module,
+			URL:  "https://pkg.go.dev/" + module,
 		})
 	}
 
 	return items
-}
-
-func packageName(module string) string {
-	trimmed := strings.Trim(module, "/")
-	if trimmed == "" {
-		return module
-	}
-
-	parts := strings.Split(trimmed, "/")
-	name := parts[len(parts)-1]
-	if majorVersionSegment.MatchString(name) && len(parts) > 1 {
-		return parts[len(parts)-2]
-	}
-
-	return name
-}
-
-func repositoryURL(module string) string {
-	parts := strings.Split(strings.Trim(module, "/"), "/")
-	if len(parts) >= 3 {
-		host := parts[0]
-		switch host {
-		case "github.com", "gitlab.com", "bitbucket.org":
-			return "https://" + strings.Join(parts[:3], "/")
-		}
-	}
-
-	return "https://pkg.go.dev/" + module
 }
 
 func renderGoSource(packages []packageEntry) ([]byte, error) {

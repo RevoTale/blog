@@ -151,6 +151,12 @@ p + p {
   transition: border-radius 0.14s ease, background-color 0.14s ease;
 }
 
+.server-logo {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
 .server-button:hover {
   border-radius: 16px;
   text-decoration: none;

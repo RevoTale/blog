@@ -20,7 +20,9 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 		<body>
 			<div class="app-shell">
 				<aside class="server-rail" aria-label="workspace navigation">
-					<a class="server-button is-active" href="/notes" aria-label="blog home">b</a>
+					<a class="server-button is-active" href="/notes" aria-label="blog home">
+						<img class="server-logo" src="/static/revtale-logo.svg" alt="RevTale"/>
+					</a>
 					<span class="server-divider" aria-hidden="true"></span>
 					<a class="server-button" href="/notes" aria-label="notes channel">#</a>
 				</aside>
@@ -33,6 +35,11 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 						</header>
 
 						<div class="channel-scroll">
+							<p class="channel-panel-label">note type</p>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "all") } href={ view.SidebarAnyTypeURL() }># All</a>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>Tales</a>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>Micro-tales</a>
+
 							<p class="channel-panel-label">channels</p>
 							<a class={ appcore.ChannelLinkClass(appcore.SidebarAllActive(view)) } href={ view.SidebarAllURL() }>
 								<span class="channel-prefix">#</span>
@@ -40,7 +47,7 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 							</a>
 
 							<p class="channel-panel-label">authors</p>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "") } href={ view.SidebarAnyAuthorURL() }>ANY</a>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "") } href={ view.SidebarAnyAuthorURL() }># All</a>
 							for _, author := range view.SidebarAuthors() {
 								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug) } href={ view.SidebarAuthorURL(author.Slug) }>
 									{ appcore.AuthorChannelLabel(author) }
@@ -48,17 +55,13 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 							}
 
 							<p class="channel-panel-label">tags</p>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == "") } href={ view.SidebarAnyTagURL() }>ANY</a>
+							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == "") } href={ view.SidebarAnyTagURL() }># All</a>
 							for _, tag := range view.SidebarTags() {
 								<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name) } href={ view.SidebarTagURL(tag.Name) }>
 									{ appcore.TagChannelLabel(tag) }
 								</a>
 							}
 
-							<p class="channel-panel-label">types</p>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "all") } href={ view.SidebarAnyTypeURL() }>ANY</a>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>Tales</a>
-							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>Micro-tales</a>
 						</div>
 
 						<footer class="channel-footer" aria-label="session status">
