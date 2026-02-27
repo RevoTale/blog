@@ -202,6 +202,40 @@ func TestContractsGenerationDeterministic(t *testing.T) {
 	}
 }
 
+func TestRewritePackageDeclarationAddsGeneratedMarker(t *testing.T) {
+	source := "package appsrc\n\nimport (\n\t\"fmt\"\n)\n"
+
+	rewritten, err := rewritePackageDeclaration([]byte(source), "r_page_root")
+	if err != nil {
+		t.Fatalf("rewrite package declaration: %v", err)
+	}
+
+	text := string(rewritten)
+	if !strings.HasPrefix(text, "package r_page_root\n"+generatedTemplHeader+"\n") {
+		t.Fatalf("expected generated marker after package declaration, got:\n%s", text)
+	}
+	if strings.Count(text, generatedTemplHeader) != 1 {
+		t.Fatalf("expected exactly one generated marker, got:\n%s", text)
+	}
+}
+
+func TestRewritePackageDeclarationKeepsSingleGeneratedMarker(t *testing.T) {
+	source := "package appsrc\n\n" + generatedTemplHeader + "\n\ntempl Page() { <div></div> }\n"
+
+	rewritten, err := rewritePackageDeclaration([]byte(source), "r_page_root")
+	if err != nil {
+		t.Fatalf("rewrite package declaration: %v", err)
+	}
+
+	text := string(rewritten)
+	if strings.Count(text, generatedTemplHeader) != 1 {
+		t.Fatalf("expected exactly one generated marker, got:\n%s", text)
+	}
+	if !strings.HasPrefix(text, "package r_page_root\n") {
+		t.Fatalf("expected package rename to be applied, got:\n%s", text)
+	}
+}
+
 func writeTestFile(t *testing.T, filePath string, content string) {
 	t.Helper()
 
