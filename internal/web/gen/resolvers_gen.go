@@ -5,23 +5,23 @@ import (
 	"blog/internal/web/appcore"
 	rr_author_param_slug "blog/internal/web/appcore/resolvers/author/param_slug"
 	rr_channels "blog/internal/web/appcore/resolvers/channels"
+	rr_micro_tales "blog/internal/web/appcore/resolvers/micro-tales"
 	rr_note_param_slug "blog/internal/web/appcore/resolvers/note/param_slug"
-	rr_notes "blog/internal/web/appcore/resolvers/notes"
-	rr_notes_micro_tales "blog/internal/web/appcore/resolvers/notes/micro-tales"
-	rr_notes_tales "blog/internal/web/appcore/resolvers/notes/tales"
+	rr_root "blog/internal/web/appcore/resolvers/root"
 	rr_tag_param_slug "blog/internal/web/appcore/resolvers/tag/param_slug"
+	rr_tales "blog/internal/web/appcore/resolvers/tales"
 	"context"
 	"net/http"
 )
 
 type generatedResolvers struct {
+	rRoot            rr_root.Resolver
 	rAuthorParamSlug rr_author_param_slug.Resolver
 	rChannels        rr_channels.Resolver
+	rMicroTales      rr_micro_tales.Resolver
 	rNoteParamSlug   rr_note_param_slug.Resolver
-	rNotes           rr_notes.Resolver
-	rNotesMicroTales rr_notes_micro_tales.Resolver
-	rNotesTales      rr_notes_tales.Resolver
 	rTagParamSlug    rr_tag_param_slug.Resolver
+	rTales           rr_tales.Resolver
 }
 
 func NewRouteResolvers() RouteResolvers {
@@ -29,6 +29,15 @@ func NewRouteResolvers() RouteResolvers {
 }
 
 var _ RouteResolvers = (*generatedResolvers)(nil)
+
+func (r *generatedResolvers) ResolveRootPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params RootParams) (rr_root.PageView, error) {
+	return r.rRoot.ResolvePage(ctx, appCtx, req, toRootParams(params))
+}
+
+func toRootParams(params RootParams) rr_root.Params {
+	_ = params
+	return rr_root.Params{}
+}
 
 func (r *generatedResolvers) ResolveAuthorParamSlugPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params AuthorParamSlugParams) (rr_author_param_slug.PageView, error) {
 	return r.rAuthorParamSlug.ResolvePage(ctx, appCtx, req, toAuthorParamSlugParams(params))
@@ -57,6 +66,15 @@ func toChannelsParams(params ChannelsParams) rr_channels.Params {
 	return rr_channels.Params{}
 }
 
+func (r *generatedResolvers) ResolveMicroTalesPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params MicroTalesParams) (rr_micro_tales.PageView, error) {
+	return r.rMicroTales.ResolvePage(ctx, appCtx, req, toMicroTalesParams(params))
+}
+
+func toMicroTalesParams(params MicroTalesParams) rr_micro_tales.Params {
+	_ = params
+	return rr_micro_tales.Params{}
+}
+
 func (r *generatedResolvers) ResolveNoteParamSlugPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params NoteParamSlugParams) (rr_note_param_slug.PageView, error) {
 	return r.rNoteParamSlug.ResolvePage(ctx, appCtx, req, toNoteParamSlugParams(params))
 }
@@ -67,41 +85,6 @@ func toNoteParamSlugParams(params NoteParamSlugParams) rr_note_param_slug.Params
 	}
 }
 
-func (r *generatedResolvers) ResolveNotesPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params NotesParams) (rr_notes.PageView, error) {
-	return r.rNotes.ResolvePage(ctx, appCtx, req, toNotesParams(params))
-}
-
-func (r *generatedResolvers) ParseNotesLiveState(req *http.Request) (rr_notes.LiveState, error) {
-	return r.rNotes.ParseLiveState(req)
-}
-
-func (r *generatedResolvers) ResolveNotesLive(ctx context.Context, appCtx *appcore.Context, req *http.Request, params NotesParams, state rr_notes.LiveState) (rr_notes.PageView, error) {
-	return r.rNotes.ResolveLive(ctx, appCtx, req, toNotesParams(params), state)
-}
-
-func toNotesParams(params NotesParams) rr_notes.Params {
-	_ = params
-	return rr_notes.Params{}
-}
-
-func (r *generatedResolvers) ResolveNotesMicroTalesPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params NotesMicroTalesParams) (rr_notes_micro_tales.PageView, error) {
-	return r.rNotesMicroTales.ResolvePage(ctx, appCtx, req, toNotesMicroTalesParams(params))
-}
-
-func toNotesMicroTalesParams(params NotesMicroTalesParams) rr_notes_micro_tales.Params {
-	_ = params
-	return rr_notes_micro_tales.Params{}
-}
-
-func (r *generatedResolvers) ResolveNotesTalesPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params NotesTalesParams) (rr_notes_tales.PageView, error) {
-	return r.rNotesTales.ResolvePage(ctx, appCtx, req, toNotesTalesParams(params))
-}
-
-func toNotesTalesParams(params NotesTalesParams) rr_notes_tales.Params {
-	_ = params
-	return rr_notes_tales.Params{}
-}
-
 func (r *generatedResolvers) ResolveTagParamSlugPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params TagParamSlugParams) (rr_tag_param_slug.PageView, error) {
 	return r.rTagParamSlug.ResolvePage(ctx, appCtx, req, toTagParamSlugParams(params))
 }
@@ -110,4 +93,13 @@ func toTagParamSlugParams(params TagParamSlugParams) rr_tag_param_slug.Params {
 	return rr_tag_param_slug.Params{
 		Slug: params.Slug,
 	}
+}
+
+func (r *generatedResolvers) ResolveTalesPage(ctx context.Context, appCtx *appcore.Context, req *http.Request, params TalesParams) (rr_tales.PageView, error) {
+	return r.rTales.ResolvePage(ctx, appCtx, req, toTalesParams(params))
+}
+
+func toTalesParams(params TalesParams) rr_tales.Params {
+	_ = params
+	return rr_tales.Params{}
 }

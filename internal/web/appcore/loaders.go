@@ -308,10 +308,10 @@ func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType n
 
 	encoded := q.Encode()
 	if encoded == "" {
-		return "/notes"
+		return "/"
 	}
 
-	return "/notes?" + encoded
+	return "/?" + encoded
 }
 
 func BuildChannelsURL(authorSlug string, tagName string, noteType notes.NoteType) string {
@@ -341,7 +341,7 @@ func BuildChannelsURL(authorSlug string, tagName string, noteType notes.NoteType
 func BuildAuthorURL(slug string, page int) string {
 	slug = strings.TrimSpace(slug)
 	if slug == "" {
-		return "/notes"
+		return "/"
 	}
 
 	if page < 1 {
@@ -360,7 +360,7 @@ func BuildAuthorURL(slug string, page int) string {
 func BuildTagURL(tagSlug string) string {
 	tagSlug = strings.TrimSpace(tagSlug)
 	if tagSlug == "" {
-		return "/notes"
+		return "/"
 	}
 
 	return "/tag/" + tagSlug
@@ -384,10 +384,10 @@ func BuildTalesURL(page int, authorSlug string, tagName string) string {
 
 	encoded := q.Encode()
 	if encoded == "" {
-		return "/notes/tales"
+		return "/tales"
 	}
 
-	return "/notes/tales?" + encoded
+	return "/tales?" + encoded
 }
 
 func BuildMicroTalesURL(page int, authorSlug string, tagName string) string {
@@ -408,10 +408,10 @@ func BuildMicroTalesURL(page int, authorSlug string, tagName string) string {
 
 	encoded := q.Encode()
 	if encoded == "" {
-		return "/notes/micro-tales"
+		return "/micro-tales"
 	}
 
-	return "/notes/micro-tales?" + encoded
+	return "/micro-tales?" + encoded
 }
 
 func BuildAuthorLiveURL(slug string) string {

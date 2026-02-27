@@ -5,14 +5,17 @@ import (
 	"blog/internal/web/appcore"
 	rr_author_param_slug "blog/internal/web/appcore/resolvers/author/param_slug"
 	rr_channels "blog/internal/web/appcore/resolvers/channels"
+	rr_micro_tales "blog/internal/web/appcore/resolvers/micro-tales"
 	rr_note_param_slug "blog/internal/web/appcore/resolvers/note/param_slug"
-	rr_notes "blog/internal/web/appcore/resolvers/notes"
-	rr_notes_micro_tales "blog/internal/web/appcore/resolvers/notes/micro-tales"
-	rr_notes_tales "blog/internal/web/appcore/resolvers/notes/tales"
+	rr_root "blog/internal/web/appcore/resolvers/root"
 	rr_tag_param_slug "blog/internal/web/appcore/resolvers/tag/param_slug"
+	rr_tales "blog/internal/web/appcore/resolvers/tales"
 	"context"
 	"net/http"
 )
+
+type RootParams struct {
+}
 
 type AuthorParamSlugParams struct {
 	Slug string
@@ -21,33 +24,28 @@ type AuthorParamSlugParams struct {
 type ChannelsParams struct {
 }
 
+type MicroTalesParams struct {
+}
+
 type NoteParamSlugParams struct {
 	Slug string
-}
-
-type NotesParams struct {
-}
-
-type NotesMicroTalesParams struct {
-}
-
-type NotesTalesParams struct {
 }
 
 type TagParamSlugParams struct {
 	Slug string
 }
 
+type TalesParams struct {
+}
+
 type RouteResolvers interface {
+	ResolveRootPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (rr_root.PageView, error)
 	ResolveAuthorParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (rr_author_param_slug.PageView, error)
 	ParseAuthorParamSlugLiveState(r *http.Request) (rr_author_param_slug.LiveState, error)
 	ResolveAuthorParamSlugLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams, state rr_author_param_slug.LiveState) (rr_author_param_slug.PageView, error)
 	ResolveChannelsPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (rr_channels.PageView, error)
+	ResolveMicroTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (rr_micro_tales.PageView, error)
 	ResolveNoteParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (rr_note_param_slug.PageView, error)
-	ResolveNotesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesParams) (rr_notes.PageView, error)
-	ParseNotesLiveState(r *http.Request) (rr_notes.LiveState, error)
-	ResolveNotesLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesParams, state rr_notes.LiveState) (rr_notes.PageView, error)
-	ResolveNotesMicroTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesMicroTalesParams) (rr_notes_micro_tales.PageView, error)
-	ResolveNotesTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesTalesParams) (rr_notes_tales.PageView, error)
 	ResolveTagParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (rr_tag_param_slug.PageView, error)
+	ResolveTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (rr_tales.PageView, error)
 }

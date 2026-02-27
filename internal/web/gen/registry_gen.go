@@ -7,20 +7,20 @@ import (
 	"blog/internal/web/appcore"
 	rr_author_param_slug "blog/internal/web/appcore/resolvers/author/param_slug"
 	rr_channels "blog/internal/web/appcore/resolvers/channels"
+	rr_micro_tales "blog/internal/web/appcore/resolvers/micro-tales"
 	rr_note_param_slug "blog/internal/web/appcore/resolvers/note/param_slug"
-	rr_notes "blog/internal/web/appcore/resolvers/notes"
-	rr_notes_micro_tales "blog/internal/web/appcore/resolvers/notes/micro-tales"
-	rr_notes_tales "blog/internal/web/appcore/resolvers/notes/tales"
+	rr_root "blog/internal/web/appcore/resolvers/root"
 	rr_tag_param_slug "blog/internal/web/appcore/resolvers/tag/param_slug"
+	rr_tales "blog/internal/web/appcore/resolvers/tales"
 	r_layout_author_param_slug "blog/internal/web/gen/r_layout_author_param_slug"
 	r_layout_root "blog/internal/web/gen/r_layout_root"
 	r_page_author_param_slug "blog/internal/web/gen/r_page_author_param_slug"
 	r_page_channels "blog/internal/web/gen/r_page_channels"
+	r_page_micro_tales "blog/internal/web/gen/r_page_micro_tales"
 	r_page_note_param_slug "blog/internal/web/gen/r_page_note_param_slug"
-	r_page_notes "blog/internal/web/gen/r_page_notes"
-	r_page_notes_micro_tales "blog/internal/web/gen/r_page_notes_micro_tales"
-	r_page_notes_tales "blog/internal/web/gen/r_page_notes_tales"
+	r_page_root "blog/internal/web/gen/r_page_root"
 	r_page_tag_param_slug "blog/internal/web/gen/r_page_tag_param_slug"
+	r_page_tales "blog/internal/web/gen/r_page_tales"
 	"context"
 	"github.com/a-h/templ"
 	"net/http"
@@ -29,6 +29,19 @@ import (
 
 func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Context] {
 	return []framework.RouteHandler[*appcore.Context]{
+		framework.PageOnlyRouteHandler[*appcore.Context, RootParams, rr_root.PageView]{
+			Page: framework.PageModule[*appcore.Context, RootParams, rr_root.PageView]{
+				Pattern:     "/",
+				ParseParams: parseRootParams,
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (rr_root.PageView, error) {
+					return resolvers.ResolveRootPage(ctx, appCtx, r, params)
+				},
+				Render: r_page_root.Page,
+				Layouts: []framework.LayoutRenderer[rr_root.PageView]{
+					wrapRootWithRootLayout,
+				},
+			},
+		},
 		framework.PageAndLiveRouteHandler[*appcore.Context, AuthorParamSlugParams, rr_author_param_slug.PageView, rr_author_param_slug.LiveState]{
 			Page: framework.PageModule[*appcore.Context, AuthorParamSlugParams, rr_author_param_slug.PageView]{
 				Pattern:     "/author/[slug]",
@@ -67,6 +80,19 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				},
 			},
 		},
+		framework.PageOnlyRouteHandler[*appcore.Context, MicroTalesParams, rr_micro_tales.PageView]{
+			Page: framework.PageModule[*appcore.Context, MicroTalesParams, rr_micro_tales.PageView]{
+				Pattern:     "/micro-tales",
+				ParseParams: parseMicroTalesParams,
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (rr_micro_tales.PageView, error) {
+					return resolvers.ResolveMicroTalesPage(ctx, appCtx, r, params)
+				},
+				Render: r_page_micro_tales.Page,
+				Layouts: []framework.LayoutRenderer[rr_micro_tales.PageView]{
+					wrapMicroTalesWithRootLayout,
+				},
+			},
+		},
 		framework.PageOnlyRouteHandler[*appcore.Context, NoteParamSlugParams, rr_note_param_slug.PageView]{
 			Page: framework.PageModule[*appcore.Context, NoteParamSlugParams, rr_note_param_slug.PageView]{
 				Pattern:     "/note/[slug]",
@@ -77,56 +103,6 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				Render: r_page_note_param_slug.Page,
 				Layouts: []framework.LayoutRenderer[rr_note_param_slug.PageView]{
 					wrapNoteParamSlugWithRootLayout,
-				},
-			},
-		},
-		framework.PageAndLiveRouteHandler[*appcore.Context, NotesParams, rr_notes.PageView, rr_notes.LiveState]{
-			Page: framework.PageModule[*appcore.Context, NotesParams, rr_notes.PageView]{
-				Pattern:     "/notes",
-				ParseParams: parseNotesParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesParams) (rr_notes.PageView, error) {
-					return resolvers.ResolveNotesPage(ctx, appCtx, r, params)
-				},
-				Render: r_page_notes.Page,
-				Layouts: []framework.LayoutRenderer[rr_notes.PageView]{
-					wrapNotesWithRootLayout,
-				},
-			},
-			Live: framework.LiveModule[*appcore.Context, NotesParams, rr_notes.PageView, rr_notes.LiveState]{
-				Pattern:     "/notes/live",
-				ParseParams: parseNotesLiveParams,
-				ParseState:  resolvers.ParseNotesLiveState,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesParams, state rr_notes.LiveState) (rr_notes.PageView, error) {
-					return resolvers.ResolveNotesLive(ctx, appCtx, r, params, state)
-				},
-				Render:            r_page_notes.Page,
-				SelectorID:        "notes-content",
-				BadRequestMessage: "invalid datastar signal payload",
-			},
-		},
-		framework.PageOnlyRouteHandler[*appcore.Context, NotesMicroTalesParams, rr_notes_micro_tales.PageView]{
-			Page: framework.PageModule[*appcore.Context, NotesMicroTalesParams, rr_notes_micro_tales.PageView]{
-				Pattern:     "/notes/micro-tales",
-				ParseParams: parseNotesMicroTalesParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesMicroTalesParams) (rr_notes_micro_tales.PageView, error) {
-					return resolvers.ResolveNotesMicroTalesPage(ctx, appCtx, r, params)
-				},
-				Render: r_page_notes_micro_tales.Page,
-				Layouts: []framework.LayoutRenderer[rr_notes_micro_tales.PageView]{
-					wrapNotesMicroTalesWithRootLayout,
-				},
-			},
-		},
-		framework.PageOnlyRouteHandler[*appcore.Context, NotesTalesParams, rr_notes_tales.PageView]{
-			Page: framework.PageModule[*appcore.Context, NotesTalesParams, rr_notes_tales.PageView]{
-				Pattern:     "/notes/tales",
-				ParseParams: parseNotesTalesParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NotesTalesParams) (rr_notes_tales.PageView, error) {
-					return resolvers.ResolveNotesTalesPage(ctx, appCtx, r, params)
-				},
-				Render: r_page_notes_tales.Page,
-				Layouts: []framework.LayoutRenderer[rr_notes_tales.PageView]{
-					wrapNotesTalesWithRootLayout,
 				},
 			},
 		},
@@ -143,7 +119,28 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				},
 			},
 		},
+		framework.PageOnlyRouteHandler[*appcore.Context, TalesParams, rr_tales.PageView]{
+			Page: framework.PageModule[*appcore.Context, TalesParams, rr_tales.PageView]{
+				Pattern:     "/tales",
+				ParseParams: parseTalesParams,
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (rr_tales.PageView, error) {
+					return resolvers.ResolveTalesPage(ctx, appCtx, r, params)
+				},
+				Render: r_page_tales.Page,
+				Layouts: []framework.LayoutRenderer[rr_tales.PageView]{
+					wrapTalesWithRootLayout,
+				},
+			},
+		},
 	}
+}
+
+func parseRootParams(requestPath string) (RootParams, bool) {
+	_, ok := router.MatchPathPattern("/", requestPath)
+	if !ok {
+		return RootParams{}, false
+	}
+	return RootParams{}, true
 }
 
 func parseAuthorParamSlugParams(requestPath string) (AuthorParamSlugParams, bool) {
@@ -182,6 +179,14 @@ func parseChannelsParams(requestPath string) (ChannelsParams, bool) {
 	return ChannelsParams{}, true
 }
 
+func parseMicroTalesParams(requestPath string) (MicroTalesParams, bool) {
+	_, ok := router.MatchPathPattern("/micro-tales", requestPath)
+	if !ok {
+		return MicroTalesParams{}, false
+	}
+	return MicroTalesParams{}, true
+}
+
 func parseNoteParamSlugParams(requestPath string) (NoteParamSlugParams, bool) {
 	params, ok := router.MatchPathPattern("/note/[slug]", requestPath)
 	if !ok {
@@ -194,38 +199,6 @@ func parseNoteParamSlugParams(requestPath string) (NoteParamSlugParams, bool) {
 	}
 	out.Slug = SlugValue
 	return out, true
-}
-
-func parseNotesParams(requestPath string) (NotesParams, bool) {
-	_, ok := router.MatchPathPattern("/notes", requestPath)
-	if !ok {
-		return NotesParams{}, false
-	}
-	return NotesParams{}, true
-}
-
-func parseNotesLiveParams(requestPath string) (NotesParams, bool) {
-	_, ok := router.MatchPathPattern("/notes/live", requestPath)
-	if !ok {
-		return NotesParams{}, false
-	}
-	return NotesParams{}, true
-}
-
-func parseNotesMicroTalesParams(requestPath string) (NotesMicroTalesParams, bool) {
-	_, ok := router.MatchPathPattern("/notes/micro-tales", requestPath)
-	if !ok {
-		return NotesMicroTalesParams{}, false
-	}
-	return NotesMicroTalesParams{}, true
-}
-
-func parseNotesTalesParams(requestPath string) (NotesTalesParams, bool) {
-	_, ok := router.MatchPathPattern("/notes/tales", requestPath)
-	if !ok {
-		return NotesTalesParams{}, false
-	}
-	return NotesTalesParams{}, true
 }
 
 func parseTagParamSlugParams(requestPath string) (TagParamSlugParams, bool) {
@@ -242,6 +215,14 @@ func parseTagParamSlugParams(requestPath string) (TagParamSlugParams, bool) {
 	return out, true
 }
 
+func parseTalesParams(requestPath string) (TalesParams, bool) {
+	_, ok := router.MatchPathPattern("/tales", requestPath)
+	if !ok {
+		return TalesParams{}, false
+	}
+	return TalesParams{}, true
+}
+
 func wrapAuthorParamSlugWithAuthorParamSlugLayout(view rr_author_param_slug.PageView, child templ.Component) templ.Component {
 	return r_layout_author_param_slug.Layout(view, child)
 }
@@ -254,22 +235,22 @@ func wrapChannelsWithRootLayout(view rr_channels.PageView, child templ.Component
 	return r_layout_root.Layout(view, child)
 }
 
+func wrapMicroTalesWithRootLayout(view rr_micro_tales.PageView, child templ.Component) templ.Component {
+	return r_layout_root.Layout(view, child)
+}
+
 func wrapNoteParamSlugWithRootLayout(view rr_note_param_slug.PageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 
-func wrapNotesMicroTalesWithRootLayout(view rr_notes_micro_tales.PageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(view, child)
-}
-
-func wrapNotesTalesWithRootLayout(view rr_notes_tales.PageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(view, child)
-}
-
-func wrapNotesWithRootLayout(view rr_notes.PageView, child templ.Component) templ.Component {
+func wrapRootWithRootLayout(view rr_root.PageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 
 func wrapTagParamSlugWithRootLayout(view rr_tag_param_slug.PageView, child templ.Component) templ.Component {
+	return r_layout_root.Layout(view, child)
+}
+
+func wrapTalesWithRootLayout(view rr_tales.PageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }

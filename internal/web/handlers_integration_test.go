@@ -251,16 +251,16 @@ func TestHandlerPageRoutesRenderHTML(t *testing.T) {
 		mustContain string
 	}{
 		{path: "/channels", mustContain: "<title>Channels :: blog</title>"},
-		{path: "/notes", mustContain: "<title>Notes :: blog</title>"},
-		{path: "/notes?author=l-you&tag=go&type=short", mustContain: "<h1>L You</h1>"},
+		{path: "/", mustContain: "<title>Notes :: blog</title>"},
+		{path: "/?author=l-you&tag=go&type=short", mustContain: "<h1>L You</h1>"},
 		{path: "/note/hello-world", mustContain: "<title>Hello World :: blog</title>"},
 		{path: "/author/l-you", mustContain: "<title>L You :: blog</title>"},
 		{path: "/author/l-you?author=zed", mustContain: "<title>L You :: blog</title>"},
 		{path: "/tag/go", mustContain: "<title>#Go :: blog</title>"},
 		{path: "/tag/go?tag=rust", mustContain: "<title>#Go :: blog</title>"},
-		{path: "/notes/tales", mustContain: "<title>Tales :: blog</title>"},
-		{path: "/notes/tales?type=short", mustContain: "<title>Tales :: blog</title>"},
-		{path: "/notes/micro-tales", mustContain: "<title>Micro-tales :: blog</title>"},
+		{path: "/tales", mustContain: "<title>Tales :: blog</title>"},
+		{path: "/tales?type=short", mustContain: "<title>Tales :: blog</title>"},
+		{path: "/micro-tales", mustContain: "<title>Micro-tales :: blog</title>"},
 	}
 
 	for _, tc := range cases {
@@ -288,7 +288,7 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	t.Parallel()
 	mux := newTestMux(t)
 
-	root := performRequest(mux, http.MethodGet, "/notes")
+	root := performRequest(mux, http.MethodGet, "/")
 	rootBody := requireBody(t, root.Body)
 	if !strings.Contains(rootBody, `href="/channels"`) {
 		t.Fatalf("root page missing channels button link")
@@ -299,16 +299,16 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	if !strings.Contains(rootBody, `href="/tag/go"`) {
 		t.Fatalf("root notes missing canonical tag link")
 	}
-	if !strings.Contains(rootBody, `href="/notes/tales"`) {
+	if !strings.Contains(rootBody, `href="/tales"`) {
 		t.Fatalf("root notes missing tales route link")
 	}
-	if !strings.Contains(rootBody, `href="/notes/micro-tales"`) {
+	if !strings.Contains(rootBody, `href="/micro-tales"`) {
 		t.Fatalf("root notes missing micro-tales route link")
 	}
-	if strings.Contains(rootBody, `href="/notes?author=`) {
+	if strings.Contains(rootBody, `href="/?author=`) {
 		t.Fatalf("root notes should not render author # All clear link when no author filter")
 	}
-	if strings.Contains(rootBody, `href="/notes?tag=`) {
+	if strings.Contains(rootBody, `href="/?tag=`) {
 		t.Fatalf("root notes should not render tag # All clear link when no tag filter")
 	}
 
@@ -317,40 +317,40 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	if !strings.Contains(filteredBody, `href="/channels?author=l-you&amp;tag=go&amp;type=short"`) {
 		t.Fatalf("filtered page missing carried channels button link")
 	}
-	if !strings.Contains(filteredBody, `href="/notes"`) {
-		t.Fatalf("filtered page missing All link to /notes")
+	if !strings.Contains(filteredBody, `href="/"`) {
+		t.Fatalf("filtered page missing All link to /")
 	}
-	if !strings.Contains(filteredBody, `href="/notes?tag=go&amp;type=short"`) {
+	if !strings.Contains(filteredBody, `href="/?tag=go&amp;type=short"`) {
 		t.Fatalf("filtered page missing ANY author clear link")
 	}
-	if !strings.Contains(filteredBody, `href="/notes?author=l-you&amp;type=short"`) {
+	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;type=short"`) {
 		t.Fatalf("filtered page missing ANY tag clear link")
 	}
-	if !strings.Contains(filteredBody, `href="/notes?author=l-you&amp;tag=go"`) {
+	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;tag=go"`) {
 		t.Fatalf("filtered page missing ANY type clear link")
 	}
-	if !strings.Contains(filteredBody, `href="/notes?author=zed&amp;tag=go&amp;type=short"`) {
+	if !strings.Contains(filteredBody, `href="/?author=zed&amp;tag=go&amp;type=short"`) {
 		t.Fatalf("filtered page missing merged author link")
 	}
-	if !strings.Contains(filteredBody, `href="/notes?author=l-you&amp;tag=rust&amp;type=short"`) {
+	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;tag=rust&amp;type=short"`) {
 		t.Fatalf("filtered page missing merged tag link")
 	}
-	if !strings.Contains(filteredBody, `href="/notes?author=l-you&amp;tag=go&amp;type=long"`) {
+	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;tag=go&amp;type=long"`) {
 		t.Fatalf("filtered page missing merged tales type link")
 	}
-	if !strings.Contains(filteredBody, `href="/notes?tag=go&amp;type=short"`) {
+	if !strings.Contains(filteredBody, `href="/?tag=go&amp;type=short"`) {
 		t.Fatalf("filtered page should render author # All clear link")
 	}
-	if !strings.Contains(filteredBody, `href="/notes?author=l-you&amp;type=short"`) {
+	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;type=short"`) {
 		t.Fatalf("filtered page should render tag # All clear link")
 	}
 
 	channelsFiltered := performRequest(mux, http.MethodGet, "/channels?author=l-you&tag=go&type=short")
 	channelsFilteredBody := requireBody(t, channelsFiltered.Body)
-	if !strings.Contains(channelsFilteredBody, `href="/notes?tag=go&amp;type=short"`) {
+	if !strings.Contains(channelsFilteredBody, `href="/?tag=go&amp;type=short"`) {
 		t.Fatalf("channels page missing author clear link")
 	}
-	if !strings.Contains(channelsFilteredBody, `href="/notes?author=zed&amp;tag=go&amp;type=short"`) {
+	if !strings.Contains(channelsFilteredBody, `href="/?author=zed&amp;tag=go&amp;type=short"`) {
 		t.Fatalf("channels page missing merged author link")
 	}
 	if !strings.Contains(channelsFilteredBody, `channels-desktop-hint`) {
@@ -369,7 +369,6 @@ func TestHandlerLiveRoutesReturnPatch(t *testing.T) {
 		path     string
 		selector string
 	}{
-		{path: "/notes/live", selector: "#notes-content"},
 		{path: "/author/l-you/live", selector: "#author-content"},
 	}
 

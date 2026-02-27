@@ -95,12 +95,12 @@ func (v NotesPageView) SidebarChannelsURL() string {
 }
 
 func (v NotesPageView) SidebarAllURL() string {
-	return "/notes"
+	return "/"
 }
 
 func (v NotesPageView) SidebarAnyAuthorURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return "/notes"
+		return "/"
 	}
 
 	return BuildNotesFilterURL(1, "", v.Filter.TagName, v.Filter.Type)
@@ -108,7 +108,7 @@ func (v NotesPageView) SidebarAnyAuthorURL() string {
 
 func (v NotesPageView) SidebarAnyTagURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return "/notes"
+		return "/"
 	}
 
 	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, "", v.Filter.Type)
@@ -116,7 +116,7 @@ func (v NotesPageView) SidebarAnyTagURL() string {
 
 func (v NotesPageView) SidebarAnyTypeURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return "/notes"
+		return "/"
 	}
 
 	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, notes.NoteTypeAll)
@@ -196,19 +196,19 @@ func (v NotePageView) SidebarChannelsURL() string {
 }
 
 func (v NotePageView) SidebarAllURL() string {
-	return "/notes"
+	return "/"
 }
 
 func (v NotePageView) SidebarAnyAuthorURL() string {
-	return "/notes"
+	return "/"
 }
 
 func (v NotePageView) SidebarAnyTagURL() string {
-	return "/notes"
+	return "/"
 }
 
 func (v NotePageView) SidebarAnyTypeURL() string {
-	return "/notes"
+	return "/"
 }
 
 func (v NotePageView) SidebarAuthorURL(authorSlug string) string {
@@ -228,7 +228,7 @@ func (v NotePageView) SidebarTypeURL(noteType notes.NoteType) string {
 		return BuildMicroTalesURL(1, "", "")
 	}
 
-	return "/notes"
+	return "/"
 }
 
 func newNotesPageView(result notes.NotesListResult, mode SidebarMode) NotesPageView {

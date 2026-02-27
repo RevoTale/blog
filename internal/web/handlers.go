@@ -46,11 +46,6 @@ func (h *Handler) Register(mux *http.ServeMux) {
 }
 
 func (h *Handler) handleRoute(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/" {
-		h.handleHome(w, r)
-		return
-	}
-
 	if r.URL.Path == "/healthz" {
 		h.handleHealth(w)
 		return
@@ -61,11 +56,6 @@ func (h *Handler) handleRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.NotFound(w, r)
-}
-
-func (h *Handler) handleHome(w http.ResponseWriter, r *http.Request) {
-	setCacheControlPublicHour(w)
-	http.Redirect(w, r, "/notes", http.StatusFound)
 }
 
 func (h *Handler) handleHealth(w http.ResponseWriter) {

@@ -5,7 +5,7 @@ import "blog/internal/web/appcore"
 templ Page(view appcore.NotePageView) {
 	<article class="panel note-detail">
 		<header class="note-detail-header">
-			<a class="back-link" href="/notes">Back to notes</a>
+			<a class="back-link" href="/">Back to notes</a>
 			if view.Note.PublishedAt != "" {
 				<p class="muted">published { view.Note.PublishedAt }</p>
 			}
