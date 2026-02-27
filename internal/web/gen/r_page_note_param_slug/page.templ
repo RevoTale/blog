@@ -4,31 +4,44 @@ import "blog/internal/web/appcore"
 
 templ Page(view appcore.NotePageView) {
 	<article class="panel note-detail">
-		<a class="muted" href="/notes">&lt;- back to notes</a>
-		<h1>{ view.Note.Title }</h1>
-		if view.Note.PublishedAt != "" {
-			<p class="muted">published: { view.Note.PublishedAt }</p>
-		}
+		<header class="note-detail-header">
+			<a class="back-link" href="/notes">Back to notes</a>
+			if view.Note.PublishedAt != "" {
+				<p class="muted">published { view.Note.PublishedAt }</p>
+			}
+		</header>
 
-		if len(view.Note.Authors) > 0 {
-			<section class="author-row">
-				for _, author := range view.Note.Authors {
-					<a href={ "/author/" + author.Slug } class="author-pill">
-						if author.Avatar != nil {
-							<img class="author-avatar" src={ author.Avatar.URL } alt={ author.Avatar.Alt } loading="lazy" width="30" height="30"/>
-						} else {
-							<span class="author-avatar fallback">&#64;</span>
-						}
-						<span>{ author.Name }</span>
-					</a>
+		<section class="note-thread-head">
+			<div class="message-avatar">
+				if appcore.HasFirstAuthorAvatar(view.Note.Authors) {
+					<img class="author-avatar large" src={ appcore.FirstAuthorAvatarURL(view.Note.Authors) } alt={ appcore.FirstAuthorAvatarAlt(view.Note.Authors) } loading="lazy" width="40" height="40"/>
+				} else {
+					<span class="author-avatar large fallback">&#64;</span>
 				}
-			</section>
-		}
+			</div>
+			<div class="message-body">
+				<h1 class="note-detail-title">{ view.Note.Title }</h1>
+				if len(view.Note.Authors) > 0 {
+					<section class="author-row">
+						for _, author := range view.Note.Authors {
+							<a href={ "/author/" + author.Slug } class="author-pill">
+								if author.Avatar != nil {
+									<img class="author-avatar" src={ author.Avatar.URL } alt={ author.Avatar.Alt } loading="lazy" width="24" height="24"/>
+								} else {
+									<span class="author-avatar fallback">&#64;</span>
+								}
+								<span>{ author.Name }</span>
+							</a>
+						}
+					</section>
+				}
+			</div>
+		</section>
 
 		if len(view.Note.Tags) > 0 {
-			<ul class="tag-list">
+			<ul class="reaction-row">
 				for _, tag := range view.Note.Tags {
-					<li><a class="tag" href={ appcore.BuildTagURL(tag.Name) }>#{ tag.Title }</a></li>
+					<li><a class="tag" href={ appcore.BuildTagURL(tag.Name) }>{ "#" + tag.Title }</a></li>
 				}
 			</ul>
 		}

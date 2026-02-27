@@ -20,26 +20,24 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 		<body>
 			<div class="app-shell">
 				<aside class="server-rail" aria-label="workspace navigation">
-					<a class="server-button server-button-home" href="/notes" aria-label="blog home">b</a>
+					<a class="server-button is-active" href="/notes" aria-label="blog home">b</a>
 					<span class="server-divider" aria-hidden="true"></span>
 					<a class="server-button" href="/notes" aria-label="notes channel">#</a>
 				</aside>
 
 				<div class="workspace">
-					<header class="topbar">
-						<div class="topbar-title">
-							<span class="channel-marker">#</span>
-							<span>All</span>
-						</div>
-						<nav class="topbar-nav" aria-label="primary">
-							<a href="/notes">all notes</a>
-						</nav>
-					</header>
+					<aside class="channel-panel" aria-label="channel list">
+						<header class="guild-header">
+							<strong>Blog</strong>
+							<span>Server</span>
+						</header>
 
-					<div class="workspace-body">
-						<aside class="channel-panel" aria-label="channel list">
+						<div class="channel-scroll">
 							<p class="channel-panel-label">channels</p>
-							<a class={ appcore.ChannelLinkClass(appcore.SidebarAllActive(view)) } href={ view.SidebarAllURL() }># All</a>
+							<a class={ appcore.ChannelLinkClass(appcore.SidebarAllActive(view)) } href={ view.SidebarAllURL() }>
+								<span class="channel-prefix">#</span>
+								<span>All</span>
+							</a>
 
 							<p class="channel-panel-label">authors</p>
 							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == "") } href={ view.SidebarAnyAuthorURL() }>ANY</a>
@@ -61,7 +59,46 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "all") } href={ view.SidebarAnyTypeURL() }>ANY</a>
 							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>Tales</a>
 							<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>Micro-tales</a>
-						</aside>
+						</div>
+
+						<footer class="channel-footer" aria-label="session status">
+							<span class="presence-dot" aria-hidden="true"></span>
+							<div class="channel-footer-meta">
+								<strong>blog</strong>
+								<span>Online</span>
+							</div>
+						</footer>
+					</aside>
+
+					<div class="workspace-main">
+						<header class="topbar" aria-label="channel header">
+							<div class="topbar-title">
+								if view.SidebarCurrentAuthorSlug() != "" {
+									<span class="channel-marker">&#64;</span>
+									<span>{ view.SidebarCurrentAuthorSlug() }</span>
+								} else if view.SidebarCurrentTagName() != "" {
+									<span class="channel-marker">#</span>
+									<span>{ view.SidebarCurrentTagName() }</span>
+								} else if view.SidebarCurrentType() == "long" {
+									<span class="channel-marker">#</span>
+									<span>Tales</span>
+								} else if view.SidebarCurrentType() == "short" {
+									<span class="channel-marker">#</span>
+									<span>Micro-tales</span>
+								} else {
+									<span class="channel-marker">#</span>
+									<span>All</span>
+								}
+							</div>
+							<nav class="topbar-nav" aria-label="utility">
+								<span class="topbar-icon" aria-hidden="true"></span>
+								<span class="topbar-icon" aria-hidden="true"></span>
+								<span class="topbar-icon" aria-hidden="true"></span>
+								<div class="topbar-search" role="search">
+									<span>Search notes</span>
+								</div>
+							</nav>
+						</header>
 
 						<main class="container">
 							@child

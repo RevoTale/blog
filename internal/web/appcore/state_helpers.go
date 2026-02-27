@@ -72,6 +72,64 @@ func AuthorChannelLabel(author notes.Author) string {
 	return "@" + label
 }
 
+func FirstAuthor(authors []notes.Author) *notes.Author {
+	if len(authors) == 0 {
+		return nil
+	}
+
+	author := authors[0]
+	return &author
+}
+
+func FirstAuthorName(authors []notes.Author) string {
+	author := FirstAuthor(authors)
+	if author == nil {
+		return ""
+	}
+
+	return strings.TrimSpace(author.Name)
+}
+
+func FirstAuthorSlug(authors []notes.Author) string {
+	author := FirstAuthor(authors)
+	if author == nil {
+		return ""
+	}
+
+	return strings.TrimSpace(author.Slug)
+}
+
+func FirstAuthorAvatar(authors []notes.Author) *notes.AuthorMedia {
+	author := FirstAuthor(authors)
+	if author == nil {
+		return nil
+	}
+
+	return author.Avatar
+}
+
+func HasFirstAuthorAvatar(authors []notes.Author) bool {
+	return FirstAuthorAvatar(authors) != nil
+}
+
+func FirstAuthorAvatarURL(authors []notes.Author) string {
+	avatar := FirstAuthorAvatar(authors)
+	if avatar == nil {
+		return ""
+	}
+
+	return strings.TrimSpace(avatar.URL)
+}
+
+func FirstAuthorAvatarAlt(authors []notes.Author) string {
+	avatar := FirstAuthorAvatar(authors)
+	if avatar == nil {
+		return ""
+	}
+
+	return strings.TrimSpace(avatar.Alt)
+}
+
 func TagChannelLabel(tag notes.Tag) string {
 	label := strings.TrimSpace(tag.Title)
 	if label == "" {

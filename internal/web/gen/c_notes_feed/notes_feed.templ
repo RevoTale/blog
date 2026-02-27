@@ -6,7 +6,7 @@ import (
 )
 
 templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
-	<section class="panel">
+	<section class="context-panel">
 		<h1>{ view.ContextTitle }</h1>
 		if view.ContextSubtitle != "" {
 			<p class="muted">{ view.ContextSubtitle }</p>
@@ -16,31 +16,35 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 		}
 	</section>
 
-	<section>
+	<section class="message-list" aria-label="notes feed">
 		if len(view.Notes) > 0 {
 			for _, note := range view.Notes {
 				@c_note_card.NoteCard(note)
 			}
 		} else {
-			<article class="panel">
+			<article class="panel empty-state">
 				<p>{ emptyMessage }</p>
 			</article>
 		}
 	</section>
 
-	<section class="panel pager">
-		<p>{ appcore.PagerStatusText(view.Pagination) }</p>
+	<section class="feed-toolbar">
+		<p class="muted">{ appcore.PagerStatusText(view.Pagination) }</p>
 		<div class="pager-controls">
 			if view.Pagination.HasPrev {
-				<a class="pager-link" href={ view.Pagination.PrevURL }>[prev]</a>
+				<a class="pager-link" href={ view.Pagination.PrevURL }>prev</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">[prev]</span>
+				<span class="pager-link" aria-disabled="true">prev</span>
 			}
 			if view.Pagination.HasNext {
-				<a class="pager-link" href={ view.Pagination.NextURL }>[next]</a>
+				<a class="pager-link" href={ view.Pagination.NextURL }>next</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">[next]</span>
+				<span class="pager-link" aria-disabled="true">next</span>
 			}
 		</div>
+	</section>
+
+	<section class="composer" aria-disabled="true">
+		<p>You do not have permission to send messages in this channel.</p>
 	</section>
 }
