@@ -3,7 +3,7 @@ package r_page_channels
 
 import (
 	"blog/internal/web/appcore"
-	c_channel_list "blog/internal/web/gen/c_channel_list"
+	"blog/internal/web/components"
 )
 
 templ Page(view appcore.NotesPageView) {
@@ -16,7 +16,7 @@ templ Page(view appcore.NotesPageView) {
 
 		<section class="channel-panel-standalone channels-mobile-panel">
 			<div class="channel-scroll">
-				@c_channel_list.ChannelList(view)
+				@components.ChannelList(view)
 			</div>
 		</section>
 	</section>

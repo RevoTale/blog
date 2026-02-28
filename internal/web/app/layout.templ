@@ -3,7 +3,7 @@ package appsrc
 import (
 	"blog/internal/techstack"
 	"blog/internal/web/appcore"
-	c_channel_list "blog/internal/web/gen/c_channel_list"
+	"blog/internal/web/components"
 )
 
 templ Layout(view appcore.RootLayoutView, child templ.Component) {
@@ -40,7 +40,7 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 						</header>
 
 						<div class="channel-scroll">
-							@c_channel_list.ChannelList(view)
+							@components.ChannelList(view)
 						</div>
 					</aside>
 

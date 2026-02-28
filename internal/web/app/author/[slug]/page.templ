@@ -2,11 +2,11 @@ package appsrc
 
 import (
 	"blog/internal/web/appcore"
-	c_notes_feed "blog/internal/web/gen/c_notes_feed"
+	"blog/internal/web/components"
 )
 
 templ Page(view appcore.AuthorPageView) {
 	<div id="author-content" data-signals={ appcore.AuthorSignalsJSON(view) }>
-		@c_notes_feed.NotesFeed(view, "this author has no published notes yet.")
+		@components.NotesFeed(view, "this author has no published notes yet.")
 	</div>
 }

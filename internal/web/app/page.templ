@@ -2,11 +2,11 @@ package appsrc
 
 import (
 	"blog/internal/web/appcore"
-	c_notes_feed "blog/internal/web/gen/c_notes_feed"
+	"blog/internal/web/components"
 )
 
 templ Page(view appcore.NotesPageView) {
 	<div id="notes-content" data-signals={ appcore.NotesSignalsJSON(view) }>
-		@c_notes_feed.NotesFeed(view, "no notes found for this filter.")
+		@components.NotesFeed(view, "no notes found for this filter.")
 	</div>
 }

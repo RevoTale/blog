@@ -1,8 +1,7 @@
-package appsrc
+package components
 
 import (
 	"blog/internal/web/appcore"
-	c_note_card "blog/internal/web/gen/c_note_card"
 )
 
 templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
@@ -19,7 +18,7 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 	<section class="message-list" aria-label="notes feed">
 		if len(view.Notes) > 0 {
 			for _, note := range view.Notes {
-				@c_note_card.NoteCard(note)
+				@NoteCard(note)
 			}
 		} else {
 			<article class="panel empty-state">

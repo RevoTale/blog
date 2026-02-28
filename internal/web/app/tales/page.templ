@@ -2,9 +2,9 @@ package appsrc
 
 import (
 	"blog/internal/web/appcore"
-	c_notes_feed "blog/internal/web/gen/c_notes_feed"
+	"blog/internal/web/components"
 )
 
 templ Page(view appcore.NotesPageView) {
-	@c_notes_feed.NotesFeed(view, "no tales found for this filter.")
+	@components.NotesFeed(view, "no tales found for this filter.")
 }

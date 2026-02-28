@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"blog/internal/web/appcore"
-	c_notes_feed "blog/internal/web/gen/c_notes_feed"
+	"blog/internal/web/components"
 )
 
 func Page(view appcore.NotesPageView) templ.Component {
@@ -52,7 +52,7 @@ func Page(view appcore.NotesPageView) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = c_notes_feed.NotesFeed(view, "no notes found for this filter.").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.NotesFeed(view, "no notes found for this filter.").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -16,7 +16,6 @@ func TestDiscoverRouteFilesStaticAndDynamic(t *testing.T) {
 	writeTestFile(t, filepath.Join(appRoot, "layout.templ"), "package appsrc\n")
 	writeTestFile(t, filepath.Join(appRoot, "notes", "page.templ"), "package appsrc\n")
 	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), "package appsrc\n")
-	writeTestFile(t, filepath.Join(appRoot, "components", "note_card.templ"), "package appsrc\n")
 
 	routes, err := discoverRouteFiles(appRoot, genRoot)
 	if err != nil {
@@ -46,7 +45,23 @@ func TestDiscoverRouteFilesRejectsRouteLocalComponents(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected route-local components error")
 	}
-	if !strings.Contains(err.Error(), "app/components") {
+	if !strings.Contains(err.Error(), "internal/web/components") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestDiscoverRouteFilesRejectsRootComponentsDir(t *testing.T) {
+	root := t.TempDir()
+	appRoot := filepath.Join(root, "app")
+	genRoot := filepath.Join(root, "gen")
+
+	writeTestFile(t, filepath.Join(appRoot, "components", "note_card.templ"), "package appsrc\n")
+
+	_, err := discoverRouteFiles(appRoot, genRoot)
+	if err == nil {
+		t.Fatal("expected root components error")
+	}
+	if !strings.Contains(err.Error(), "internal/web/components") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

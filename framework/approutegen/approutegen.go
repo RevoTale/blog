@@ -80,14 +80,6 @@ type templateDef struct {
 	OutputFile string
 }
 
-type componentDef struct {
-	SourcePath string
-	ModuleName string
-	Package    string
-	OutputDir  string
-	OutputFile string
-}
-
 type resolverTypeDecl struct {
 	PackageName  string
 	HasLiveState bool
@@ -134,11 +126,6 @@ func Run() error {
 		return errors.New("no page.templ files found in internal/web/app")
 	}
 
-	components, err := discoverSharedComponents(paths.AppRoot, paths.GenRoot)
-	if err != nil {
-		return err
-	}
-
 	metas, err := buildRouteMetas(routes.Pages, paths)
 	if err != nil {
 		return err
@@ -152,17 +139,6 @@ func Run() error {
 	}
 
 	for _, tpl := range routes.Templates {
-		if err := writeTemplCopy(tpl); err != nil {
-			return err
-		}
-	}
-	for _, component := range components {
-		tpl := templateDef{
-			SourcePath: component.SourcePath,
-			Package:    component.Package,
-			OutputDir:  component.OutputDir,
-			OutputFile: component.OutputFile,
-		}
 		if err := writeTemplCopy(tpl); err != nil {
 			return err
 		}
@@ -269,12 +245,8 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 			return nil
 		}
 
-		if strings.HasPrefix(relPath, "components/") {
-			return nil
-		}
-
-		if strings.Contains(relPath, "/components/") {
-			return fmt.Errorf("component templates must be under app/components only: %q", relPath)
+		if strings.HasPrefix(relPath, "components/") || strings.Contains(relPath, "/components/") {
+			return fmt.Errorf("component templates must be under internal/web/components: %q", relPath)
 		}
 
 		base := path.Base(relPath)
@@ -337,63 +309,6 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 	})
 
 	return routeFiles{Templates: templates, Pages: pages, Layouts: layouts}, nil
-}
-
-func discoverSharedComponents(appRoot string, outputRoot string) ([]componentDef, error) {
-	componentsRoot := filepath.Join(appRoot, "components")
-	if !pathExists(componentsRoot) {
-		return []componentDef{}, nil
-	}
-
-	components := make([]componentDef, 0, 4)
-	seenModules := make(map[string]string)
-
-	walkErr := filepath.WalkDir(componentsRoot, func(filePath string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if entry.IsDir() {
-			if filePath == componentsRoot {
-				return nil
-			}
-			return fmt.Errorf("nested component directories are not allowed: %q", filepath.ToSlash(filePath))
-		}
-
-		if filepath.Ext(filePath) != ".templ" {
-			return nil
-		}
-
-		base := path.Base(filepath.ToSlash(filePath))
-		componentName := strings.TrimSuffix(base, ".templ")
-		if strings.TrimSpace(componentName) == "" {
-			return fmt.Errorf("invalid component filename %q", base)
-		}
-
-		moduleName := "c_" + safeIdentifier(componentName)
-		if existing, ok := seenModules[moduleName]; ok {
-			return fmt.Errorf("component module name conflict %q between %q and %q", moduleName, existing, filePath)
-		}
-		seenModules[moduleName] = filePath
-
-		components = append(components, componentDef{
-			SourcePath: filepath.ToSlash(filePath),
-			ModuleName: moduleName,
-			Package:    moduleName,
-			OutputDir:  filepath.ToSlash(filepath.Join(outputRoot, moduleName)),
-			OutputFile: base,
-		})
-
-		return nil
-	})
-	if walkErr != nil {
-		return nil, fmt.Errorf("walk shared components: %w", walkErr)
-	}
-
-	sort.Slice(components, func(i int, j int) bool {
-		return components[i].SourcePath < components[j].SourcePath
-	})
-
-	return components, nil
 }
 
 func parseRouteSegments(routeDir string) ([]routeSegment, error) {

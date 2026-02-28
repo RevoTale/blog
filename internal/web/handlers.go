@@ -10,8 +10,8 @@ import (
 	"blog/internal/config"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
+	"blog/internal/web/components"
 	webgen "blog/internal/web/gen"
-	c_not_found "blog/internal/web/gen/c_not_found"
 	r_layout_root "blog/internal/web/gen/r_layout_root"
 	"github.com/a-h/templ"
 	"github.com/starfederation/datastar-go/datastar"
@@ -86,7 +86,7 @@ func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
 			Type: notes.NoteTypeAll,
 		},
 	}
-	component := r_layout_root.Layout(view, c_not_found.NotFound(path))
+	component := r_layout_root.Layout(view, components.NotFound(path))
 	if err := renderComponentWithStatus(r, w, component, http.StatusNotFound); err != nil {
 		h.serverError(w, fmt.Errorf("render not found page: %w", err))
 	}
