@@ -1,88 +1,9 @@
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-light.woff2") format("woff2");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-light-italic.woff2") format("woff2");
-  font-weight: 300;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-book.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-book-italic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-medium-italic.woff2") format("woff2");
-  font-weight: 500;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-semibold.woff2") format("woff2");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-semibold-italic.woff2") format("woff2");
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Whitney";
-  src: url("/.revotale/fonts/whitney-bold-italic.woff2") format("woff2");
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
-}
-
 :root {
   color-scheme: dark;
-  --font-primary: "Whitney", "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-display: "Whitney", "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-headline: "Whitney", "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-primary: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  --font-display: var(--font-primary);
+  --font-headline: var(--font-primary);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bg-app: #1e1f22;
   --bg-rail: #111214;
   --bg-sidebar: #2b2d31;
@@ -537,7 +458,7 @@ p + p {
 }
 
 .not-found-path {
-  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+  font-family: var(--font-mono);
   background: rgba(17, 19, 23, 0.8);
   border: 1px solid var(--divider);
   border-radius: 5px;
@@ -1070,7 +991,7 @@ p + p {
 }
 
 .markdown-body pre {
-  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+  font-family: var(--font-mono);
   background: #1b1c20;
   border: 1px solid var(--divider);
   border-radius: var(--radius-md);
@@ -1081,7 +1002,7 @@ p + p {
 }
 
 .markdown-body .inline-code {
-  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.92em;
   padding: 0.08rem 0.3rem;
   border-radius: 4px;
