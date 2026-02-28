@@ -12,7 +12,6 @@ var packages = []Package{
 	{Name: "github.com/a-h/templ", URL: "https://pkg.go.dev/github.com/a-h/templ"},
 	{Name: "github.com/alecthomas/chroma/v2", URL: "https://pkg.go.dev/github.com/alecthomas/chroma/v2"},
 	{Name: "github.com/gomarkdown/markdown", URL: "https://pkg.go.dev/github.com/gomarkdown/markdown"},
-	{Name: "github.com/starfederation/datastar-go", URL: "https://pkg.go.dev/github.com/starfederation/datastar-go"},
 	{Name: "golang.org/x/mod", URL: "https://pkg.go.dev/golang.org/x/mod"},
 }
 

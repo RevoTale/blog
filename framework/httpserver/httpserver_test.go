@@ -28,7 +28,20 @@ func textComponent(value string) templ.Component {
 	})
 }
 
-func TestHTTPServerCachePoliciesAndLive(t *testing.T) {
+func wrapComponent(tag string, child templ.Component) templ.Component {
+	return componentFunc(func(ctx context.Context, w io.Writer) error {
+		if _, err := io.WriteString(w, "["+tag+"]"); err != nil {
+			return err
+		}
+		if err := child.Render(ctx, w); err != nil {
+			return err
+		}
+		_, err := io.WriteString(w, "[/"+tag+"]")
+		return err
+	})
+}
+
+func TestHTTPServerCachePoliciesAndHTMX(t *testing.T) {
 	t.Parallel()
 
 	staticDir := t.TempDir()
@@ -39,7 +52,7 @@ func TestHTTPServerCachePoliciesAndLive(t *testing.T) {
 	handler, err := New(Config[*struct{}]{
 		AppContext: &struct{}{},
 		Handlers: []framework.RouteHandler[*struct{}]{
-			framework.PageAndLiveRouteHandler[*struct{}, framework.EmptyParams, string, string]{
+			framework.PageOnlyRouteHandler[*struct{}, framework.EmptyParams, string]{
 				Page: framework.PageModule[*struct{}, framework.EmptyParams, string]{
 					Pattern: "/notes",
 					ParseParams: func(path string) (framework.EmptyParams, bool) {
@@ -49,19 +62,11 @@ func TestHTTPServerCachePoliciesAndLive(t *testing.T) {
 						return "page", nil
 					},
 					Render: func(view string) templ.Component { return textComponent(view) },
-				},
-				Live: framework.LiveModule[*struct{}, framework.EmptyParams, string, string]{
-					Pattern: "/notes/live",
-					ParseParams: func(path string) (framework.EmptyParams, bool) {
-						return framework.EmptyParams{}, path == "/notes/live"
+					Layouts: []framework.LayoutRenderer[string]{
+						func(_ string, child templ.Component) templ.Component {
+							return wrapComponent("layout", child)
+						},
 					},
-					ParseState: func(*http.Request) (string, error) { return "state", nil },
-					Load: func(context.Context, *struct{}, *http.Request, framework.EmptyParams, string) (string, error) {
-						return "live", nil
-					},
-					Render:            func(view string) templ.Component { return textComponent(view) },
-					SelectorID:        "notes-content",
-					BadRequestMessage: "bad payload",
 				},
 			},
 		},
@@ -93,32 +98,36 @@ func TestHTTPServerCachePoliciesAndLive(t *testing.T) {
 	if got := recPage.Header().Get("Cache-Control"); got != "html-cache" {
 		t.Fatalf("page cache policy: expected %q, got %q", "html-cache", got)
 	}
-	if body := strings.TrimSpace(recPage.Body.String()); body != "page" {
-		t.Fatalf("page body: expected %q, got %q", "page", body)
+	if got := recPage.Header().Get("Vary"); !strings.Contains(got, "HX-Request") {
+		t.Fatalf("page vary header: expected HX-Request, got %q", got)
+	}
+	if body := strings.TrimSpace(recPage.Body.String()); body != "[layout]page[/layout]" {
+		t.Fatalf("page body: expected layout-wrapped response, got %q", body)
 	}
 
-	recLive := httptest.NewRecorder()
-	handler.ServeHTTP(recLive, httptest.NewRequest(http.MethodGet, "/notes/live", nil))
-	if recLive.Code != http.StatusOK {
-		t.Fatalf("live status: expected %d, got %d", http.StatusOK, recLive.Code)
+	reqHTMX := httptest.NewRequest(http.MethodGet, "/notes", nil)
+	reqHTMX.Header.Set("HX-Request", "true")
+	recHTMX := httptest.NewRecorder()
+	handler.ServeHTTP(recHTMX, reqHTMX)
+	if recHTMX.Code != http.StatusOK {
+		t.Fatalf("htmx status: expected %d, got %d", http.StatusOK, recHTMX.Code)
 	}
-	if got := recLive.Header().Get("Cache-Control"); got != "live-cache" {
-		t.Fatalf("live cache policy: expected %q, got %q", "live-cache", got)
+	if got := recHTMX.Header().Get("Cache-Control"); got != "live-cache" {
+		t.Fatalf("htmx cache policy: expected %q, got %q", "live-cache", got)
 	}
-	if !strings.Contains(recLive.Body.String(), "event: datastar-patch-elements") {
-		t.Fatalf("live body missing datastar patch event")
+	if body := strings.TrimSpace(recHTMX.Body.String()); body != "page" {
+		t.Fatalf("htmx body: expected partial response, got %q", body)
 	}
 
-	recLiveNav := httptest.NewRecorder()
-	handler.ServeHTTP(
-		recLiveNav,
-		httptest.NewRequest(http.MethodGet, "/notes/live?__live=navigation", nil),
-	)
-	if recLiveNav.Code != http.StatusOK {
-		t.Fatalf("live nav status: expected %d, got %d", http.StatusOK, recLiveNav.Code)
+	reqHTMXNav := httptest.NewRequest(http.MethodGet, "/notes?__live=navigation", nil)
+	reqHTMXNav.Header.Set("HX-Request", "true")
+	recHTMXNav := httptest.NewRecorder()
+	handler.ServeHTTP(recHTMXNav, reqHTMXNav)
+	if recHTMXNav.Code != http.StatusOK {
+		t.Fatalf("htmx nav status: expected %d, got %d", http.StatusOK, recHTMXNav.Code)
 	}
-	if got := recLiveNav.Header().Get("Cache-Control"); got != "live-nav-cache" {
-		t.Fatalf("live nav cache policy: expected %q, got %q", "live-nav-cache", got)
+	if got := recHTMXNav.Header().Get("Cache-Control"); got != "live-nav-cache" {
+		t.Fatalf("htmx nav cache policy: expected %q, got %q", "live-nav-cache", got)
 	}
 
 	recStatic := httptest.NewRecorder()

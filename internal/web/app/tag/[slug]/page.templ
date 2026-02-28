@@ -6,7 +6,7 @@ import (
 )
 
 templ Page(view appcore.NotesPageView) {
-	<div id="notes-content" data-signals={ appcore.NotesSignalsJSON(view) }>
+	<div id="notes-content" hx-history-elt>
 		@components.NotesFeed(view, "no notes found for this tag.")
 	</div>
 }

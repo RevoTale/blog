@@ -6,7 +6,7 @@ import (
 )
 
 templ Page(view appcore.AuthorPageView) {
-	<div id="notes-content" data-signals={ appcore.AuthorSignalsJSON(view) }>
+	<div id="notes-content" hx-history-elt>
 		@components.NotesFeed(view, "this author has no published notes yet.")
 	</div>
 }

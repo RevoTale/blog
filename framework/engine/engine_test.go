@@ -41,84 +41,13 @@ func wrapComponent(tag string, child templ.Component) templ.Component {
 	})
 }
 
-func TestServeRouteLiveFirst(t *testing.T) {
+func TestServeRoutePageOnly(t *testing.T) {
 	var rendered string
-	var patched string
-
-	handlers := []framework.RouteHandler[*testAppContext]{
-		framework.PageAndLiveRouteHandler[*testAppContext, framework.EmptyParams, string, string]{
-			Page: framework.PageModule[*testAppContext, framework.EmptyParams, string]{
-				Pattern: "/notes",
-				ParseParams: func(path string) (framework.EmptyParams, bool) {
-					return framework.EmptyParams{}, path == "/notes"
-				},
-				Load: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (string, error) {
-					return "page", nil
-				},
-				Render: func(view string) templ.Component { return textComponent(view) },
-			},
-			Live: framework.LiveModule[*testAppContext, framework.EmptyParams, string, string]{
-				Pattern: "/notes/live",
-				ParseParams: func(path string) (framework.EmptyParams, bool) {
-					return framework.EmptyParams{}, path == "/notes/live"
-				},
-				ParseState: func(*http.Request) (string, error) { return "live", nil },
-				Load: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams, string) (string, error) {
-					return "live", nil
-				},
-				Render:            func(view string) templ.Component { return textComponent(view) },
-				SelectorID:        "notes-content",
-				BadRequestMessage: "bad payload",
-			},
-		},
-	}
-
-	routeEngine, err := New(Config[*testAppContext]{
-		AppContext: &testAppContext{},
-		Handlers:   handlers,
-		RenderPage: func(_ *http.Request, _ http.ResponseWriter, component templ.Component) error {
-			var b bytes.Buffer
-			if err := component.Render(context.Background(), &b); err != nil {
-				return err
-			}
-			rendered = b.String()
-			return nil
-		},
-		PatchLive: func(_ http.ResponseWriter, _ *http.Request, _ string, component templ.Component) error {
-			var b bytes.Buffer
-			if err := component.Render(context.Background(), &b); err != nil {
-				return err
-			}
-			patched = b.String()
-			return nil
-		},
-	})
-	if err != nil {
-		t.Fatalf("new engine: %v", err)
-	}
-
-	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes/live", nil)) {
-		t.Fatal("expected live route to match")
-	}
-	if patched != "live" {
-		t.Fatalf("expected live content, got %q", patched)
-	}
-
-	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
-		t.Fatal("expected page route to match")
-	}
-	if rendered != "page" {
-		t.Fatalf("expected page content, got %q", rendered)
-	}
-}
-
-func TestLiveStateParseError(t *testing.T) {
-	var badRequestMessage string
 
 	routeEngine, err := New(Config[*testAppContext]{
 		AppContext: &testAppContext{},
 		Handlers: []framework.RouteHandler[*testAppContext]{
-			framework.PageAndLiveRouteHandler[*testAppContext, framework.EmptyParams, string, string]{
+			framework.PageOnlyRouteHandler[*testAppContext, framework.EmptyParams, string]{
 				Page: framework.PageModule[*testAppContext, framework.EmptyParams, string]{
 					Pattern: "/notes",
 					ParseParams: func(path string) (framework.EmptyParams, bool) {
@@ -129,38 +58,76 @@ func TestLiveStateParseError(t *testing.T) {
 					},
 					Render: func(view string) templ.Component { return textComponent(view) },
 				},
-				Live: framework.LiveModule[*testAppContext, framework.EmptyParams, string, string]{
-					Pattern: "/notes/live",
-					ParseParams: func(path string) (framework.EmptyParams, bool) {
-						return framework.EmptyParams{}, path == "/notes/live"
-					},
-					ParseState: func(*http.Request) (string, error) {
-						return "", errors.New("invalid")
-					},
-					Load: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams, string) (string, error) {
-						return "", nil
-					},
-					Render:            func(view string) templ.Component { return textComponent(view) },
-					SelectorID:        "notes-content",
-					BadRequestMessage: "invalid datastar signal payload",
-				},
 			},
 		},
-		RenderPage: func(*http.Request, http.ResponseWriter, templ.Component) error { return nil },
-		PatchLive:  func(http.ResponseWriter, *http.Request, string, templ.Component) error { return nil },
-		HandleBadRequest: func(_ http.ResponseWriter, message string) {
-			badRequestMessage = message
+		RenderPage: func(_ *http.Request, _ http.ResponseWriter, component templ.Component) error {
+			var b bytes.Buffer
+			if err := component.Render(context.Background(), &b); err != nil {
+				return err
+			}
+			rendered = b.String()
+			return nil
 		},
 	})
 	if err != nil {
 		t.Fatalf("new engine: %v", err)
 	}
 
-	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes/live", nil)) {
-		t.Fatal("expected live route to match")
+	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
+		t.Fatal("expected route to match")
 	}
-	if badRequestMessage != "invalid datastar signal payload" {
-		t.Fatalf("expected bad request message to be propagated, got %q", badRequestMessage)
+	if rendered != "page" {
+		t.Fatalf("expected page content, got %q", rendered)
+	}
+
+	if routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/missing", nil)) {
+		t.Fatal("did not expect missing route to match")
+	}
+}
+
+func TestServeRouteSkipsLayoutsForPartialRequests(t *testing.T) {
+	var rendered string
+
+	routeEngine, err := New(Config[*testAppContext]{
+		AppContext: &testAppContext{},
+		Handlers: []framework.RouteHandler[*testAppContext]{
+			framework.PageOnlyRouteHandler[*testAppContext, framework.EmptyParams, string]{
+				Page: framework.PageModule[*testAppContext, framework.EmptyParams, string]{
+					Pattern: "/notes",
+					ParseParams: func(path string) (framework.EmptyParams, bool) {
+						return framework.EmptyParams{}, path == "/notes"
+					},
+					Load: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (string, error) {
+						return "body", nil
+					},
+					Render: func(view string) templ.Component { return textComponent(view) },
+					Layouts: []framework.LayoutRenderer[string]{
+						func(_ string, child templ.Component) templ.Component {
+							return wrapComponent("layout", child)
+						},
+					},
+				},
+			},
+		},
+		IsPartialRequest: func(_ *http.Request) bool { return true },
+		RenderPage: func(_ *http.Request, _ http.ResponseWriter, component templ.Component) error {
+			var b bytes.Buffer
+			if err := component.Render(context.Background(), &b); err != nil {
+				return err
+			}
+			rendered = b.String()
+			return nil
+		},
+	})
+	if err != nil {
+		t.Fatalf("new engine: %v", err)
+	}
+
+	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
+		t.Fatal("expected route to match")
+	}
+	if rendered != "body" {
+		t.Fatalf("expected partial body without layout, got %q", rendered)
 	}
 }
 
@@ -190,7 +157,6 @@ func TestNotFoundAndServerErrorClassification(t *testing.T) {
 				},
 			},
 			RenderPage:      func(*http.Request, http.ResponseWriter, templ.Component) error { return nil },
-			PatchLive:       func(http.ResponseWriter, *http.Request, string, templ.Component) error { return nil },
 			IsNotFoundError: func(err error) bool { return errors.Is(err, errNotFound) },
 			HandleNotFound: func(_ http.ResponseWriter, _ *http.Request, ctx framework.NotFoundContext) {
 				notFoundCalled = true
@@ -245,7 +211,6 @@ func TestNotFoundAndServerErrorClassification(t *testing.T) {
 				},
 			},
 			RenderPage:      func(*http.Request, http.ResponseWriter, templ.Component) error { return nil },
-			PatchLive:       func(http.ResponseWriter, *http.Request, string, templ.Component) error { return nil },
 			IsNotFoundError: func(error) bool { return false },
 			HandleNotFound: func(http.ResponseWriter, *http.Request, framework.NotFoundContext) {
 				notFoundCalled = true
@@ -305,7 +270,6 @@ func TestLayoutOrder(t *testing.T) {
 			rendered = b.String()
 			return nil
 		},
-		PatchLive: func(http.ResponseWriter, *http.Request, string, templ.Component) error { return nil },
 	})
 	if err != nil {
 		t.Fatalf("new engine: %v", err)

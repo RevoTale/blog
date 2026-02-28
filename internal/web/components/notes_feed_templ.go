@@ -182,27 +182,27 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\" data-live-nav-url=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildLiveNavigationURL(view.Pagination.FirstURL))
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildHTMXNavigationURL(view.Pagination.FirstURL))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 42, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 42, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" data-on-click__prevent=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" hx-target=\"#notes-content\" hx-select=\"#notes-content\" hx-swap=\"outerHTML\" hx-push-url=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildPagerLiveAction(view.Pagination.FirstURL, view.Pagination.FirstPage))
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(view.Pagination.FirstURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 43, Col: 111}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 46, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -226,33 +226,33 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 			var templ_7745c5c3_Var12 templ.SafeURL
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinURLErrs(view.Pagination.PrevURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 51, Col: 35}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 54, Col: 35}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" data-live-nav-url=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
-			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildLiveNavigationURL(view.Pagination.PrevURL))
+			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildHTMXNavigationURL(view.Pagination.PrevURL))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 52, Col: 80}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 55, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" data-on-click__prevent=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" hx-target=\"#notes-content\" hx-select=\"#notes-content\" hx-swap=\"outerHTML\" hx-push-url=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildPagerLiveAction(view.Pagination.PrevURL, view.Pagination.PrevPage))
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(view.Pagination.PrevURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 53, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 59, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -276,33 +276,33 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 			var templ_7745c5c3_Var15 templ.SafeURL
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinURLErrs(view.Pagination.NextURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 61, Col: 35}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 67, Col: 35}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" data-live-nav-url=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var16 string
-			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildLiveNavigationURL(view.Pagination.NextURL))
+			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildHTMXNavigationURL(view.Pagination.NextURL))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 62, Col: 80}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 68, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\" data-on-click__prevent=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\" hx-target=\"#notes-content\" hx-select=\"#notes-content\" hx-swap=\"outerHTML\" hx-push-url=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildPagerLiveAction(view.Pagination.NextURL, view.Pagination.NextPage))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(view.Pagination.NextURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 63, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 72, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -326,33 +326,33 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 			var templ_7745c5c3_Var18 templ.SafeURL
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinURLErrs(view.Pagination.LastURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 71, Col: 35}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 80, Col: 35}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\" data-live-nav-url=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var19 string
-			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildLiveNavigationURL(view.Pagination.LastURL))
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildHTMXNavigationURL(view.Pagination.LastURL))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 72, Col: 80}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 81, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" data-on-click__prevent=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" hx-target=\"#notes-content\" hx-select=\"#notes-content\" hx-swap=\"outerHTML\" hx-push-url=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var20 string
-			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildPagerLiveAction(view.Pagination.LastURL, view.Pagination.LastPage))
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(view.Pagination.LastURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 73, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 85, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {

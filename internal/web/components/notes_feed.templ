@@ -39,8 +39,11 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 				<a
 					class="pager-link"
 					href={ view.Pagination.FirstURL }
-					data-live-nav-url={ appcore.BuildLiveNavigationURL(view.Pagination.FirstURL) }
-					data-on-click__prevent={ appcore.BuildPagerLiveAction(view.Pagination.FirstURL, view.Pagination.FirstPage) }
+					hx-get={ appcore.BuildHTMXNavigationURL(view.Pagination.FirstURL) }
+					hx-target="#notes-content"
+					hx-select="#notes-content"
+					hx-swap="outerHTML"
+					hx-push-url={ view.Pagination.FirstURL }
 				>first</a>
 			} else {
 				<span class="pager-link" aria-disabled="true">first</span>
@@ -49,8 +52,11 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 				<a
 					class="pager-link"
 					href={ view.Pagination.PrevURL }
-					data-live-nav-url={ appcore.BuildLiveNavigationURL(view.Pagination.PrevURL) }
-					data-on-click__prevent={ appcore.BuildPagerLiveAction(view.Pagination.PrevURL, view.Pagination.PrevPage) }
+					hx-get={ appcore.BuildHTMXNavigationURL(view.Pagination.PrevURL) }
+					hx-target="#notes-content"
+					hx-select="#notes-content"
+					hx-swap="outerHTML"
+					hx-push-url={ view.Pagination.PrevURL }
 				>prev</a>
 			} else {
 				<span class="pager-link" aria-disabled="true">prev</span>
@@ -59,8 +65,11 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 				<a
 					class="pager-link"
 					href={ view.Pagination.NextURL }
-					data-live-nav-url={ appcore.BuildLiveNavigationURL(view.Pagination.NextURL) }
-					data-on-click__prevent={ appcore.BuildPagerLiveAction(view.Pagination.NextURL, view.Pagination.NextPage) }
+					hx-get={ appcore.BuildHTMXNavigationURL(view.Pagination.NextURL) }
+					hx-target="#notes-content"
+					hx-select="#notes-content"
+					hx-swap="outerHTML"
+					hx-push-url={ view.Pagination.NextURL }
 				>next</a>
 			} else {
 				<span class="pager-link" aria-disabled="true">next</span>
@@ -69,8 +78,11 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 				<a
 					class="pager-link"
 					href={ view.Pagination.LastURL }
-					data-live-nav-url={ appcore.BuildLiveNavigationURL(view.Pagination.LastURL) }
-					data-on-click__prevent={ appcore.BuildPagerLiveAction(view.Pagination.LastURL, view.Pagination.LastPage) }
+					hx-get={ appcore.BuildHTMXNavigationURL(view.Pagination.LastURL) }
+					hx-target="#notes-content"
+					hx-select="#notes-content"
+					hx-swap="outerHTML"
+					hx-push-url={ view.Pagination.LastURL }
 				>last</a>
 			} else {
 				<span class="pager-link" aria-disabled="true">last</span>

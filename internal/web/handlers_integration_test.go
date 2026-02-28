@@ -284,6 +284,21 @@ func performRequest(mux http.Handler, method string, path string) *httptest.Resp
 	return rec
 }
 
+func performRequestWithHeaders(
+	mux http.Handler,
+	method string,
+	path string,
+	headers map[string]string,
+) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(method, path, nil)
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	return rec
+}
+
 func TestHandlerPageRoutesRenderHTML(t *testing.T) {
 	t.Parallel()
 	mux := newTestMux(t)
@@ -431,38 +446,43 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	}
 }
 
-func TestHandlerLiveRoutesReturnPatch(t *testing.T) {
+func TestHandlerHTMXRoutesReturnPartial(t *testing.T) {
 	t.Parallel()
 	mux := newTestMux(t)
 
 	cases := []struct {
-		path     string
-		selector string
+		path        string
+		mustContain string
 	}{
-		{path: "/.live/", selector: "#notes-content"},
-		{path: "/.live/author/l-you", selector: "#notes-content"},
-		{path: "/.live/tag/go", selector: "#notes-content"},
-		{path: "/.live/tales", selector: "#notes-content"},
-		{path: "/.live/micro-tales", selector: "#notes-content"},
+		{path: "/", mustContain: "<section class=\"context-panel\">"},
+		{path: "/author/l-you", mustContain: "<section class=\"context-panel\">"},
+		{path: "/tag/go", mustContain: "<section class=\"context-panel\">"},
+		{path: "/tales", mustContain: "<section class=\"context-panel\">"},
+		{path: "/micro-tales", mustContain: "<section class=\"context-panel\">"},
 	}
 
 	for _, tc := range cases {
-		rec := performRequest(mux, http.MethodGet, tc.path)
+		rec := performRequestWithHeaders(mux, http.MethodGet, tc.path, map[string]string{
+			"HX-Request": "true",
+		})
 		if rec.Code != http.StatusOK {
 			t.Fatalf("%s status: expected %d, got %d", tc.path, http.StatusOK, rec.Code)
 		}
+		if got := rec.Header().Get("Cache-Control"); got != httpserver.DefaultCachePolicies().Live {
+			t.Fatalf("%s cache policy: expected %q, got %q", tc.path, httpserver.DefaultCachePolicies().Live, got)
+		}
 
 		body := requireBody(t, rec.Body)
-		if !strings.Contains(body, "event: datastar-patch-elements") {
-			t.Fatalf("%s missing datastar patch event", tc.path)
+		if !strings.Contains(body, tc.mustContain) {
+			t.Fatalf("%s body missing %q", tc.path, tc.mustContain)
 		}
-		if !strings.Contains(body, "data: selector "+tc.selector) {
-			t.Fatalf("%s missing selector %q", tc.path, tc.selector)
+		if strings.Contains(body, "<title>") {
+			t.Fatalf("%s should return partial HTMX payload without layout title", tc.path)
 		}
 	}
 }
 
-func TestPagerLinksIncludeLiveNavigationActions(t *testing.T) {
+func TestPagerLinksIncludeHTMXNavigationActions(t *testing.T) {
 	t.Parallel()
 	mux := newTestMux(t)
 
@@ -471,8 +491,8 @@ func TestPagerLinksIncludeLiveNavigationActions(t *testing.T) {
 		t.Fatalf("pager prev page status: expected %d, got %d", http.StatusOK, recPrev.Code)
 	}
 	prevBody := requireBody(t, recPrev.Body)
-	if !strings.Contains(prevBody, `data-live-nav-url="/.live/?__live=navigation&amp;author=l-you&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("prev link should include live navigation url marker")
+	if !strings.Contains(prevBody, `hx-get="/?__live=navigation&amp;author=l-you&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("prev link should include htmx navigation url marker")
 	}
 
 	recNext := performRequest(mux, http.MethodGet, "/?author=l-you&tag=go&type=short")
@@ -480,8 +500,17 @@ func TestPagerLinksIncludeLiveNavigationActions(t *testing.T) {
 		t.Fatalf("pager next page status: expected %d, got %d", http.StatusOK, recNext.Code)
 	}
 	nextBody := requireBody(t, recNext.Body)
-	if !strings.Contains(nextBody, `data-live-nav-url="/.live/?__live=navigation&amp;author=l-you&amp;page=2&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("next link should include live navigation url marker")
+	if !strings.Contains(nextBody, `hx-get="/?__live=navigation&amp;author=l-you&amp;page=2&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("next link should include htmx navigation url marker")
+	}
+	if !strings.Contains(nextBody, `hx-target="#notes-content"`) {
+		t.Fatalf("pager links should target notes-content for partial swap")
+	}
+	if !strings.Contains(nextBody, `hx-select="#notes-content"`) {
+		t.Fatalf("pager links should select notes-content fragment")
+	}
+	if !strings.Contains(nextBody, `hx-swap="outerHTML"`) {
+		t.Fatalf("pager links should replace notes-content outer html")
 	}
 
 	recSearch := performRequest(mux, http.MethodGet, "/?q=hello&author=l-you&tag=go&type=short")
@@ -489,17 +518,17 @@ func TestPagerLinksIncludeLiveNavigationActions(t *testing.T) {
 		t.Fatalf("pager next search page status: expected %d, got %d", http.StatusOK, recSearch.Code)
 	}
 	searchBody := requireBody(t, recSearch.Body)
-	if !strings.Contains(searchBody, `data-live-nav-url="/.live/?__live=navigation&amp;author=l-you&amp;page=2&amp;q=hello&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("next link should preserve q in live navigation url marker")
+	if !strings.Contains(searchBody, `hx-get="/?__live=navigation&amp;author=l-you&amp;page=2&amp;q=hello&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("next link should preserve q in htmx navigation url marker")
 	}
 	if !strings.Contains(searchBody, `class="topbar-search-clear" href="/?author=l-you&amp;tag=go&amp;type=short"`) {
 		t.Fatalf("search clear action should preserve author/tag/type and drop q")
 	}
-	if !strings.Contains(nextBody, `data-on-click__prevent=`) {
-		t.Fatalf("pager links should include datastar click action")
+	if !strings.Contains(nextBody, `hx-push-url="/?author=l-you&amp;page=2&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("pager links should push canonical url to history")
 	}
-	if !strings.Contains(nextBody, `window.addEventListener("popstate"`) {
-		t.Fatalf("layout should include popstate live patch script")
+	if !strings.Contains(nextBody, `/.revotale/vendor/htmx.min.js`) {
+		t.Fatalf("layout should include self-hosted htmx script")
 	}
 	if !strings.Contains(nextBody, `window.scrollTo({ top: 0, left: 0, behavior: "smooth" })`) {
 		t.Fatalf("layout should include smooth scroll to top behavior")

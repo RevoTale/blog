@@ -89,7 +89,7 @@ func TestDiscoverRouteFilesCollectsNotFoundTemplates(t *testing.T) {
 
 	writeTestFile(t, filepath.Join(appRoot, "404.templ"), "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
 	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "404.templ"), "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
-	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\" data-signals=\"{}\"></div> }\n")
+	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\"></div> }\n")
 
 	routes, err := discoverRouteFiles(appRoot, genRoot)
 	if err != nil {
@@ -170,33 +170,13 @@ func TestValidateNotFoundTemplateSignature(t *testing.T) {
 	}
 }
 
-func TestDeriveLiveStateType(t *testing.T) {
-	liveStateType, err := deriveLiveStateType("appcore.AuthorPageView")
-	if err != nil {
-		t.Fatalf("derive live state type: %v", err)
-	}
-	if liveStateType != "appcore.AuthorSignalState" {
-		t.Fatalf("expected appcore.AuthorSignalState, got %q", liveStateType)
-	}
-}
-
-func TestDeriveLiveStateTypeRejectsInvalidViewType(t *testing.T) {
-	_, err := deriveLiveStateType("appcore.AuthorView")
-	if err == nil {
-		t.Fatal("expected invalid page view suffix error")
-	}
-	if !strings.Contains(err.Error(), "must end with PageView") {
-		t.Fatalf("unexpected error: %v", err)
-	}
-}
-
-func TestBuildRouteMetasLiveDetection(t *testing.T) {
+func TestBuildRouteMetasPageOnly(t *testing.T) {
 	root := t.TempDir()
 	appRoot := filepath.Join(root, "app")
 	genRoot := filepath.Join(root, "gen")
 
-	rootTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotesPageView) { <div id=\"notes-content\" data-signals=\"{}\"></div> }\n"
-	authorTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\" data-signals=\"{}\"></div> }\n"
+	rootTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotesPageView) { <div id=\"notes-content\"></div> }\n"
+	authorTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\"></div> }\n"
 	writeTestFile(t, filepath.Join(appRoot, "page.templ"), rootTemplate)
 	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), authorTemplate)
 
@@ -219,37 +199,25 @@ func TestBuildRouteMetasLiveDetection(t *testing.T) {
 	if !ok {
 		t.Fatalf("missing root route meta: %#v", byRoute)
 	}
-	if !rootMeta.HasLive {
-		t.Fatalf("expected root route to be live")
-	}
-	if rootMeta.LiveSelectorID != "notes-content" {
-		t.Fatalf("expected selector notes-content, got %q", rootMeta.LiveSelectorID)
-	}
-	if rootMeta.LiveStateType != "appcore.NotesSignalState" {
-		t.Fatalf("expected appcore.NotesSignalState, got %q", rootMeta.LiveStateType)
+	if rootMeta.PageViewType != "appcore.NotesPageView" {
+		t.Fatalf("expected root page view type, got %q", rootMeta.PageViewType)
 	}
 
 	authorMeta, ok := byRoute["author/[slug]"]
 	if !ok {
 		t.Fatalf("missing author route meta: %#v", byRoute)
 	}
-	if !authorMeta.HasLive {
-		t.Fatalf("expected author route to be live")
-	}
-	if authorMeta.LiveSelectorID != "notes-content" {
-		t.Fatalf("expected selector notes-content, got %q", authorMeta.LiveSelectorID)
-	}
-	if authorMeta.LiveStateType != "appcore.AuthorSignalState" {
-		t.Fatalf("expected appcore.AuthorSignalState, got %q", authorMeta.LiveStateType)
+	if authorMeta.PageViewType != "appcore.AuthorPageView" {
+		t.Fatalf("expected author page view type, got %q", authorMeta.PageViewType)
 	}
 }
 
-func TestBuildRouteMetasLiveDerivationError(t *testing.T) {
+func TestBuildRouteMetasAllowsNonPageViewSuffix(t *testing.T) {
 	root := t.TempDir()
 	appRoot := filepath.Join(root, "app")
 	genRoot := filepath.Join(root, "gen")
 
-	pageTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NoteView) { <div id=\"note-content\" data-signals=\"{}\"></div> }\n"
+	pageTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NoteView) { <div id=\"note-content\"></div> }\n"
 	writeTestFile(t, filepath.Join(appRoot, "note", "[slug]", "page.templ"), pageTemplate)
 
 	routes, err := discoverRouteFiles(appRoot, genRoot)
@@ -257,12 +225,15 @@ func TestBuildRouteMetasLiveDerivationError(t *testing.T) {
 		t.Fatalf("discover routes: %v", err)
 	}
 
-	_, err = buildRouteMetas(routes.Pages, generationPaths{})
-	if err == nil {
-		t.Fatal("expected live state derivation error")
+	metas, err := buildRouteMetas(routes.Pages, generationPaths{})
+	if err != nil {
+		t.Fatalf("build route metas: %v", err)
 	}
-	if !strings.Contains(err.Error(), "must end with PageView") {
-		t.Fatalf("unexpected error: %v", err)
+	if len(metas) != 1 {
+		t.Fatalf("expected 1 route meta, got %d", len(metas))
+	}
+	if metas[0].PageViewType != "appcore.NoteView" {
+		t.Fatalf("expected appcore.NoteView, got %q", metas[0].PageViewType)
 	}
 }
 
@@ -280,8 +251,6 @@ func TestResolverNamespaceGenerationDeterministic(t *testing.T) {
 			ParamsTypeName: "AuthorParamSlugParams",
 			Params:         []routeParamDef{{Name: "slug", FieldName: "Slug"}},
 			PageViewType:   "appcore.AuthorPageView",
-			HasLive:        true,
-			LiveStateType:  "appcore.AuthorSignalState",
 		},
 	}
 
@@ -308,9 +277,6 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 			RouteName:      "Root",
 			ParamsTypeName: "RootParams",
 			PageViewType:   "appcore.NotesPageView",
-			HasLive:        true,
-			LiveStateType:  "appcore.NotesSignalState",
-			LiveSelectorID: "notes-content",
 			Page:           templateDef{ModuleName: "r_page_root"},
 		},
 		{
@@ -319,9 +285,6 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 			ParamsTypeName: "AuthorParamSlugParams",
 			Params:         []routeParamDef{{Name: "slug", FieldName: "Slug"}},
 			PageViewType:   "appcore.AuthorPageView",
-			HasLive:        true,
-			LiveStateType:  "appcore.AuthorSignalState",
-			LiveSelectorID: "notes-content",
 			Page:           templateDef{ModuleName: "r_page_author_param_slug"},
 		},
 	}
@@ -355,17 +318,17 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 	if !strings.Contains(text, "return &route_resolvers.Resolver{}") {
 		t.Fatalf("expected route resolver constructor to return unified resolver:\n%s", text)
 	}
-	if !strings.Contains(text, "Pattern:     \"/.live/\"") {
-		t.Fatalf("expected root live pattern to use /.live/ prefix:\n%s", text)
+	if !strings.Contains(text, "framework.PageOnlyRouteHandler") {
+		t.Fatalf("expected page-only route handlers:\n%s", text)
 	}
-	if !strings.Contains(text, "Pattern:     \"/.live/author/[slug]\"") {
-		t.Fatalf("expected nested live pattern to use /.live/ prefix:\n%s", text)
+	if strings.Contains(text, "PageAndLiveRouteHandler") {
+		t.Fatalf("did not expect live route handlers:\n%s", text)
 	}
-	if !strings.Contains(text, "if routeID == \".live\"") {
-		t.Fatalf("expected generated not-found normalization to handle /.live root:\n%s", text)
+	if strings.Contains(text, "/.live/") {
+		t.Fatalf("did not expect live route patterns:\n%s", text)
 	}
-	if !strings.Contains(text, "strings.HasPrefix(routeID, \".live/\")") {
-		t.Fatalf("expected generated not-found normalization to strip /.live prefix:\n%s", text)
+	if strings.Contains(text, "ParseRootLiveState") {
+		t.Fatalf("did not expect live resolver contract references:\n%s", text)
 	}
 	if !strings.Contains(text, "func NotFoundPage(notFound framework.NotFoundContext) templ.Component") {
 		t.Fatalf("expected generated NotFoundPage helper in registry:\n%s", text)

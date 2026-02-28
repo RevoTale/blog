@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"slices"
 	"strings"
 
 	"blog/framework"
 	"blog/framework/engine"
 	"github.com/a-h/templ"
-	"github.com/starfederation/datastar-go/datastar"
 )
 
 const defaultCacheControlPolicy = "public, max-age=3600, s-maxage=3600"
@@ -88,11 +88,10 @@ func New[C interface{}](cfg Config[C]) (http.Handler, error) {
 	routeEngine, err := engine.New(engine.Config[C]{
 		AppContext:        cfg.AppContext,
 		Handlers:          cfg.Handlers,
+		IsPartialRequest:  srv.isHTMXRequest,
 		RenderPage:        srv.renderPage,
-		PatchLive:         srv.patchLive,
 		IsNotFoundError:   cfg.IsNotFoundError,
 		HandleNotFound:    srv.handleNotFound,
-		HandleBadRequest:  srv.handleBadRequest,
 		HandleServerError: srv.handleServerError,
 	})
 	if err != nil {
@@ -128,7 +127,12 @@ func (s *server[C]) handleRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server[C]) renderPage(r *http.Request, w http.ResponseWriter, component templ.Component) error {
-	return s.renderPageWithStatus(r, w, component, 0, s.cachePolicies.HTML)
+	cachePolicy := s.cachePolicies.HTML
+	if s.isHTMXRequest(r) {
+		cachePolicy = s.liveCachePolicyFor(r)
+	}
+
+	return s.renderPageWithStatus(r, w, component, 0, cachePolicy)
 }
 
 func (s *server[C]) renderPageWithStatus(
@@ -139,6 +143,7 @@ func (s *server[C]) renderPageWithStatus(
 	cachePolicy string,
 ) error {
 	setCachePolicy(w, cachePolicy)
+	setVaryHeader(w, "HX-Request")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if statusCode > 0 {
 		w.WriteHeader(statusCode)
@@ -146,15 +151,12 @@ func (s *server[C]) renderPageWithStatus(
 	return component.Render(r.Context(), w)
 }
 
-func (s *server[C]) patchLive(
-	w http.ResponseWriter,
-	r *http.Request,
-	selectorID string,
-	component templ.Component,
-) error {
-	sse := datastar.NewSSE(w, r)
-	setCachePolicy(w, s.liveCachePolicyFor(r))
-	return sse.PatchElementTempl(component, datastar.WithSelectorID(selectorID))
+func (s *server[C]) isHTMXRequest(r *http.Request) bool {
+	if r == nil {
+		return false
+	}
+
+	return strings.EqualFold(strings.TrimSpace(r.Header.Get("HX-Request")), "true")
 }
 
 func (s *server[C]) liveCachePolicyFor(r *http.Request) string {
@@ -187,11 +189,6 @@ func (s *server[C]) handleNotFound(
 	if err := s.renderPageWithStatus(r, w, component, http.StatusNotFound, s.cachePolicies.Error); err != nil {
 		s.handleServerError(w, fmt.Errorf("render not found page: %w", err))
 	}
-}
-
-func (s *server[C]) handleBadRequest(w http.ResponseWriter, message string) {
-	setCachePolicy(w, s.cachePolicies.Error)
-	http.Error(w, message, http.StatusBadRequest)
 }
 
 func (s *server[C]) handleServerError(w http.ResponseWriter, err error) {
@@ -269,4 +266,36 @@ func withCachePolicy(policy string, next http.Handler) http.Handler {
 		setCachePolicy(w, policy)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func setVaryHeader(w http.ResponseWriter, header string) {
+	if w == nil {
+		return
+	}
+	header = strings.TrimSpace(header)
+	if header == "" {
+		return
+	}
+
+	current := strings.TrimSpace(w.Header().Get("Vary"))
+	if current == "" {
+		w.Header().Set("Vary", header)
+		return
+	}
+
+	for _, existing := range strings.Split(current, ",") {
+		if strings.EqualFold(strings.TrimSpace(existing), header) {
+			return
+		}
+	}
+
+	parts := strings.Split(current, ",")
+	parts = append(parts, header)
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+	}
+	parts = slices.DeleteFunc(parts, func(value string) bool {
+		return value == ""
+	})
+	w.Header().Set("Vary", strings.Join(parts, ", "))
 }
