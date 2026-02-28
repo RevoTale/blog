@@ -24,7 +24,7 @@ Use semantic tokens, not route/component-local color literals.
 - Foundation tokens:
   - `--bg-*`, `--text-*`, `--border-*`, `--divider`, `--focus-ring`, `--accent-*`
 - Surface/state tokens:
-  - `--topbar-*`, `--topbar-search-*`, `--content-header-*`, `--feed-toolbar-*`, `--server-*`, `--channel-*`, `--presence-*`, `--note-open-badge-*`
+  - `--topbar-*`, `--topbar-search-*`, `--content-header-*`, `--feed-toolbar-*`, `--note-detail-*`, `--footer-*`, `--server-*`, `--channel-*`, `--presence-*`, `--note-open-badge-*`
 - Optional brand/status tokens:
   - reserved for stable accents (for example online state green).
 
@@ -52,6 +52,9 @@ Top/search/mid bars are token-driven:
 - buttons/clear states use `--topbar-search-submit-*` and `--topbar-search-clear-*`
 - `.context-panel` uses `--content-header-bg`
 - `.feed-toolbar` uses `--feed-toolbar-bg`
+- `.note-detail` uses `--note-detail-bg`
+- `.footer` uses `--footer-bg` and `--footer-link`
+- code/media/empty surfaces use `--code-surface-bg`, `--media-surface-bg`, `--empty-state-bg`
 - unread/read badge dot uses `--note-open-badge-*`
 
 This ensures all bar surfaces switch with the system theme from a centralized token set.

@@ -32,6 +32,12 @@
   --topbar-bg: rgba(49, 51, 56, 0.94);
   --content-header-bg: rgba(49, 51, 56, 0.66);
   --feed-toolbar-bg: rgba(49, 51, 56, 0.52);
+  --note-detail-bg: rgba(34, 36, 41, 0.6);
+  --footer-bg: rgba(25, 27, 30, 0.65);
+  --footer-link: #86d8ff;
+  --empty-state-bg: rgba(23, 24, 27, 0.45);
+  --media-surface-bg: #1d1f22;
+  --code-surface-bg: #1b1c20;
   --topbar-search-border: #323744;
   --topbar-search-bg-start: rgba(38, 41, 48, 0.9);
   --topbar-search-bg-end: rgba(29, 31, 37, 0.96);
@@ -102,6 +108,12 @@
     --topbar-bg: rgba(255, 255, 255, 0.94);
     --content-header-bg: rgba(255, 255, 255, 0.84);
     --feed-toolbar-bg: rgba(255, 255, 255, 0.76);
+    --note-detail-bg: rgba(255, 255, 255, 0.82);
+    --footer-bg: rgba(255, 255, 255, 0.88);
+    --footer-link: #1f68d8;
+    --empty-state-bg: rgba(235, 241, 250, 0.78);
+    --media-surface-bg: #e8effa;
+    --code-surface-bg: #edf3fc;
     --topbar-search-border: #c8d4e8;
     --topbar-search-bg-start: rgba(255, 255, 255, 0.99);
     --topbar-search-bg-end: rgba(250, 252, 255, 1);
@@ -584,10 +596,11 @@ p + p {
 }
 
 .context-panel {
-  padding: 0.08rem 0.1rem 0.8rem;
-  border-bottom: 1px solid var(--border-soft);
+  margin-top: 0.1rem;
+  padding: 0.68rem 0.82rem 0.84rem;
+  border: 1px solid var(--border-soft);
   background: var(--content-header-bg);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
 }
 
 .context-panel h1 {
@@ -730,7 +743,7 @@ p + p {
 .channels-back-button:hover {
   text-decoration: none;
   background: var(--bg-hover);
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .channel-panel-standalone {
@@ -877,7 +890,7 @@ p + p {
 
 .message-title-link:hover,
 .message-title-link:focus-visible {
-  color: #fff;
+  color: var(--text-primary);
   text-decoration: underline;
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.14em;
@@ -978,7 +991,7 @@ p + p {
   height: auto;
   border-radius: var(--radius-md);
   border: 1px solid var(--divider);
-  background: #1d1f22;
+  background: var(--media-surface-bg);
   object-fit: contain;
 }
 
@@ -1097,7 +1110,7 @@ p + p {
 .empty-state {
   border: 1px dashed var(--divider);
   border-radius: var(--radius-md);
-  background: rgba(23, 24, 27, 0.45);
+  background: var(--empty-state-bg);
   color: var(--text-muted);
   padding: 0.9rem;
 }
@@ -1138,7 +1151,7 @@ p + p {
   margin: 0.1rem auto 0;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-md);
-  background: rgba(34, 36, 41, 0.6);
+  background: var(--note-detail-bg);
   box-shadow: var(--shadow-soft);
   padding: 0.9rem 1rem 1.1rem;
 }
@@ -1202,7 +1215,7 @@ p + p {
 
 .markdown-body pre {
   font-family: var(--font-mono);
-  background: #1b1c20;
+  background: var(--code-surface-bg);
   border: 1px solid var(--divider);
   border-radius: var(--radius-md);
   overflow-x: auto;
@@ -1216,7 +1229,7 @@ p + p {
   font-size: 0.92em;
   padding: 0.08rem 0.3rem;
   border-radius: 4px;
-  background: #1b1c20;
+  background: var(--code-surface-bg);
   border: 1px solid var(--divider);
 }
 
@@ -1249,7 +1262,7 @@ p + p {
   margin-top: 1rem;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-md);
-  background: rgba(25, 27, 30, 0.65);
+  background: var(--footer-bg);
   padding: 0.56rem 0.72rem;
 }
 
@@ -1262,7 +1275,7 @@ p + p {
 }
 
 .footer p a {
-  color: #86d8ff;
+  color: var(--footer-link);
 }
 
 @media (prefers-contrast: more) {
@@ -1430,6 +1443,10 @@ p + p {
 }
 
 @media (max-width: 720px) {
+  .context-panel {
+    padding: 0.58rem 0.64rem 0.72rem;
+  }
+
   .topbar-search-input {
     font-size: 0.95rem;
     padding-inline: 0.72rem;
