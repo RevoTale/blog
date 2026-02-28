@@ -267,7 +267,7 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 	}
 
 	text := string(registry)
-	if !strings.Contains(text, "route_resolvers \"blog/internal/web/appcore/resolvers\"") {
+	if !strings.Contains(text, "route_resolvers \"blog/internal/web/resolvers\"") {
 		t.Fatalf("expected unified resolver namespace import in registry:\n%s", text)
 	}
 	if strings.Contains(text, "rr_") {

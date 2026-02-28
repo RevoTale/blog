@@ -164,7 +164,7 @@ func resolvePaths() (generationPaths, error) {
 		AppRoot:       filepath.ToSlash(filepath.Join(moduleRoot, "internal/web/app")),
 		GenRoot:       filepath.ToSlash(filepath.Join(moduleRoot, "internal/web/gen")),
 		GenImportRoot: "internal/web/gen",
-		ResolverRoot:  filepath.ToSlash(filepath.Join(moduleRoot, "internal/web/appcore/resolvers")),
+		ResolverRoot:  filepath.ToSlash(filepath.Join(moduleRoot, "internal/web/resolvers")),
 	}, nil
 }
 
@@ -664,7 +664,7 @@ func generateRegistrySource(
 		"\"blog/framework\"",
 		"\"blog/framework/router\"",
 		"\"blog/internal/web/appcore\"",
-		"route_resolvers \"blog/internal/web/appcore/resolvers\"",
+		"route_resolvers \"blog/internal/web/resolvers\"",
 		"\"github.com/a-h/templ\"",
 	}
 
