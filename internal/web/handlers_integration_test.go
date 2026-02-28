@@ -10,8 +10,10 @@ import (
 
 	"net/http/httptest"
 
-	"blog/internal/config"
+	"blog/framework/httpserver"
 	"blog/internal/notes"
+	"blog/internal/web/appcore"
+	webgen "blog/internal/web/gen"
 	"github.com/Khan/genqlient/graphql"
 )
 
@@ -211,18 +213,27 @@ func requestVarString(req *graphql.Request, key string) string {
 	return strings.TrimSpace(value)
 }
 
-func newTestMux(t *testing.T) *http.ServeMux {
+func newTestMux(t *testing.T) http.Handler {
 	t.Helper()
 
 	svc := notes.NewService(fakeGraphQLClient{}, 12, "")
-	handler, err := NewHandler(config.Config{StaticDir: "../../static"}, svc)
+	handler, err := httpserver.New(httpserver.Config[*appcore.Context]{
+		AppContext:      appcore.NewContext(svc),
+		Handlers:        webgen.Handlers(webgen.NewRouteResolvers()),
+		IsNotFoundError: appcore.IsNotFoundError,
+		NotFoundPage:    webgen.NotFoundPage,
+		Static: httpserver.StaticMount{
+			URLPrefix: "/.revotale/",
+			Dir:       "../../internal/web/static",
+		},
+		CachePolicies: httpserver.DefaultCachePolicies(),
+		LogServerError: func(error) {
+		},
+	})
 	if err != nil {
 		t.Fatalf("new handler: %v", err)
 	}
-
-	mux := http.NewServeMux()
-	handler.Register(mux)
-	return mux
+	return handler
 }
 
 func requireBody(t *testing.T, body io.Reader) string {
@@ -235,7 +246,7 @@ func requireBody(t *testing.T, body io.Reader) string {
 	return string(content)
 }
 
-func performRequest(mux *http.ServeMux, method string, path string) *httptest.ResponseRecorder {
+func performRequest(mux http.Handler, method string, path string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(method, path, nil)
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
@@ -369,6 +380,7 @@ func TestHandlerLiveRoutesReturnPatch(t *testing.T) {
 		path     string
 		selector string
 	}{
+		{path: "/live", selector: "#notes-content"},
 		{path: "/author/l-you/live", selector: "#author-content"},
 	}
 
@@ -398,6 +410,14 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	}
 	if body := strings.TrimSpace(requireBody(t, recHealth.Body)); body != "ok" {
 		t.Fatalf("healthz body: expected %q, got %q", "ok", body)
+	}
+
+	recStatic := performRequest(mux, http.MethodGet, "/.revotale/tui.css")
+	if recStatic.Code != http.StatusOK {
+		t.Fatalf("static status: expected %d, got %d", http.StatusOK, recStatic.Code)
+	}
+	if !strings.Contains(recStatic.Header().Get("Content-Type"), "text/css") {
+		t.Fatalf("static content-type: expected css, got %q", recStatic.Header().Get("Content-Type"))
 	}
 
 	recMissingNote := performRequest(mux, http.MethodGet, "/note/missing")

@@ -20,7 +20,7 @@ type Config struct {
 func Load() Config {
 	return Config{
 		ListenAddr:       getEnv("BLOG_LISTEN_ADDR", ":8080"),
-		StaticDir:        getEnv("BLOG_STATIC_DIR", "static"),
+		StaticDir:        getEnv("BLOG_STATIC_DIR", "internal/web/static"),
 		RootURL:          getEnv("BLOG_ROOT_URL", ""),
 		GraphQLEndpoint:  getEnv("BLOG_GRAPHQL_ENDPOINT", "http://localhost:3000/api/graphql"),
 		GraphQLAuthToken: os.Getenv("BLOG_GRAPHQL_AUTH_TOKEN"),

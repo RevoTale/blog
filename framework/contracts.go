@@ -60,9 +60,23 @@ type RuntimeContext[C interface{}] interface {
 	RenderPage(r *http.Request, w http.ResponseWriter, component templ.Component) error
 	PatchLive(w http.ResponseWriter, r *http.Request, selectorID string, component templ.Component) error
 	IsNotFound(err error) bool
-	RespondNotFound(w http.ResponseWriter, r *http.Request)
+	RespondNotFound(w http.ResponseWriter, r *http.Request, notFoundContext NotFoundContext)
 	RespondBadRequest(w http.ResponseWriter, message string)
 	RespondServerError(w http.ResponseWriter, err error)
+}
+
+type NotFoundSource string
+
+const (
+	NotFoundSourcePageLoad       NotFoundSource = "page_load"
+	NotFoundSourceLiveLoad       NotFoundSource = "live_load"
+	NotFoundSourceUnmatchedRoute NotFoundSource = "unmatched_route"
+)
+
+type NotFoundContext struct {
+	RequestPath         string
+	MatchedRoutePattern string
+	Source              NotFoundSource
 }
 
 type RouteHandler[C interface{}] interface {
@@ -136,7 +150,7 @@ func servePageModule[C interface{}, P interface{}, VM interface{}](
 
 	view, err := module.Load(r.Context(), runtime.AppContext(), r, params)
 	if err != nil {
-		handleLoadError(runtime, w, r, err, module.Pattern)
+		handleLoadError(runtime, w, r, err, module.Pattern, NotFoundSourcePageLoad)
 		return true
 	}
 
@@ -171,7 +185,7 @@ func serveLiveModule[C interface{}, P interface{}, VM interface{}, S interface{}
 
 	view, err := module.Load(r.Context(), runtime.AppContext(), r, params, state)
 	if err != nil {
-		handleLoadError(runtime, w, r, err, module.Pattern)
+		handleLoadError(runtime, w, r, err, module.Pattern, NotFoundSourceLiveLoad)
 		return true
 	}
 
@@ -187,9 +201,14 @@ func handleLoadError[C interface{}](
 	r *http.Request,
 	err error,
 	routePattern string,
+	source NotFoundSource,
 ) {
 	if runtime.IsNotFound(err) {
-		runtime.RespondNotFound(w, r)
+		runtime.RespondNotFound(w, r, NotFoundContext{
+			RequestPath:         r.URL.Path,
+			MatchedRoutePattern: routePattern,
+			Source:              source,
+		})
 		return
 	}
 

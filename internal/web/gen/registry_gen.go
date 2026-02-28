@@ -7,6 +7,7 @@ import (
 	"blog/internal/web/appcore"
 	r_layout_author_param_slug "blog/internal/web/gen/r_layout_author_param_slug"
 	r_layout_root "blog/internal/web/gen/r_layout_root"
+	r_not_found_root "blog/internal/web/gen/r_not_found_root"
 	r_page_author_param_slug "blog/internal/web/gen/r_page_author_param_slug"
 	r_page_channels "blog/internal/web/gen/r_page_channels"
 	r_page_micro_tales "blog/internal/web/gen/r_page_micro_tales"
@@ -37,7 +38,7 @@ func NewRouteResolvers() RouteResolvers {
 
 func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Context] {
 	return []framework.RouteHandler[*appcore.Context]{
-		framework.PageOnlyRouteHandler[*appcore.Context, RootParams, appcore.NotesPageView]{
+		framework.PageAndLiveRouteHandler[*appcore.Context, RootParams, appcore.NotesPageView, appcore.NotesSignalState]{
 			Page: framework.PageModule[*appcore.Context, RootParams, appcore.NotesPageView]{
 				Pattern:     "/",
 				ParseParams: parseRootParams,
@@ -48,6 +49,17 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapRootWithRootLayout,
 				},
+			},
+			Live: framework.LiveModule[*appcore.Context, RootParams, appcore.NotesPageView, appcore.NotesSignalState]{
+				Pattern:     "/live",
+				ParseParams: parseRootLiveParams,
+				ParseState:  resolvers.ParseRootLiveState,
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams, state appcore.NotesSignalState) (appcore.NotesPageView, error) {
+					return resolvers.ResolveRootLive(ctx, appCtx, r, params, state)
+				},
+				Render:            r_page_root.Page,
+				SelectorID:        "notes-content",
+				BadRequestMessage: "invalid datastar signal payload",
 			},
 		},
 		framework.PageAndLiveRouteHandler[*appcore.Context, AuthorParamSlugParams, appcore.AuthorPageView, appcore.AuthorSignalState]{
@@ -143,8 +155,126 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 	}
 }
 
+func NotFoundPage(notFound framework.NotFoundContext) templ.Component {
+	pathValue := strings.TrimSpace(notFound.RequestPath)
+	if pathValue == "" {
+		pathValue = "/"
+	}
+	routeID := nearestNotFoundRouteID(notFound)
+	view := appcore.NewNotFoundLayoutView()
+	switch routeID {
+	default:
+		component := r_not_found_root.Page(pathValue)
+		component = r_layout_root.Layout(view, component)
+		return component
+	}
+}
+
+func nearestNotFoundRouteID(notFound framework.NotFoundContext) string {
+	for _, candidate := range candidateRouteIDsFromPattern(notFound.MatchedRoutePattern) {
+		if routeID, ok := resolveNotFoundCandidateRouteID(candidate); ok {
+			return routeID
+		}
+	}
+	for _, candidate := range candidateRouteIDsFromPath(notFound.RequestPath) {
+		if routeID, ok := resolveNotFoundCandidateRouteID(candidate); ok {
+			return routeID
+		}
+	}
+	return ""
+}
+
+func resolveNotFoundCandidateRouteID(candidate string) (string, bool) {
+	if hasNotFoundTemplate(candidate) {
+		return candidate, true
+	}
+	if candidate == "" {
+		return "", false
+	}
+	routeID, ok := matchDynamicNotFoundTemplate(candidate)
+	if !ok {
+		return "", false
+	}
+	return routeID, true
+}
+
+func matchDynamicNotFoundTemplate(candidate string) (string, bool) {
+	if candidate == "" {
+		return "", false
+	}
+	return "", false
+}
+
+func hasNotFoundTemplate(routeID string) bool {
+	switch routeID {
+	case "":
+		return true
+	default:
+		return false
+	}
+}
+
+func candidateRouteIDsFromPattern(pattern string) []string {
+	routeID := normalizePatternRouteID(pattern)
+	return routeAncestry(routeID)
+}
+
+func candidateRouteIDsFromPath(requestPath string) []string {
+	routeID := normalizeRequestRouteID(requestPath)
+	return routeAncestry(routeID)
+}
+
+func normalizePatternRouteID(pattern string) string {
+	routeID := strings.TrimSpace(pattern)
+	routeID = strings.Trim(routeID, "/")
+	if routeID == "live" {
+		return ""
+	}
+	if strings.HasSuffix(routeID, "/live") {
+		routeID = strings.TrimSuffix(routeID, "/live")
+		routeID = strings.Trim(routeID, "/")
+	}
+	return routeID
+}
+
+func normalizeRequestRouteID(requestPath string) string {
+	routeID := strings.TrimSpace(requestPath)
+	routeID = strings.Trim(routeID, "/")
+	if routeID == "live" {
+		return ""
+	}
+	if strings.HasSuffix(routeID, "/live") {
+		routeID = strings.TrimSuffix(routeID, "/live")
+		routeID = strings.Trim(routeID, "/")
+	}
+	return routeID
+}
+
+func routeAncestry(routeID string) []string {
+	routeID = strings.TrimSpace(routeID)
+	routeID = strings.Trim(routeID, "/")
+	if routeID == "" {
+		return []string{""}
+	}
+	parts := strings.Split(routeID, "/")
+	out := make([]string, 0, len(parts)+1)
+	for idx := len(parts); idx >= 1; idx-- {
+		out = append(out, strings.Join(parts[:idx], "/"))
+	}
+	out = append(out, "")
+	return out
+}
+
 func parseRootParams(requestPath string) (RootParams, bool) {
 	_, ok := router.MatchPathPattern("/", requestPath)
+	if !ok {
+		return RootParams{}, false
+	}
+	return RootParams{}, true
+}
+
+func parseRootLiveParams(requestPath string) (RootParams, bool) {
+	_, ok := router.MatchPathPattern("/live", requestPath)
 	if !ok {
 		return RootParams{}, false
 	}

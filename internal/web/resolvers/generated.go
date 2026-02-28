@@ -33,6 +33,8 @@ type TalesParams struct {
 
 type RouteResolver interface {
 	ResolveRootPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (appcore.NotesPageView, error)
+	ParseRootLiveState(r *http.Request) (appcore.NotesSignalState, error)
+	ResolveRootLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams, state appcore.NotesSignalState) (appcore.NotesPageView, error)
 	ResolveAuthorParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (appcore.AuthorPageView, error)
 	ParseAuthorParamSlugLiveState(r *http.Request) (appcore.AuthorSignalState, error)
 	ResolveAuthorParamSlugLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams, state appcore.AuthorSignalState) (appcore.AuthorPageView, error)

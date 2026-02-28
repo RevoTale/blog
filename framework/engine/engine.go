@@ -16,7 +16,7 @@ type Config[C interface{}] struct {
 	PatchLive  func(w http.ResponseWriter, r *http.Request, selectorID string, component templ.Component) error
 
 	IsNotFoundError   func(err error) bool
-	HandleNotFound    func(w http.ResponseWriter, r *http.Request)
+	HandleNotFound    func(w http.ResponseWriter, r *http.Request, notFoundContext framework.NotFoundContext)
 	HandleBadRequest  func(w http.ResponseWriter, message string)
 	HandleServerError func(w http.ResponseWriter, err error)
 }
@@ -29,7 +29,7 @@ type Engine[C interface{}] struct {
 	patchLive  func(w http.ResponseWriter, r *http.Request, selectorID string, component templ.Component) error
 
 	isNotFound  func(err error) bool
-	notFound    func(w http.ResponseWriter, r *http.Request)
+	notFound    func(w http.ResponseWriter, r *http.Request, notFoundContext framework.NotFoundContext)
 	badRequest  func(w http.ResponseWriter, message string)
 	serverError func(w http.ResponseWriter, err error)
 }
@@ -49,7 +49,9 @@ func New[C interface{}](cfg Config[C]) (*Engine[C], error) {
 
 	notFound := cfg.HandleNotFound
 	if notFound == nil {
-		notFound = http.NotFound
+		notFound = func(w http.ResponseWriter, r *http.Request, _ framework.NotFoundContext) {
+			http.NotFound(w, r)
+		}
 	}
 
 	badRequest := cfg.HandleBadRequest
@@ -119,8 +121,12 @@ func (engine *Engine[C]) IsNotFound(err error) bool {
 	return engine.isNotFound(err)
 }
 
-func (engine *Engine[C]) RespondNotFound(w http.ResponseWriter, r *http.Request) {
-	engine.notFound(w, r)
+func (engine *Engine[C]) RespondNotFound(
+	w http.ResponseWriter,
+	r *http.Request,
+	notFoundContext framework.NotFoundContext,
+) {
+	engine.notFound(w, r, notFoundContext)
 }
 
 func (engine *Engine[C]) RespondBadRequest(w http.ResponseWriter, message string) {

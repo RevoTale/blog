@@ -56,6 +56,6 @@ pages from CMS GraphQL data.
 - Markdown rendering: `github.com/gomarkdown/markdown`
   Link: https://github.com/gomarkdown/markdown
 - Keep data fetching server-side; templates receive pre-mapped view models.
-- Keep styling minimal and terminal-like in `static/tui.css`.
+- Keep styling minimal and terminal-like in `internal/web/static/tui.css`.
 - Default run command from `blog/`: `go run .`
 - Optional env: `BLOG_ROOT_URL` (used by markdown link formatter to normalize same-domain absolute URLs).

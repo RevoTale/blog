@@ -15,7 +15,7 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<title>{ view.LayoutPageTitle() } :: blog</title>
 			<meta name="color-scheme" content="dark"/>
-			<link rel="stylesheet" href="/static/tui.css"/>
+			<link rel="stylesheet" href="/.revotale/tui.css"/>
 			@templ.Raw(appcore.ChromaStyleTag())
 			<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-RC.6/bundles/datastar.js"></script>
 		</head>
@@ -23,7 +23,7 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 			<div class="app-shell">
 				<aside class="server-rail" aria-label="workspace navigation">
 					<a class="server-button is-active" href="/" aria-label="blog home">
-						<img class="server-logo" src="/static/revtale-logo.svg" alt="RevTale"/>
+						<img class="server-logo" src="/.revotale/revtale-logo.svg" alt="RevTale"/>
 					</a>
 					<span class="server-divider" aria-hidden="true"></span>
 					<a class="server-button" href="/" aria-label="notes channel">#</a>

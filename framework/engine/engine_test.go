@@ -171,6 +171,7 @@ func TestNotFoundAndServerErrorClassification(t *testing.T) {
 	t.Run("not found", func(t *testing.T) {
 		notFoundCalled := false
 		serverErrorCalled := false
+		var notFoundContext framework.NotFoundContext
 
 		routeEngine, err := New(Config[*testAppContext]{
 			AppContext: &testAppContext{},
@@ -191,8 +192,9 @@ func TestNotFoundAndServerErrorClassification(t *testing.T) {
 			RenderPage:      func(*http.Request, http.ResponseWriter, templ.Component) error { return nil },
 			PatchLive:       func(http.ResponseWriter, *http.Request, string, templ.Component) error { return nil },
 			IsNotFoundError: func(err error) bool { return errors.Is(err, errNotFound) },
-			HandleNotFound: func(http.ResponseWriter, *http.Request) {
+			HandleNotFound: func(_ http.ResponseWriter, _ *http.Request, ctx framework.NotFoundContext) {
 				notFoundCalled = true
+				notFoundContext = ctx
 			},
 			HandleServerError: func(http.ResponseWriter, error) {
 				serverErrorCalled = true
@@ -207,6 +209,15 @@ func TestNotFoundAndServerErrorClassification(t *testing.T) {
 		}
 		if !notFoundCalled {
 			t.Fatal("expected not found callback")
+		}
+		if notFoundContext.Source != framework.NotFoundSourcePageLoad {
+			t.Fatalf("expected not-found source %q, got %q", framework.NotFoundSourcePageLoad, notFoundContext.Source)
+		}
+		if notFoundContext.MatchedRoutePattern != "/notes" {
+			t.Fatalf("expected matched route pattern /notes, got %q", notFoundContext.MatchedRoutePattern)
+		}
+		if notFoundContext.RequestPath != "/notes" {
+			t.Fatalf("expected request path /notes, got %q", notFoundContext.RequestPath)
 		}
 		if serverErrorCalled {
 			t.Fatal("did not expect server error callback")
@@ -236,7 +247,7 @@ func TestNotFoundAndServerErrorClassification(t *testing.T) {
 			RenderPage:      func(*http.Request, http.ResponseWriter, templ.Component) error { return nil },
 			PatchLive:       func(http.ResponseWriter, *http.Request, string, templ.Component) error { return nil },
 			IsNotFoundError: func(error) bool { return false },
-			HandleNotFound: func(http.ResponseWriter, *http.Request) {
+			HandleNotFound: func(http.ResponseWriter, *http.Request, framework.NotFoundContext) {
 				notFoundCalled = true
 			},
 			HandleServerError: func(http.ResponseWriter, error) {

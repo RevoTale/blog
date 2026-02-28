@@ -82,6 +82,28 @@ func TestDiscoverRouteFilesRejectsLegacyWildcardSyntax(t *testing.T) {
 	}
 }
 
+func TestDiscoverRouteFilesCollectsNotFoundTemplates(t *testing.T) {
+	root := t.TempDir()
+	appRoot := filepath.Join(root, "app")
+	genRoot := filepath.Join(root, "gen")
+
+	writeTestFile(t, filepath.Join(appRoot, "404.templ"), "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
+	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "404.templ"), "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
+	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"author-content\" data-signals=\"{}\"></div> }\n")
+
+	routes, err := discoverRouteFiles(appRoot, genRoot)
+	if err != nil {
+		t.Fatalf("discover routes: %v", err)
+	}
+
+	if _, ok := routes.NotFounds[""]; !ok {
+		t.Fatalf("expected root 404 template")
+	}
+	if _, ok := routes.NotFounds["author/[slug]"]; !ok {
+		t.Fatalf("expected nested author 404 template")
+	}
+}
+
 func TestParsePageViewType(t *testing.T) {
 	root := t.TempDir()
 	pagePath := filepath.Join(root, "page.templ")
@@ -107,6 +129,44 @@ func TestParsePageViewTypeRejectsNonAppcoreType(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "appcore-qualified") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestValidateLayoutTemplateSignature(t *testing.T) {
+	root := t.TempDir()
+	validPath := filepath.Join(root, "layout_valid.templ")
+	invalidPath := filepath.Join(root, "layout_invalid.templ")
+	writeTestFile(
+		t,
+		validPath,
+		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Layout(view appcore.RootLayoutView, child templ.Component) { @child }\n",
+	)
+	writeTestFile(
+		t,
+		invalidPath,
+		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Layout(view appcore.NotesPageView, child templ.Component) { @child }\n",
+	)
+
+	if err := validateLayoutTemplateSignature(validPath); err != nil {
+		t.Fatalf("expected valid signature, got %v", err)
+	}
+	if err := validateLayoutTemplateSignature(invalidPath); err == nil {
+		t.Fatal("expected invalid layout signature error")
+	}
+}
+
+func TestValidateNotFoundTemplateSignature(t *testing.T) {
+	root := t.TempDir()
+	validPath := filepath.Join(root, "404_valid.templ")
+	invalidPath := filepath.Join(root, "404_invalid.templ")
+	writeTestFile(t, validPath, "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
+	writeTestFile(t, invalidPath, "package appsrc\n\ntempl Page(target string) { <div>{ target }</div> }\n")
+
+	if err := validateNotFoundTemplateSignature(validPath); err != nil {
+		t.Fatalf("expected valid 404 signature, got %v", err)
+	}
+	if err := validateNotFoundTemplateSignature(invalidPath); err == nil {
+		t.Fatal("expected invalid 404 signature error")
 	}
 }
 
@@ -159,8 +219,14 @@ func TestBuildRouteMetasLiveDetection(t *testing.T) {
 	if !ok {
 		t.Fatalf("missing root route meta: %#v", byRoute)
 	}
-	if rootMeta.HasLive {
-		t.Fatalf("expected root route to be non-live, got live meta: %#v", rootMeta)
+	if !rootMeta.HasLive {
+		t.Fatalf("expected root route to be live")
+	}
+	if rootMeta.LiveSelectorID != "notes-content" {
+		t.Fatalf("expected selector notes-content, got %q", rootMeta.LiveSelectorID)
+	}
+	if rootMeta.LiveStateType != "appcore.NotesSignalState" {
+		t.Fatalf("expected appcore.NotesSignalState, got %q", rootMeta.LiveStateType)
 	}
 
 	authorMeta, ok := byRoute["author/[slug]"]
@@ -261,6 +327,13 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 		generationPaths{GenImportRoot: "internal/web/gen"},
 		metas,
 		map[string]templateDef{},
+		map[string]templateDef{
+			"": {
+				Kind:       notFoundTemplate,
+				RouteID:    "",
+				ModuleName: "r_not_found_root",
+			},
+		},
 	)
 	if err != nil {
 		t.Fatalf("generate registry: %v", err)
@@ -278,6 +351,34 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 	}
 	if !strings.Contains(text, "return &route_resolvers.Resolver{}") {
 		t.Fatalf("expected route resolver constructor to return unified resolver:\n%s", text)
+	}
+	if !strings.Contains(text, "func NotFoundPage(notFound framework.NotFoundContext) templ.Component") {
+		t.Fatalf("expected generated NotFoundPage helper in registry:\n%s", text)
+	}
+}
+
+func TestRegistryGenerationRequiresRootNotFoundTemplate(t *testing.T) {
+	metas := []routeMeta{
+		{
+			RouteID:        "",
+			RouteName:      "Root",
+			ParamsTypeName: "RootParams",
+			PageViewType:   "appcore.NotesPageView",
+			Page:           templateDef{ModuleName: "r_page_root"},
+		},
+	}
+
+	_, err := generateRegistrySource(
+		generationPaths{GenImportRoot: "internal/web/gen"},
+		metas,
+		map[string]templateDef{},
+		map[string]templateDef{},
+	)
+	if err == nil {
+		t.Fatal("expected missing root 404 metadata error")
+	}
+	if !strings.Contains(err.Error(), "missing root 404") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 

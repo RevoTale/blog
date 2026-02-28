@@ -66,6 +66,16 @@ type NotePageView struct {
 	SidebarTagItems    []notes.Tag
 }
 
+func NewNotFoundLayoutView() RootLayoutView {
+	return NotesPageView{
+		PageTitle:   "404 Not Found",
+		SidebarMode: SidebarModeRoot,
+		Filter: notes.ListFilter{
+			Type: notes.NoteTypeAll,
+		},
+	}
+}
+
 func (v NotesPageView) LayoutPageTitle() string {
 	return v.PageTitle
 }

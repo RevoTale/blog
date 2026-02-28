@@ -1,0 +1,19 @@
+package appsrc
+
+templ Page(path string) {
+	<section class="not-found-page">
+		<article class="not-found-card panel">
+			<p class="not-found-kicker">error / 404</p>
+			<h1 class="not-found-title">Signal lost</h1>
+			<p class="not-found-summary">
+				The channel
+				<code class="not-found-path">{ path }</code>
+				was not found on this server.
+			</p>
+			<div class="not-found-actions">
+				<a class="channels-back-button" href="/">Back to notes</a>
+				<a class="channels-back-button not-found-alt-action" href="/channels">Open channels</a>
+			</div>
+		</article>
+	</section>
+}

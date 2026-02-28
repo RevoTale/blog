@@ -20,12 +20,17 @@ var liveContainerPattern = regexp.MustCompile(
 		`|<[^>]*\bdata-signals\b[^>]*\bid\s*=\s*"([A-Za-z0-9_-]+)"`,
 )
 var pageViewTypePattern = regexp.MustCompile(`templ\s+Page\s*\(\s*view\s+([A-Za-z0-9_.]+)\s*\)`)
+var layoutSignaturePattern = regexp.MustCompile(
+	`templ\s+Layout\s*\(\s*view\s+([A-Za-z0-9_.]+)\s*,\s*child\s+templ\.Component\s*\)`,
+)
+var notFoundSignaturePattern = regexp.MustCompile(`templ\s+Page\s*\(\s*path\s+string\s*\)`)
 
 type templateKind string
 
 const (
-	pageTemplate   templateKind = "page"
-	layoutTemplate templateKind = "layout"
+	pageTemplate     templateKind = "page"
+	layoutTemplate   templateKind = "layout"
+	notFoundTemplate templateKind = "not_found"
 )
 
 const (
@@ -98,6 +103,7 @@ type routeFiles struct {
 	Templates []templateDef
 	Pages     []templateDef
 	Layouts   map[string]templateDef
+	NotFounds map[string]templateDef
 }
 
 func Run() error {
@@ -112,6 +118,19 @@ func Run() error {
 	}
 	if len(routes.Pages) == 0 {
 		return errors.New("no page.templ files found in internal/web/app")
+	}
+	if _, ok := routes.NotFounds[""]; !ok {
+		return errors.New("root 404 template is required: internal/web/app/404.templ")
+	}
+	for _, layout := range routes.Layouts {
+		if err := validateLayoutTemplateSignature(layout.SourcePath); err != nil {
+			return err
+		}
+	}
+	for _, notFound := range routes.NotFounds {
+		if err := validateNotFoundTemplateSignature(notFound.SourcePath); err != nil {
+			return err
+		}
 	}
 
 	metas, err := buildRouteMetas(routes.Pages, paths)
@@ -143,7 +162,7 @@ func Run() error {
 		return fmt.Errorf("write %s: %w", generatedResolverFileName, err)
 	}
 
-	registrySource, err := generateRegistrySource(paths, metas, routes.Layouts)
+	registrySource, err := generateRegistrySource(paths, metas, routes.Layouts, routes.NotFounds)
 	if err != nil {
 		return err
 	}
@@ -198,6 +217,7 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 	templates := make([]templateDef, 0, 16)
 	pages := make([]templateDef, 0, 8)
 	layouts := make(map[string]templateDef)
+	notFounds := make(map[string]templateDef)
 
 	walkErr := filepath.WalkDir(appRoot, func(filePath string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -228,8 +248,10 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 			kind = pageTemplate
 		case "layout.templ":
 			kind = layoutTemplate
+		case "404.templ":
+			kind = notFoundTemplate
 		default:
-			return fmt.Errorf("unsupported route template %q; only page.templ/layout.templ are allowed", relPath)
+			return fmt.Errorf("unsupported route template %q; only page.templ/layout.templ/404.templ are allowed", relPath)
 		}
 
 		routeDir := path.Dir(relPath)
@@ -252,7 +274,7 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 			ModuleName: moduleName,
 			Package:    moduleName,
 			OutputDir:  filepath.ToSlash(filepath.Join(outputRoot, moduleName)),
-			OutputFile: string(kind) + ".templ",
+			OutputFile: templateOutputFileName(kind),
 		}
 		templates = append(templates, tpl)
 		if kind == pageTemplate {
@@ -260,6 +282,9 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 		}
 		if kind == layoutTemplate {
 			layouts[routeID] = tpl
+		}
+		if kind == notFoundTemplate {
+			notFounds[routeID] = tpl
 		}
 
 		return nil
@@ -280,7 +305,12 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 		return pages[i].RouteID < pages[j].RouteID
 	})
 
-	return routeFiles{Templates: templates, Pages: pages, Layouts: layouts}, nil
+	return routeFiles{
+		Templates: templates,
+		Pages:     pages,
+		Layouts:   layouts,
+		NotFounds: notFounds,
+	}, nil
 }
 
 func parseRouteSegments(routeDir string) ([]routeSegment, error) {
@@ -356,6 +386,13 @@ func moduleNameFor(kind templateKind, segments []routeSegment) string {
 	return strings.Join(parts, "_")
 }
 
+func templateOutputFileName(kind templateKind) string {
+	if kind == notFoundTemplate {
+		return "404.templ"
+	}
+	return string(kind) + ".templ"
+}
+
 func buildRouteMetas(pages []templateDef, paths generationPaths) ([]routeMeta, error) {
 	_ = paths
 	metas := make([]routeMeta, 0, len(pages))
@@ -385,7 +422,7 @@ func buildRouteMetas(pages []templateDef, paths generationPaths) ([]routeMeta, e
 		if selectorErr != nil {
 			return nil, fmt.Errorf("route %q: %w", page.RouteID, selectorErr)
 		}
-		if hasLiveSelector && len(meta.Params) > 0 {
+		if hasLiveSelector {
 			liveStateType, liveTypeErr := deriveLiveStateType(pageViewType)
 			if liveTypeErr != nil {
 				return nil, fmt.Errorf("route %q: %w", page.RouteID, liveTypeErr)
@@ -438,6 +475,42 @@ func parsePageViewType(pageTemplatePath string) (string, error) {
 		return "", fmt.Errorf("%q page view type %q must be appcore-qualified", filepath.ToSlash(pageTemplatePath), viewType)
 	}
 	return viewType, nil
+}
+
+func validateLayoutTemplateSignature(layoutTemplatePath string) error {
+	source, err := os.ReadFile(layoutTemplatePath)
+	if err != nil {
+		return fmt.Errorf("read %q: %w", filepath.ToSlash(layoutTemplatePath), err)
+	}
+
+	matches := layoutSignaturePattern.FindStringSubmatch(string(source))
+	if len(matches) < 2 {
+		return fmt.Errorf("%q must declare templ Layout(view appcore.RootLayoutView, child templ.Component)", filepath.ToSlash(layoutTemplatePath))
+	}
+
+	viewType := strings.TrimSpace(matches[1])
+	if viewType != "appcore.RootLayoutView" {
+		return fmt.Errorf(
+			"%q layout view type %q must be appcore.RootLayoutView",
+			filepath.ToSlash(layoutTemplatePath),
+			viewType,
+		)
+	}
+
+	return nil
+}
+
+func validateNotFoundTemplateSignature(notFoundTemplatePath string) error {
+	source, err := os.ReadFile(notFoundTemplatePath)
+	if err != nil {
+		return fmt.Errorf("read %q: %w", filepath.ToSlash(notFoundTemplatePath), err)
+	}
+
+	if !notFoundSignaturePattern.Match(source) {
+		return fmt.Errorf("%q must declare templ Page(path string)", filepath.ToSlash(notFoundTemplatePath))
+	}
+
+	return nil
 }
 
 func deriveLiveStateType(pageViewType string) (string, error) {
@@ -656,7 +729,12 @@ func generateRegistrySource(
 	paths generationPaths,
 	metas []routeMeta,
 	layouts map[string]templateDef,
+	notFounds map[string]templateDef,
 ) ([]byte, error) {
+	if _, ok := notFounds[""]; !ok {
+		return nil, errors.New("missing root 404 template metadata")
+	}
+
 	importLines := []string{
 		"\"context\"",
 		"\"net/http\"",
@@ -668,7 +746,7 @@ func generateRegistrySource(
 		"\"github.com/a-h/templ\"",
 	}
 
-	moduleImports := make([]string, 0, len(metas)+len(layouts))
+	moduleImports := make([]string, 0, len(metas)+len(layouts)+len(notFounds))
 	for _, meta := range metas {
 		moduleImports = append(moduleImports, fmt.Sprintf(
 			"%s \"blog/%s/%s\"",
@@ -690,6 +768,21 @@ func generateRegistrySource(
 			layout.ModuleName,
 			paths.GenImportRoot,
 			layout.ModuleName,
+		))
+	}
+
+	notFoundKeys := make([]string, 0, len(notFounds))
+	for routeID := range notFounds {
+		notFoundKeys = append(notFoundKeys, routeID)
+	}
+	sort.Strings(notFoundKeys)
+	for _, routeID := range notFoundKeys {
+		notFound := notFounds[routeID]
+		moduleImports = append(moduleImports, fmt.Sprintf(
+			"%s \"blog/%s/%s\"",
+			notFound.ModuleName,
+			paths.GenImportRoot,
+			notFound.ModuleName,
 		))
 	}
 
@@ -745,6 +838,8 @@ func generateRegistrySource(
 	buffer.WriteString("\t}\n")
 	buffer.WriteString("}\n\n")
 
+	writeNotFoundPageFunc(buffer, layouts, notFounds)
+
 	for _, meta := range metas {
 		writeParseParamsFunc(buffer, meta, false)
 		if meta.HasLive {
@@ -778,6 +873,177 @@ func generateRegistrySource(
 		return nil, fmt.Errorf("format registry source: %w", err)
 	}
 	return formatted, nil
+}
+
+func writeNotFoundPageFunc(
+	buffer *bytes.Buffer,
+	layouts map[string]templateDef,
+	notFounds map[string]templateDef,
+) {
+	notFoundKeys := make([]string, 0, len(notFounds))
+	dynamicNotFoundKeys := make([]string, 0, len(notFounds))
+	for routeID := range notFounds {
+		notFoundKeys = append(notFoundKeys, routeID)
+		if strings.Contains(routeID, "[") {
+			dynamicNotFoundKeys = append(dynamicNotFoundKeys, routeID)
+		}
+	}
+	sort.Strings(notFoundKeys)
+	sort.Slice(dynamicNotFoundKeys, func(i int, j int) bool {
+		left := routeIDSegmentCount(dynamicNotFoundKeys[i])
+		right := routeIDSegmentCount(dynamicNotFoundKeys[j])
+		if left != right {
+			return left > right
+		}
+		return dynamicNotFoundKeys[i] < dynamicNotFoundKeys[j]
+	})
+
+	buffer.WriteString("func NotFoundPage(notFound framework.NotFoundContext) templ.Component {\n")
+	buffer.WriteString("\tpathValue := strings.TrimSpace(notFound.RequestPath)\n")
+	buffer.WriteString("\tif pathValue == \"\" {\n")
+	buffer.WriteString("\t\tpathValue = \"/\"\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\trouteID := nearestNotFoundRouteID(notFound)\n")
+	buffer.WriteString("\tview := appcore.NewNotFoundLayoutView()\n")
+	buffer.WriteString("\tswitch routeID {\n")
+	for _, routeID := range notFoundKeys {
+		if routeID == "" {
+			continue
+		}
+		notFound := notFounds[routeID]
+		writef(buffer, "\tcase %q:\n", routeID)
+		writef(buffer, "\t\tcomponent := %s.Page(pathValue)\n", notFound.ModuleName)
+		chain := layoutChain(routeID, layouts)
+		for idx := len(chain) - 1; idx >= 0; idx-- {
+			writef(buffer, "\t\tcomponent = %s.Layout(view, component)\n", chain[idx].ModuleName)
+		}
+		buffer.WriteString("\t\treturn component\n")
+	}
+
+	rootNotFound := notFounds[""]
+	buffer.WriteString("\tdefault:\n")
+	writef(buffer, "\t\tcomponent := %s.Page(pathValue)\n", rootNotFound.ModuleName)
+	rootChain := layoutChain("", layouts)
+	for idx := len(rootChain) - 1; idx >= 0; idx-- {
+		writef(buffer, "\t\tcomponent = %s.Layout(view, component)\n", rootChain[idx].ModuleName)
+	}
+	buffer.WriteString("\t\treturn component\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func nearestNotFoundRouteID(notFound framework.NotFoundContext) string {\n")
+	buffer.WriteString("\tfor _, candidate := range candidateRouteIDsFromPattern(notFound.MatchedRoutePattern) {\n")
+	buffer.WriteString("\t\tif routeID, ok := resolveNotFoundCandidateRouteID(candidate); ok {\n")
+	buffer.WriteString("\t\t\treturn routeID\n")
+	buffer.WriteString("\t\t}\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\tfor _, candidate := range candidateRouteIDsFromPath(notFound.RequestPath) {\n")
+	buffer.WriteString("\t\tif routeID, ok := resolveNotFoundCandidateRouteID(candidate); ok {\n")
+	buffer.WriteString("\t\t\treturn routeID\n")
+	buffer.WriteString("\t\t}\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\treturn \"\"\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func resolveNotFoundCandidateRouteID(candidate string) (string, bool) {\n")
+	buffer.WriteString("\tif hasNotFoundTemplate(candidate) {\n")
+	buffer.WriteString("\t\treturn candidate, true\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\tif candidate == \"\" {\n")
+	buffer.WriteString("\t\treturn \"\", false\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\trouteID, ok := matchDynamicNotFoundTemplate(candidate)\n")
+	buffer.WriteString("\tif !ok {\n")
+	buffer.WriteString("\t\treturn \"\", false\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\treturn routeID, true\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func matchDynamicNotFoundTemplate(candidate string) (string, bool) {\n")
+	buffer.WriteString("\tif candidate == \"\" {\n")
+	buffer.WriteString("\t\treturn \"\", false\n")
+	buffer.WriteString("\t}\n")
+	if len(dynamicNotFoundKeys) > 0 {
+		buffer.WriteString("\trequestPath := \"/\" + candidate\n")
+	}
+	for _, routeID := range dynamicNotFoundKeys {
+		writef(buffer, "\tif _, ok := router.MatchPathPattern(%q, requestPath); ok {\n", routePattern(routeID))
+		writef(buffer, "\t\treturn %q, true\n", routeID)
+		buffer.WriteString("\t}\n")
+	}
+	buffer.WriteString("\treturn \"\", false\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func hasNotFoundTemplate(routeID string) bool {\n")
+	buffer.WriteString("\tswitch routeID {\n")
+	for _, routeID := range notFoundKeys {
+		writef(buffer, "\tcase %q:\n", routeID)
+	}
+	buffer.WriteString("\t\treturn true\n")
+	buffer.WriteString("\tdefault:\n")
+	buffer.WriteString("\t\treturn false\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func candidateRouteIDsFromPattern(pattern string) []string {\n")
+	buffer.WriteString("\trouteID := normalizePatternRouteID(pattern)\n")
+	buffer.WriteString("\treturn routeAncestry(routeID)\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func candidateRouteIDsFromPath(requestPath string) []string {\n")
+	buffer.WriteString("\trouteID := normalizeRequestRouteID(requestPath)\n")
+	buffer.WriteString("\treturn routeAncestry(routeID)\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func normalizePatternRouteID(pattern string) string {\n")
+	buffer.WriteString("\trouteID := strings.TrimSpace(pattern)\n")
+	buffer.WriteString("\trouteID = strings.Trim(routeID, \"/\")\n")
+	buffer.WriteString("\tif routeID == \"live\" {\n")
+	buffer.WriteString("\t\treturn \"\"\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\tif strings.HasSuffix(routeID, \"/live\") {\n")
+	buffer.WriteString("\t\trouteID = strings.TrimSuffix(routeID, \"/live\")\n")
+	buffer.WriteString("\t\trouteID = strings.Trim(routeID, \"/\")\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\treturn routeID\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func normalizeRequestRouteID(requestPath string) string {\n")
+	buffer.WriteString("\trouteID := strings.TrimSpace(requestPath)\n")
+	buffer.WriteString("\trouteID = strings.Trim(routeID, \"/\")\n")
+	buffer.WriteString("\tif routeID == \"live\" {\n")
+	buffer.WriteString("\t\treturn \"\"\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\tif strings.HasSuffix(routeID, \"/live\") {\n")
+	buffer.WriteString("\t\trouteID = strings.TrimSuffix(routeID, \"/live\")\n")
+	buffer.WriteString("\t\trouteID = strings.Trim(routeID, \"/\")\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\treturn routeID\n")
+	buffer.WriteString("}\n\n")
+
+	buffer.WriteString("func routeAncestry(routeID string) []string {\n")
+	buffer.WriteString("\trouteID = strings.TrimSpace(routeID)\n")
+	buffer.WriteString("\trouteID = strings.Trim(routeID, \"/\")\n")
+	buffer.WriteString("\tif routeID == \"\" {\n")
+	buffer.WriteString("\t\treturn []string{\"\"}\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\tparts := strings.Split(routeID, \"/\")\n")
+	buffer.WriteString("\tout := make([]string, 0, len(parts)+1)\n")
+	buffer.WriteString("\tfor idx := len(parts); idx >= 1; idx-- {\n")
+	buffer.WriteString("\t\tout = append(out, strings.Join(parts[:idx], \"/\"))\n")
+	buffer.WriteString("\t}\n")
+	buffer.WriteString("\tout = append(out, \"\")\n")
+	buffer.WriteString("\treturn out\n")
+	buffer.WriteString("}\n\n")
+}
+
+func routeIDSegmentCount(routeID string) int {
+	routeID = strings.TrimSpace(routeID)
+	routeID = strings.Trim(routeID, "/")
+	if routeID == "" {
+		return 0
+	}
+	return len(strings.Split(routeID, "/"))
 }
 
 type layoutWrapperDef struct {
