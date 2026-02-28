@@ -1,4 +1,4 @@
-package param_slug
+package resolvers
 
 import (
 	"context"
@@ -8,27 +8,25 @@ import (
 	"blog/internal/web/appcore"
 )
 
-type Resolver struct{}
-
-func (Resolver) ResolvePage(
+func (Resolver) ResolveAuthorParamSlugPage(
 	ctx context.Context,
 	appCtx *appcore.Context,
 	r *http.Request,
-	params Params,
-) (PageView, error) {
+	params AuthorParamSlugParams,
+) (appcore.AuthorPageView, error) {
 	return appcore.LoadAuthorPage(ctx, appCtx, r, framework.SlugParams{Slug: params.Slug})
 }
 
-func (Resolver) ParseLiveState(r *http.Request) (LiveState, error) {
+func (Resolver) ParseAuthorParamSlugLiveState(r *http.Request) (appcore.AuthorSignalState, error) {
 	return appcore.ParseAuthorLiveState(r)
 }
 
-func (Resolver) ResolveLive(
+func (Resolver) ResolveAuthorParamSlugLive(
 	ctx context.Context,
 	appCtx *appcore.Context,
 	r *http.Request,
-	params Params,
-	state LiveState,
-) (PageView, error) {
+	params AuthorParamSlugParams,
+	state appcore.AuthorSignalState,
+) (appcore.AuthorPageView, error) {
 	return appcore.LoadAuthorLivePage(ctx, appCtx, r, framework.SlugParams{Slug: params.Slug}, state)
 }

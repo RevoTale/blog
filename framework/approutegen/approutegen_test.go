@@ -82,138 +82,202 @@ func TestDiscoverRouteFilesRejectsLegacyWildcardSyntax(t *testing.T) {
 	}
 }
 
-func TestBuildRouteMetasMissingTypesFile(t *testing.T) {
+func TestParsePageViewType(t *testing.T) {
 	root := t.TempDir()
-	appRoot := filepath.Join(root, "app")
-	genRoot := filepath.Join(root, "gen")
+	pagePath := filepath.Join(root, "page.templ")
+	writeTestFile(t, pagePath, "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotePageView) { <div/> }\n")
 
-	writeTestFile(t, filepath.Join(appRoot, "note", "[slug]", "page.templ"), "package appsrc\n")
-	routes, err := discoverRouteFiles(appRoot, genRoot)
+	viewType, err := parsePageViewType(pagePath)
 	if err != nil {
-		t.Fatalf("discover routes: %v", err)
+		t.Fatalf("parse page view type: %v", err)
 	}
+	if viewType != "appcore.NotePageView" {
+		t.Fatalf("expected appcore.NotePageView, got %q", viewType)
+	}
+}
 
-	_, err = buildRouteMetas(routes.Pages, generationPaths{
-		ResolverRoot:       filepath.Join(root, "appcore", "resolvers"),
-		ResolverImportRoot: "internal/web/appcore/resolvers",
-	})
+func TestParsePageViewTypeRejectsNonAppcoreType(t *testing.T) {
+	root := t.TempDir()
+	pagePath := filepath.Join(root, "page.templ")
+	writeTestFile(t, pagePath, "package appsrc\n\ntempl Page(view note.NotePageView) { <div/> }\n")
+
+	_, err := parsePageViewType(pagePath)
 	if err == nil {
-		t.Fatal("expected missing types.go error")
+		t.Fatal("expected appcore-qualified type error")
 	}
-	if !strings.Contains(err.Error(), "types.go") {
+	if !strings.Contains(err.Error(), "appcore-qualified") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
-func TestBuildRouteMetasMissingPageView(t *testing.T) {
-	root := t.TempDir()
-	appRoot := filepath.Join(root, "app")
-	genRoot := filepath.Join(root, "gen")
-	resolverRoot := filepath.Join(root, "appcore", "resolvers")
-
-	writeTestFile(t, filepath.Join(appRoot, "notes", "page.templ"), "package appsrc\n")
-	writeTestFile(t, filepath.Join(resolverRoot, "notes", "types.go"), "package notes\n\ntype LiveState struct{}\n")
-
-	routes, err := discoverRouteFiles(appRoot, genRoot)
+func TestDeriveLiveStateType(t *testing.T) {
+	liveStateType, err := deriveLiveStateType("appcore.AuthorPageView")
 	if err != nil {
-		t.Fatalf("discover routes: %v", err)
+		t.Fatalf("derive live state type: %v", err)
 	}
+	if liveStateType != "appcore.AuthorSignalState" {
+		t.Fatalf("expected appcore.AuthorSignalState, got %q", liveStateType)
+	}
+}
 
-	_, err = buildRouteMetas(routes.Pages, generationPaths{
-		ResolverRoot:       resolverRoot,
-		ResolverImportRoot: "internal/web/appcore/resolvers",
-	})
+func TestDeriveLiveStateTypeRejectsInvalidViewType(t *testing.T) {
+	_, err := deriveLiveStateType("appcore.AuthorView")
 	if err == nil {
-		t.Fatal("expected missing PageView error")
+		t.Fatal("expected invalid page view suffix error")
 	}
-	if !strings.Contains(err.Error(), "PageView") {
+	if !strings.Contains(err.Error(), "must end with PageView") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
-func TestLiveGenerationRequiresLiveStateDeclaration(t *testing.T) {
+func TestBuildRouteMetasLiveDetection(t *testing.T) {
 	root := t.TempDir()
 	appRoot := filepath.Join(root, "app")
 	genRoot := filepath.Join(root, "gen")
-	resolverRoot := filepath.Join(root, "appcore", "resolvers")
 
-	notesPageTemplate := "package appsrc\n\n" +
-		"templ Page() { <div id=\"notes-content\" data-signals=\"{}\"></div> }\n"
-	notePageTemplate := "package appsrc\n\n" +
-		"templ Page() { <div id=\"note-content\"></div> }\n"
-	writeTestFile(t, filepath.Join(appRoot, "notes", "page.templ"), notesPageTemplate)
-	writeTestFile(t, filepath.Join(appRoot, "note", "[slug]", "page.templ"), notePageTemplate)
-	writeTestFile(t, filepath.Join(appRoot, "layout.templ"), "package appsrc\n")
-
-	notesTypes := "package notes\n\n" +
-		"type PageView struct{}\n" +
-		"type LiveState struct{}\n"
-	noteTypes := "package param_slug\n\n" +
-		"type PageView struct{}\n"
-	writeTestFile(t, filepath.Join(resolverRoot, "notes", "types.go"), notesTypes)
-	writeTestFile(t, filepath.Join(resolverRoot, "note", "param_slug", "types.go"), noteTypes)
+	rootTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotesPageView) { <div id=\"notes-content\" data-signals=\"{}\"></div> }\n"
+	authorTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"author-content\" data-signals=\"{}\"></div> }\n"
+	writeTestFile(t, filepath.Join(appRoot, "page.templ"), rootTemplate)
+	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), authorTemplate)
 
 	routes, err := discoverRouteFiles(appRoot, genRoot)
 	if err != nil {
 		t.Fatalf("discover routes: %v", err)
 	}
 
-	metas, err := buildRouteMetas(routes.Pages, generationPaths{
-		GenImportRoot:      "internal/web/gen",
-		ResolverRoot:       resolverRoot,
-		ResolverImportRoot: "internal/web/appcore/resolvers",
-	})
+	metas, err := buildRouteMetas(routes.Pages, generationPaths{})
 	if err != nil {
 		t.Fatalf("build route metas: %v", err)
+	}
+
+	byRoute := map[string]routeMeta{}
+	for _, meta := range metas {
+		byRoute[meta.RouteID] = meta
+	}
+
+	rootMeta, ok := byRoute[""]
+	if !ok {
+		t.Fatalf("missing root route meta: %#v", byRoute)
+	}
+	if rootMeta.HasLive {
+		t.Fatalf("expected root route to be non-live, got live meta: %#v", rootMeta)
+	}
+
+	authorMeta, ok := byRoute["author/[slug]"]
+	if !ok {
+		t.Fatalf("missing author route meta: %#v", byRoute)
+	}
+	if !authorMeta.HasLive {
+		t.Fatalf("expected author route to be live")
+	}
+	if authorMeta.LiveSelectorID != "author-content" {
+		t.Fatalf("expected selector author-content, got %q", authorMeta.LiveSelectorID)
+	}
+	if authorMeta.LiveStateType != "appcore.AuthorSignalState" {
+		t.Fatalf("expected appcore.AuthorSignalState, got %q", authorMeta.LiveStateType)
+	}
+}
+
+func TestBuildRouteMetasLiveDerivationError(t *testing.T) {
+	root := t.TempDir()
+	appRoot := filepath.Join(root, "app")
+	genRoot := filepath.Join(root, "gen")
+
+	pageTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NoteView) { <div id=\"note-content\" data-signals=\"{}\"></div> }\n"
+	writeTestFile(t, filepath.Join(appRoot, "note", "[slug]", "page.templ"), pageTemplate)
+
+	routes, err := discoverRouteFiles(appRoot, genRoot)
+	if err != nil {
+		t.Fatalf("discover routes: %v", err)
+	}
+
+	_, err = buildRouteMetas(routes.Pages, generationPaths{})
+	if err == nil {
+		t.Fatal("expected live state derivation error")
+	}
+	if !strings.Contains(err.Error(), "must end with PageView") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestResolverNamespaceGenerationDeterministic(t *testing.T) {
+	metas := []routeMeta{
+		{
+			RouteID:        "",
+			RouteName:      "Root",
+			ParamsTypeName: "RootParams",
+			PageViewType:   "appcore.NotesPageView",
+		},
+		{
+			RouteID:        "author/[slug]",
+			RouteName:      "AuthorParamSlug",
+			ParamsTypeName: "AuthorParamSlugParams",
+			Params:         []routeParamDef{{Name: "slug", FieldName: "Slug"}},
+			PageViewType:   "appcore.AuthorPageView",
+			HasLive:        true,
+			LiveStateType:  "appcore.AuthorSignalState",
+		},
+	}
+
+	first, err := generateResolverNamespaceSource(metas)
+	if err != nil {
+		t.Fatalf("first generation failed: %v", err)
+	}
+	second, err := generateResolverNamespaceSource(metas)
+	if err != nil {
+		t.Fatalf("second generation failed: %v", err)
+	}
+	if !bytes.Equal(first, second) {
+		t.Fatalf("resolver namespace generation is not deterministic")
+	}
+	if !bytes.Contains(first, []byte("var _ RouteResolver = (*Resolver)(nil)")) {
+		t.Fatalf("expected compile-time assertion in generated resolver namespace:\n%s", string(first))
+	}
+}
+
+func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
+	metas := []routeMeta{
+		{
+			RouteID:        "",
+			RouteName:      "Root",
+			ParamsTypeName: "RootParams",
+			PageViewType:   "appcore.NotesPageView",
+			Page:           templateDef{ModuleName: "r_page_root"},
+		},
+		{
+			RouteID:        "author/[slug]",
+			RouteName:      "AuthorParamSlug",
+			ParamsTypeName: "AuthorParamSlugParams",
+			Params:         []routeParamDef{{Name: "slug", FieldName: "Slug"}},
+			PageViewType:   "appcore.AuthorPageView",
+			HasLive:        true,
+			LiveStateType:  "appcore.AuthorSignalState",
+			LiveSelectorID: "author-content",
+			Page:           templateDef{ModuleName: "r_page_author_param_slug"},
+		},
 	}
 
 	registry, err := generateRegistrySource(
 		generationPaths{GenImportRoot: "internal/web/gen"},
 		metas,
-		routes.Layouts,
+		map[string]templateDef{},
 	)
 	if err != nil {
 		t.Fatalf("generate registry: %v", err)
 	}
 
-	if !bytes.Contains(registry, []byte("\"/notes/live\"")) {
-		t.Fatalf("expected notes live route in registry:\n%s", string(registry))
+	text := string(registry)
+	if !strings.Contains(text, "route_resolvers \"blog/internal/web/appcore/resolvers\"") {
+		t.Fatalf("expected unified resolver namespace import in registry:\n%s", text)
 	}
-	if bytes.Contains(registry, []byte("\"/note/[slug]/live\"")) {
-		t.Fatalf("did not expect note live route in registry:\n%s", string(registry))
+	if strings.Contains(text, "rr_") {
+		t.Fatalf("did not expect per-route resolver aliases in registry:\n%s", text)
 	}
-}
-
-func TestContractsGenerationDeterministic(t *testing.T) {
-	metas := []routeMeta{
-		{
-			RouteID:            "notes",
-			RouteName:          "Notes",
-			ParamsTypeName:     "NotesParams",
-			ResolverAlias:      "rr_notes",
-			ResolverImportPath: "internal/web/appcore/resolvers/notes",
-			HasLive:            true,
-		},
-		{
-			RouteID:            "note/[slug]",
-			RouteName:          "NoteParamSlug",
-			ParamsTypeName:     "NoteParamSlugParams",
-			Params:             []routeParamDef{{Name: "slug", FieldName: "Slug"}},
-			ResolverAlias:      "rr_note_param_slug",
-			ResolverImportPath: "internal/web/appcore/resolvers/note/param_slug",
-		},
+	if !strings.Contains(text, "func NewRouteResolvers() RouteResolvers") {
+		t.Fatalf("expected NewRouteResolvers constructor in registry:\n%s", text)
 	}
-
-	first, err := generateContractsSource(metas)
-	if err != nil {
-		t.Fatalf("first generation failed: %v", err)
-	}
-	second, err := generateContractsSource(metas)
-	if err != nil {
-		t.Fatalf("second generation failed: %v", err)
-	}
-	if !bytes.Equal(first, second) {
-		t.Fatalf("contracts generation is not deterministic")
+	if !strings.Contains(text, "return &route_resolvers.Resolver{}") {
+		t.Fatalf("expected route resolver constructor to return unified resolver:\n%s", text)
 	}
 }
 

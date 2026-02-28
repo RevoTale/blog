@@ -1,4 +1,4 @@
-package root
+package resolvers
 
 import (
 	"context"
@@ -8,13 +8,11 @@ import (
 	"blog/internal/web/appcore"
 )
 
-type Resolver struct{}
-
-func (Resolver) ResolvePage(
+func (Resolver) ResolveRootPage(
 	ctx context.Context,
 	appCtx *appcore.Context,
 	r *http.Request,
-	_ Params,
-) (PageView, error) {
+	_ RootParams,
+) (appcore.NotesPageView, error) {
 	return appcore.LoadNotesPage(ctx, appCtx, r, framework.EmptyParams{})
 }

@@ -1,4 +1,4 @@
-package param_slug
+package resolvers
 
 import (
 	"context"
@@ -8,13 +8,11 @@ import (
 	"blog/internal/web/appcore"
 )
 
-type Resolver struct{}
-
-func (Resolver) ResolvePage(
+func (Resolver) ResolveTagParamSlugPage(
 	ctx context.Context,
 	appCtx *appcore.Context,
 	r *http.Request,
-	params Params,
-) (PageView, error) {
+	params TagParamSlugParams,
+) (appcore.NotesPageView, error) {
 	return appcore.LoadTagPage(ctx, appCtx, r, framework.SlugParams{Slug: params.Slug})
 }

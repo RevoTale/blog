@@ -19,7 +19,7 @@ tasks:
       - |
         set -euo pipefail
         templ_files="$(find internal/web -type f -name '*_templ.go' | sort)"
-        git diff --exit-code -- go.mod go.sum internal/gql/generated.go internal/techstack/generated.go $templ_files
+        git diff --exit-code -- go.mod go.sum internal/gql/generated.go internal/techstack/generated.go internal/web/appcore/resolvers/generated.go internal/web/gen/registry_gen.go internal/web/gen/contracts_gen.go internal/web/gen/resolvers_gen.go $templ_files
 
   go:fmt:
     desc: Format Go sources

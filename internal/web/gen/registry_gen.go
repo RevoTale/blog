@@ -5,13 +5,7 @@ import (
 	"blog/framework"
 	"blog/framework/router"
 	"blog/internal/web/appcore"
-	rr_author_param_slug "blog/internal/web/appcore/resolvers/author/param_slug"
-	rr_channels "blog/internal/web/appcore/resolvers/channels"
-	rr_micro_tales "blog/internal/web/appcore/resolvers/micro-tales"
-	rr_note_param_slug "blog/internal/web/appcore/resolvers/note/param_slug"
-	rr_root "blog/internal/web/appcore/resolvers/root"
-	rr_tag_param_slug "blog/internal/web/appcore/resolvers/tag/param_slug"
-	rr_tales "blog/internal/web/appcore/resolvers/tales"
+	route_resolvers "blog/internal/web/appcore/resolvers"
 	r_layout_author_param_slug "blog/internal/web/gen/r_layout_author_param_slug"
 	r_layout_root "blog/internal/web/gen/r_layout_root"
 	r_page_author_param_slug "blog/internal/web/gen/r_page_author_param_slug"
@@ -27,39 +21,53 @@ import (
 	"strings"
 )
 
+type RouteResolvers = route_resolvers.RouteResolver
+
+type RootParams = route_resolvers.RootParams
+type AuthorParamSlugParams = route_resolvers.AuthorParamSlugParams
+type ChannelsParams = route_resolvers.ChannelsParams
+type MicroTalesParams = route_resolvers.MicroTalesParams
+type NoteParamSlugParams = route_resolvers.NoteParamSlugParams
+type TagParamSlugParams = route_resolvers.TagParamSlugParams
+type TalesParams = route_resolvers.TalesParams
+
+func NewRouteResolvers() RouteResolvers {
+	return &route_resolvers.Resolver{}
+}
+
 func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Context] {
 	return []framework.RouteHandler[*appcore.Context]{
-		framework.PageOnlyRouteHandler[*appcore.Context, RootParams, rr_root.PageView]{
-			Page: framework.PageModule[*appcore.Context, RootParams, rr_root.PageView]{
+		framework.PageOnlyRouteHandler[*appcore.Context, RootParams, appcore.NotesPageView]{
+			Page: framework.PageModule[*appcore.Context, RootParams, appcore.NotesPageView]{
 				Pattern:     "/",
 				ParseParams: parseRootParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (rr_root.PageView, error) {
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveRootPage(ctx, appCtx, r, params)
 				},
 				Render: r_page_root.Page,
-				Layouts: []framework.LayoutRenderer[rr_root.PageView]{
+				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapRootWithRootLayout,
 				},
 			},
 		},
-		framework.PageAndLiveRouteHandler[*appcore.Context, AuthorParamSlugParams, rr_author_param_slug.PageView, rr_author_param_slug.LiveState]{
-			Page: framework.PageModule[*appcore.Context, AuthorParamSlugParams, rr_author_param_slug.PageView]{
+		framework.PageAndLiveRouteHandler[*appcore.Context, AuthorParamSlugParams, appcore.AuthorPageView, appcore.AuthorSignalState]{
+			Page: framework.PageModule[*appcore.Context, AuthorParamSlugParams, appcore.AuthorPageView]{
 				Pattern:     "/author/[slug]",
 				ParseParams: parseAuthorParamSlugParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (rr_author_param_slug.PageView, error) {
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (appcore.AuthorPageView, error) {
 					return resolvers.ResolveAuthorParamSlugPage(ctx, appCtx, r, params)
 				},
 				Render: r_page_author_param_slug.Page,
-				Layouts: []framework.LayoutRenderer[rr_author_param_slug.PageView]{
+				Layouts: []framework.LayoutRenderer[appcore.AuthorPageView]{
 					wrapAuthorParamSlugWithRootLayout,
 					wrapAuthorParamSlugWithAuthorParamSlugLayout,
 				},
 			},
-			Live: framework.LiveModule[*appcore.Context, AuthorParamSlugParams, rr_author_param_slug.PageView, rr_author_param_slug.LiveState]{
+			Live: framework.LiveModule[*appcore.Context, AuthorParamSlugParams, appcore.AuthorPageView, appcore.AuthorSignalState]{
 				Pattern:     "/author/[slug]/live",
 				ParseParams: parseAuthorParamSlugLiveParams,
 				ParseState:  resolvers.ParseAuthorParamSlugLiveState,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams, state rr_author_param_slug.LiveState) (rr_author_param_slug.PageView, error) {
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams, state appcore.AuthorSignalState) (appcore.AuthorPageView, error) {
 					return resolvers.ResolveAuthorParamSlugLive(ctx, appCtx, r, params, state)
 				},
 				Render:            r_page_author_param_slug.Page,
@@ -67,67 +75,67 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				BadRequestMessage: "invalid datastar signal payload",
 			},
 		},
-		framework.PageOnlyRouteHandler[*appcore.Context, ChannelsParams, rr_channels.PageView]{
-			Page: framework.PageModule[*appcore.Context, ChannelsParams, rr_channels.PageView]{
+		framework.PageOnlyRouteHandler[*appcore.Context, ChannelsParams, appcore.NotesPageView]{
+			Page: framework.PageModule[*appcore.Context, ChannelsParams, appcore.NotesPageView]{
 				Pattern:     "/channels",
 				ParseParams: parseChannelsParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (rr_channels.PageView, error) {
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveChannelsPage(ctx, appCtx, r, params)
 				},
 				Render: r_page_channels.Page,
-				Layouts: []framework.LayoutRenderer[rr_channels.PageView]{
+				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapChannelsWithRootLayout,
 				},
 			},
 		},
-		framework.PageOnlyRouteHandler[*appcore.Context, MicroTalesParams, rr_micro_tales.PageView]{
-			Page: framework.PageModule[*appcore.Context, MicroTalesParams, rr_micro_tales.PageView]{
+		framework.PageOnlyRouteHandler[*appcore.Context, MicroTalesParams, appcore.NotesPageView]{
+			Page: framework.PageModule[*appcore.Context, MicroTalesParams, appcore.NotesPageView]{
 				Pattern:     "/micro-tales",
 				ParseParams: parseMicroTalesParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (rr_micro_tales.PageView, error) {
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveMicroTalesPage(ctx, appCtx, r, params)
 				},
 				Render: r_page_micro_tales.Page,
-				Layouts: []framework.LayoutRenderer[rr_micro_tales.PageView]{
+				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapMicroTalesWithRootLayout,
 				},
 			},
 		},
-		framework.PageOnlyRouteHandler[*appcore.Context, NoteParamSlugParams, rr_note_param_slug.PageView]{
-			Page: framework.PageModule[*appcore.Context, NoteParamSlugParams, rr_note_param_slug.PageView]{
+		framework.PageOnlyRouteHandler[*appcore.Context, NoteParamSlugParams, appcore.NotePageView]{
+			Page: framework.PageModule[*appcore.Context, NoteParamSlugParams, appcore.NotePageView]{
 				Pattern:     "/note/[slug]",
 				ParseParams: parseNoteParamSlugParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (rr_note_param_slug.PageView, error) {
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (appcore.NotePageView, error) {
 					return resolvers.ResolveNoteParamSlugPage(ctx, appCtx, r, params)
 				},
 				Render: r_page_note_param_slug.Page,
-				Layouts: []framework.LayoutRenderer[rr_note_param_slug.PageView]{
+				Layouts: []framework.LayoutRenderer[appcore.NotePageView]{
 					wrapNoteParamSlugWithRootLayout,
 				},
 			},
 		},
-		framework.PageOnlyRouteHandler[*appcore.Context, TagParamSlugParams, rr_tag_param_slug.PageView]{
-			Page: framework.PageModule[*appcore.Context, TagParamSlugParams, rr_tag_param_slug.PageView]{
+		framework.PageOnlyRouteHandler[*appcore.Context, TagParamSlugParams, appcore.NotesPageView]{
+			Page: framework.PageModule[*appcore.Context, TagParamSlugParams, appcore.NotesPageView]{
 				Pattern:     "/tag/[slug]",
 				ParseParams: parseTagParamSlugParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (rr_tag_param_slug.PageView, error) {
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveTagParamSlugPage(ctx, appCtx, r, params)
 				},
 				Render: r_page_tag_param_slug.Page,
-				Layouts: []framework.LayoutRenderer[rr_tag_param_slug.PageView]{
+				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapTagParamSlugWithRootLayout,
 				},
 			},
 		},
-		framework.PageOnlyRouteHandler[*appcore.Context, TalesParams, rr_tales.PageView]{
-			Page: framework.PageModule[*appcore.Context, TalesParams, rr_tales.PageView]{
+		framework.PageOnlyRouteHandler[*appcore.Context, TalesParams, appcore.NotesPageView]{
+			Page: framework.PageModule[*appcore.Context, TalesParams, appcore.NotesPageView]{
 				Pattern:     "/tales",
 				ParseParams: parseTalesParams,
-				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (rr_tales.PageView, error) {
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveTalesPage(ctx, appCtx, r, params)
 				},
 				Render: r_page_tales.Page,
-				Layouts: []framework.LayoutRenderer[rr_tales.PageView]{
+				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapTalesWithRootLayout,
 				},
 			},
@@ -223,34 +231,34 @@ func parseTalesParams(requestPath string) (TalesParams, bool) {
 	return TalesParams{}, true
 }
 
-func wrapAuthorParamSlugWithAuthorParamSlugLayout(view rr_author_param_slug.PageView, child templ.Component) templ.Component {
+func wrapAuthorParamSlugWithAuthorParamSlugLayout(view appcore.AuthorPageView, child templ.Component) templ.Component {
 	return r_layout_author_param_slug.Layout(view, child)
 }
 
-func wrapAuthorParamSlugWithRootLayout(view rr_author_param_slug.PageView, child templ.Component) templ.Component {
+func wrapAuthorParamSlugWithRootLayout(view appcore.AuthorPageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 
-func wrapChannelsWithRootLayout(view rr_channels.PageView, child templ.Component) templ.Component {
+func wrapChannelsWithRootLayout(view appcore.NotesPageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 
-func wrapMicroTalesWithRootLayout(view rr_micro_tales.PageView, child templ.Component) templ.Component {
+func wrapMicroTalesWithRootLayout(view appcore.NotesPageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 
-func wrapNoteParamSlugWithRootLayout(view rr_note_param_slug.PageView, child templ.Component) templ.Component {
+func wrapNoteParamSlugWithRootLayout(view appcore.NotePageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 
-func wrapRootWithRootLayout(view rr_root.PageView, child templ.Component) templ.Component {
+func wrapRootWithRootLayout(view appcore.NotesPageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 
-func wrapTagParamSlugWithRootLayout(view rr_tag_param_slug.PageView, child templ.Component) templ.Component {
+func wrapTagParamSlugWithRootLayout(view appcore.NotesPageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
 
-func wrapTalesWithRootLayout(view rr_tales.PageView, child templ.Component) templ.Component {
+func wrapTalesWithRootLayout(view appcore.NotesPageView, child templ.Component) templ.Component {
 	return r_layout_root.Layout(view, child)
 }
