@@ -17,6 +17,7 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 			<link rel="stylesheet" href="/.revotale/tui.css"/>
 			@templ.Raw(appcore.ChromaStyleTag())
 			<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-RC.6/bundles/datastar.js"></script>
+			@templ.Raw(appcore.LiveNavigationScriptTag())
 		</head>
 		<body>
 			<div class="app-shell">

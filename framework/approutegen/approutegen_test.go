@@ -89,7 +89,7 @@ func TestDiscoverRouteFilesCollectsNotFoundTemplates(t *testing.T) {
 
 	writeTestFile(t, filepath.Join(appRoot, "404.templ"), "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
 	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "404.templ"), "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
-	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"author-content\" data-signals=\"{}\"></div> }\n")
+	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\" data-signals=\"{}\"></div> }\n")
 
 	routes, err := discoverRouteFiles(appRoot, genRoot)
 	if err != nil {
@@ -196,7 +196,7 @@ func TestBuildRouteMetasLiveDetection(t *testing.T) {
 	genRoot := filepath.Join(root, "gen")
 
 	rootTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotesPageView) { <div id=\"notes-content\" data-signals=\"{}\"></div> }\n"
-	authorTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"author-content\" data-signals=\"{}\"></div> }\n"
+	authorTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\" data-signals=\"{}\"></div> }\n"
 	writeTestFile(t, filepath.Join(appRoot, "page.templ"), rootTemplate)
 	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), authorTemplate)
 
@@ -236,8 +236,8 @@ func TestBuildRouteMetasLiveDetection(t *testing.T) {
 	if !authorMeta.HasLive {
 		t.Fatalf("expected author route to be live")
 	}
-	if authorMeta.LiveSelectorID != "author-content" {
-		t.Fatalf("expected selector author-content, got %q", authorMeta.LiveSelectorID)
+	if authorMeta.LiveSelectorID != "notes-content" {
+		t.Fatalf("expected selector notes-content, got %q", authorMeta.LiveSelectorID)
 	}
 	if authorMeta.LiveStateType != "appcore.AuthorSignalState" {
 		t.Fatalf("expected appcore.AuthorSignalState, got %q", authorMeta.LiveStateType)
@@ -308,6 +308,9 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 			RouteName:      "Root",
 			ParamsTypeName: "RootParams",
 			PageViewType:   "appcore.NotesPageView",
+			HasLive:        true,
+			LiveStateType:  "appcore.NotesSignalState",
+			LiveSelectorID: "notes-content",
 			Page:           templateDef{ModuleName: "r_page_root"},
 		},
 		{
@@ -318,7 +321,7 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 			PageViewType:   "appcore.AuthorPageView",
 			HasLive:        true,
 			LiveStateType:  "appcore.AuthorSignalState",
-			LiveSelectorID: "author-content",
+			LiveSelectorID: "notes-content",
 			Page:           templateDef{ModuleName: "r_page_author_param_slug"},
 		},
 	}
@@ -351,6 +354,18 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 	}
 	if !strings.Contains(text, "return &route_resolvers.Resolver{}") {
 		t.Fatalf("expected route resolver constructor to return unified resolver:\n%s", text)
+	}
+	if !strings.Contains(text, "Pattern:     \"/.live/\"") {
+		t.Fatalf("expected root live pattern to use /.live/ prefix:\n%s", text)
+	}
+	if !strings.Contains(text, "Pattern:     \"/.live/author/[slug]\"") {
+		t.Fatalf("expected nested live pattern to use /.live/ prefix:\n%s", text)
+	}
+	if !strings.Contains(text, "if routeID == \".live\"") {
+		t.Fatalf("expected generated not-found normalization to handle /.live root:\n%s", text)
+	}
+	if !strings.Contains(text, "strings.HasPrefix(routeID, \".live/\")") {
+		t.Fatalf("expected generated not-found normalization to strip /.live prefix:\n%s", text)
 	}
 	if !strings.Contains(text, "func NotFoundPage(notFound framework.NotFoundContext) templ.Component") {
 		t.Fatalf("expected generated NotFoundPage helper in registry:\n%s", text)

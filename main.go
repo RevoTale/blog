@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"blog/framework/httpserver"
 	"blog/internal/config"
@@ -17,6 +18,10 @@ func main() {
 
 	graphqlClient := gql.NewClient(cfg)
 	noteService := notes.NewService(graphqlClient, cfg.PageSize, cfg.RootURL)
+	cachePolicies := httpserver.DefaultCachePolicies()
+	if strings.TrimSpace(cfg.CacheLiveNavigation) != "" {
+		cachePolicies.LiveNavigation = cfg.CacheLiveNavigation
+	}
 	handler, err := httpserver.New(httpserver.Config[*appcore.Context]{
 		AppContext:      appcore.NewContext(noteService),
 		Handlers:        webgen.Handlers(webgen.NewRouteResolvers()),
@@ -26,7 +31,7 @@ func main() {
 			URLPrefix: "/.revotale/",
 			Dir:       cfg.StaticDir,
 		},
-		CachePolicies: httpserver.DefaultCachePolicies(),
+		CachePolicies: cachePolicies,
 		LogServerError: func(err error) {
 			log.Printf("blog server error: %v", err)
 		},

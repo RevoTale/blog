@@ -70,11 +70,12 @@ func TestHTTPServerCachePoliciesAndLive(t *testing.T) {
 			Dir:       staticDir,
 		},
 		CachePolicies: CachePolicies{
-			HTML:   "html-cache",
-			Live:   "live-cache",
-			Static: "static-cache",
-			Health: "health-cache",
-			Error:  "error-cache",
+			HTML:           "html-cache",
+			Live:           "live-cache",
+			LiveNavigation: "live-nav-cache",
+			Static:         "static-cache",
+			Health:         "health-cache",
+			Error:          "error-cache",
 		},
 		NotFoundPage: func(framework.NotFoundContext) templ.Component {
 			return textComponent("not-found")
@@ -106,6 +107,18 @@ func TestHTTPServerCachePoliciesAndLive(t *testing.T) {
 	}
 	if !strings.Contains(recLive.Body.String(), "event: datastar-patch-elements") {
 		t.Fatalf("live body missing datastar patch event")
+	}
+
+	recLiveNav := httptest.NewRecorder()
+	handler.ServeHTTP(
+		recLiveNav,
+		httptest.NewRequest(http.MethodGet, "/notes/live?__live=navigation", nil),
+	)
+	if recLiveNav.Code != http.StatusOK {
+		t.Fatalf("live nav status: expected %d, got %d", http.StatusOK, recLiveNav.Code)
+	}
+	if got := recLiveNav.Header().Get("Cache-Control"); got != "live-nav-cache" {
+		t.Fatalf("live nav cache policy: expected %q, got %q", "live-nav-cache", got)
 	}
 
 	recStatic := httptest.NewRecorder()

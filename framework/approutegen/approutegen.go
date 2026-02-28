@@ -998,11 +998,11 @@ func writeNotFoundPageFunc(
 	buffer.WriteString("func normalizePatternRouteID(pattern string) string {\n")
 	buffer.WriteString("\trouteID := strings.TrimSpace(pattern)\n")
 	buffer.WriteString("\trouteID = strings.Trim(routeID, \"/\")\n")
-	buffer.WriteString("\tif routeID == \"live\" {\n")
+	buffer.WriteString("\tif routeID == \".live\" {\n")
 	buffer.WriteString("\t\treturn \"\"\n")
 	buffer.WriteString("\t}\n")
-	buffer.WriteString("\tif strings.HasSuffix(routeID, \"/live\") {\n")
-	buffer.WriteString("\t\trouteID = strings.TrimSuffix(routeID, \"/live\")\n")
+	buffer.WriteString("\tif strings.HasPrefix(routeID, \".live/\") {\n")
+	buffer.WriteString("\t\trouteID = strings.TrimPrefix(routeID, \".live/\")\n")
 	buffer.WriteString("\t\trouteID = strings.Trim(routeID, \"/\")\n")
 	buffer.WriteString("\t}\n")
 	buffer.WriteString("\treturn routeID\n")
@@ -1011,11 +1011,11 @@ func writeNotFoundPageFunc(
 	buffer.WriteString("func normalizeRequestRouteID(requestPath string) string {\n")
 	buffer.WriteString("\trouteID := strings.TrimSpace(requestPath)\n")
 	buffer.WriteString("\trouteID = strings.Trim(routeID, \"/\")\n")
-	buffer.WriteString("\tif routeID == \"live\" {\n")
+	buffer.WriteString("\tif routeID == \".live\" {\n")
 	buffer.WriteString("\t\treturn \"\"\n")
 	buffer.WriteString("\t}\n")
-	buffer.WriteString("\tif strings.HasSuffix(routeID, \"/live\") {\n")
-	buffer.WriteString("\t\trouteID = strings.TrimSuffix(routeID, \"/live\")\n")
+	buffer.WriteString("\tif strings.HasPrefix(routeID, \".live/\") {\n")
+	buffer.WriteString("\t\trouteID = strings.TrimPrefix(routeID, \".live/\")\n")
 	buffer.WriteString("\t\trouteID = strings.Trim(routeID, \"/\")\n")
 	buffer.WriteString("\t}\n")
 	buffer.WriteString("\treturn routeID\n")
@@ -1192,9 +1192,9 @@ func routePattern(routeID string) string {
 
 func liveRoutePattern(routeID string) string {
 	if routeID == "" {
-		return "/live"
+		return "/.live/"
 	}
-	return "/" + routeID + "/live"
+	return "/.live/" + routeID
 }
 
 func resolvePageMethod(meta routeMeta) string {

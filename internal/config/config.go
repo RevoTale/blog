@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -10,6 +11,8 @@ type Config struct {
 	StaticDir  string
 
 	RootURL string
+
+	CacheLiveNavigation string
 
 	GraphQLEndpoint  string
 	GraphQLAuthToken string
@@ -19,9 +22,12 @@ type Config struct {
 
 func Load() Config {
 	return Config{
-		ListenAddr:       getEnv("BLOG_LISTEN_ADDR", ":8080"),
-		StaticDir:        getEnv("BLOG_STATIC_DIR", "internal/web/static"),
-		RootURL:          getEnv("BLOG_ROOT_URL", ""),
+		ListenAddr: getEnv("BLOG_LISTEN_ADDR", ":8080"),
+		StaticDir:  getEnv("BLOG_STATIC_DIR", "internal/web/static"),
+		RootURL:    getEnv("BLOG_ROOT_URL", ""),
+		CacheLiveNavigation: strings.TrimSpace(
+			os.Getenv("BLOG_CACHE_LIVE_NAV"),
+		),
 		GraphQLEndpoint:  getEnv("BLOG_GRAPHQL_ENDPOINT", "http://localhost:3000/api/graphql"),
 		GraphQLAuthToken: os.Getenv("BLOG_GRAPHQL_AUTH_TOKEN"),
 		PageSize:         getEnvInt("BLOG_NOTES_PAGE_SIZE", 12),

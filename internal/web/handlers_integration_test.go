@@ -380,8 +380,11 @@ func TestHandlerLiveRoutesReturnPatch(t *testing.T) {
 		path     string
 		selector string
 	}{
-		{path: "/live", selector: "#notes-content"},
-		{path: "/author/l-you/live", selector: "#author-content"},
+		{path: "/.live/", selector: "#notes-content"},
+		{path: "/.live/author/l-you", selector: "#notes-content"},
+		{path: "/.live/tag/go", selector: "#notes-content"},
+		{path: "/.live/tales", selector: "#notes-content"},
+		{path: "/.live/micro-tales", selector: "#notes-content"},
 	}
 
 	for _, tc := range cases {
@@ -397,6 +400,38 @@ func TestHandlerLiveRoutesReturnPatch(t *testing.T) {
 		if !strings.Contains(body, "data: selector "+tc.selector) {
 			t.Fatalf("%s missing selector %q", tc.path, tc.selector)
 		}
+	}
+}
+
+func TestPagerLinksIncludeLiveNavigationActions(t *testing.T) {
+	t.Parallel()
+	mux := newTestMux(t)
+
+	recPrev := performRequest(mux, http.MethodGet, "/?page=2&author=l-you&tag=go&type=short")
+	if recPrev.Code != http.StatusOK {
+		t.Fatalf("pager prev page status: expected %d, got %d", http.StatusOK, recPrev.Code)
+	}
+	prevBody := requireBody(t, recPrev.Body)
+	if !strings.Contains(prevBody, `data-live-nav-url="/.live/?__live=navigation&amp;author=l-you&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("prev link should include live navigation url marker")
+	}
+
+	recNext := performRequest(mux, http.MethodGet, "/?author=l-you&tag=go&type=short")
+	if recNext.Code != http.StatusOK {
+		t.Fatalf("pager next page status: expected %d, got %d", http.StatusOK, recNext.Code)
+	}
+	nextBody := requireBody(t, recNext.Body)
+	if !strings.Contains(nextBody, `data-live-nav-url="/.live/?__live=navigation&amp;author=l-you&amp;page=2&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("next link should include live navigation url marker")
+	}
+	if !strings.Contains(nextBody, `data-on-click__prevent=`) {
+		t.Fatalf("pager links should include datastar click action")
+	}
+	if !strings.Contains(nextBody, `window.addEventListener("popstate"`) {
+		t.Fatalf("layout should include popstate live patch script")
+	}
+	if !strings.Contains(nextBody, `window.scrollTo({ top: 0, left: 0, behavior: "smooth" })`) {
+		t.Fatalf("layout should include smooth scroll to top behavior")
 	}
 }
 
@@ -450,13 +485,22 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 		t.Fatalf("missing tag page should include requested path")
 	}
 
-	recNoLive := performRequest(mux, http.MethodGet, "/note/hello-world/live")
+	recNoLive := performRequest(mux, http.MethodGet, "/.live/note/hello-world")
 	if recNoLive.Code != http.StatusNotFound {
 		t.Fatalf("note live status: expected %d, got %d", http.StatusNotFound, recNoLive.Code)
 	}
 	noLiveBody := requireBody(t, recNoLive.Body)
-	if !strings.Contains(noLiveBody, "/note/hello-world/live") {
+	if !strings.Contains(noLiveBody, "/.live/note/hello-world") {
 		t.Fatalf("note live fallback should render requested path")
+	}
+
+	recLegacyLive := performRequest(mux, http.MethodGet, "/live")
+	if recLegacyLive.Code != http.StatusNotFound {
+		t.Fatalf("legacy live status: expected %d, got %d", http.StatusNotFound, recLegacyLive.Code)
+	}
+	legacyLiveBody := requireBody(t, recLegacyLive.Body)
+	if !strings.Contains(legacyLiveBody, "/live") {
+		t.Fatalf("legacy live fallback should render requested path")
 	}
 
 	recMissingRoute := performRequest(mux, http.MethodGet, "/missing-route")

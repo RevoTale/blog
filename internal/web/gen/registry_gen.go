@@ -51,7 +51,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				},
 			},
 			Live: framework.LiveModule[*appcore.Context, RootParams, appcore.NotesPageView, appcore.NotesSignalState]{
-				Pattern:     "/live",
+				Pattern:     "/.live/",
 				ParseParams: parseRootLiveParams,
 				ParseState:  resolvers.ParseRootLiveState,
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams, state appcore.NotesSignalState) (appcore.NotesPageView, error) {
@@ -76,14 +76,14 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				},
 			},
 			Live: framework.LiveModule[*appcore.Context, AuthorParamSlugParams, appcore.AuthorPageView, appcore.AuthorSignalState]{
-				Pattern:     "/author/[slug]/live",
+				Pattern:     "/.live/author/[slug]",
 				ParseParams: parseAuthorParamSlugLiveParams,
 				ParseState:  resolvers.ParseAuthorParamSlugLiveState,
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams, state appcore.AuthorSignalState) (appcore.AuthorPageView, error) {
 					return resolvers.ResolveAuthorParamSlugLive(ctx, appCtx, r, params, state)
 				},
 				Render:            r_page_author_param_slug.Page,
-				SelectorID:        "author-content",
+				SelectorID:        "notes-content",
 				BadRequestMessage: "invalid datastar signal payload",
 			},
 		},
@@ -100,7 +100,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				},
 			},
 		},
-		framework.PageOnlyRouteHandler[*appcore.Context, MicroTalesParams, appcore.NotesPageView]{
+		framework.PageAndLiveRouteHandler[*appcore.Context, MicroTalesParams, appcore.NotesPageView, appcore.NotesSignalState]{
 			Page: framework.PageModule[*appcore.Context, MicroTalesParams, appcore.NotesPageView]{
 				Pattern:     "/micro-tales",
 				ParseParams: parseMicroTalesParams,
@@ -111,6 +111,17 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapMicroTalesWithRootLayout,
 				},
+			},
+			Live: framework.LiveModule[*appcore.Context, MicroTalesParams, appcore.NotesPageView, appcore.NotesSignalState]{
+				Pattern:     "/.live/micro-tales",
+				ParseParams: parseMicroTalesLiveParams,
+				ParseState:  resolvers.ParseMicroTalesLiveState,
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams, state appcore.NotesSignalState) (appcore.NotesPageView, error) {
+					return resolvers.ResolveMicroTalesLive(ctx, appCtx, r, params, state)
+				},
+				Render:            r_page_micro_tales.Page,
+				SelectorID:        "notes-content",
+				BadRequestMessage: "invalid datastar signal payload",
 			},
 		},
 		framework.PageOnlyRouteHandler[*appcore.Context, NoteParamSlugParams, appcore.NotePageView]{
@@ -126,7 +137,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				},
 			},
 		},
-		framework.PageOnlyRouteHandler[*appcore.Context, TagParamSlugParams, appcore.NotesPageView]{
+		framework.PageAndLiveRouteHandler[*appcore.Context, TagParamSlugParams, appcore.NotesPageView, appcore.NotesSignalState]{
 			Page: framework.PageModule[*appcore.Context, TagParamSlugParams, appcore.NotesPageView]{
 				Pattern:     "/tag/[slug]",
 				ParseParams: parseTagParamSlugParams,
@@ -138,8 +149,19 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 					wrapTagParamSlugWithRootLayout,
 				},
 			},
+			Live: framework.LiveModule[*appcore.Context, TagParamSlugParams, appcore.NotesPageView, appcore.NotesSignalState]{
+				Pattern:     "/.live/tag/[slug]",
+				ParseParams: parseTagParamSlugLiveParams,
+				ParseState:  resolvers.ParseTagParamSlugLiveState,
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams, state appcore.NotesSignalState) (appcore.NotesPageView, error) {
+					return resolvers.ResolveTagParamSlugLive(ctx, appCtx, r, params, state)
+				},
+				Render:            r_page_tag_param_slug.Page,
+				SelectorID:        "notes-content",
+				BadRequestMessage: "invalid datastar signal payload",
+			},
 		},
-		framework.PageOnlyRouteHandler[*appcore.Context, TalesParams, appcore.NotesPageView]{
+		framework.PageAndLiveRouteHandler[*appcore.Context, TalesParams, appcore.NotesPageView, appcore.NotesSignalState]{
 			Page: framework.PageModule[*appcore.Context, TalesParams, appcore.NotesPageView]{
 				Pattern:     "/tales",
 				ParseParams: parseTalesParams,
@@ -150,6 +172,17 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapTalesWithRootLayout,
 				},
+			},
+			Live: framework.LiveModule[*appcore.Context, TalesParams, appcore.NotesPageView, appcore.NotesSignalState]{
+				Pattern:     "/.live/tales",
+				ParseParams: parseTalesLiveParams,
+				ParseState:  resolvers.ParseTalesLiveState,
+				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams, state appcore.NotesSignalState) (appcore.NotesPageView, error) {
+					return resolvers.ResolveTalesLive(ctx, appCtx, r, params, state)
+				},
+				Render:            r_page_tales.Page,
+				SelectorID:        "notes-content",
+				BadRequestMessage: "invalid datastar signal payload",
 			},
 		},
 	}
@@ -227,11 +260,11 @@ func candidateRouteIDsFromPath(requestPath string) []string {
 func normalizePatternRouteID(pattern string) string {
 	routeID := strings.TrimSpace(pattern)
 	routeID = strings.Trim(routeID, "/")
-	if routeID == "live" {
+	if routeID == ".live" {
 		return ""
 	}
-	if strings.HasSuffix(routeID, "/live") {
-		routeID = strings.TrimSuffix(routeID, "/live")
+	if strings.HasPrefix(routeID, ".live/") {
+		routeID = strings.TrimPrefix(routeID, ".live/")
 		routeID = strings.Trim(routeID, "/")
 	}
 	return routeID
@@ -240,11 +273,11 @@ func normalizePatternRouteID(pattern string) string {
 func normalizeRequestRouteID(requestPath string) string {
 	routeID := strings.TrimSpace(requestPath)
 	routeID = strings.Trim(routeID, "/")
-	if routeID == "live" {
+	if routeID == ".live" {
 		return ""
 	}
-	if strings.HasSuffix(routeID, "/live") {
-		routeID = strings.TrimSuffix(routeID, "/live")
+	if strings.HasPrefix(routeID, ".live/") {
+		routeID = strings.TrimPrefix(routeID, ".live/")
 		routeID = strings.Trim(routeID, "/")
 	}
 	return routeID
@@ -274,7 +307,7 @@ func parseRootParams(requestPath string) (RootParams, bool) {
 }
 
 func parseRootLiveParams(requestPath string) (RootParams, bool) {
-	_, ok := router.MatchPathPattern("/live", requestPath)
+	_, ok := router.MatchPathPattern("/.live/", requestPath)
 	if !ok {
 		return RootParams{}, false
 	}
@@ -296,7 +329,7 @@ func parseAuthorParamSlugParams(requestPath string) (AuthorParamSlugParams, bool
 }
 
 func parseAuthorParamSlugLiveParams(requestPath string) (AuthorParamSlugParams, bool) {
-	params, ok := router.MatchPathPattern("/author/[slug]/live", requestPath)
+	params, ok := router.MatchPathPattern("/.live/author/[slug]", requestPath)
 	if !ok {
 		return AuthorParamSlugParams{}, false
 	}
@@ -319,6 +352,14 @@ func parseChannelsParams(requestPath string) (ChannelsParams, bool) {
 
 func parseMicroTalesParams(requestPath string) (MicroTalesParams, bool) {
 	_, ok := router.MatchPathPattern("/micro-tales", requestPath)
+	if !ok {
+		return MicroTalesParams{}, false
+	}
+	return MicroTalesParams{}, true
+}
+
+func parseMicroTalesLiveParams(requestPath string) (MicroTalesParams, bool) {
+	_, ok := router.MatchPathPattern("/.live/micro-tales", requestPath)
 	if !ok {
 		return MicroTalesParams{}, false
 	}
@@ -353,8 +394,30 @@ func parseTagParamSlugParams(requestPath string) (TagParamSlugParams, bool) {
 	return out, true
 }
 
+func parseTagParamSlugLiveParams(requestPath string) (TagParamSlugParams, bool) {
+	params, ok := router.MatchPathPattern("/.live/tag/[slug]", requestPath)
+	if !ok {
+		return TagParamSlugParams{}, false
+	}
+	out := TagParamSlugParams{}
+	SlugValue := strings.TrimSpace(params["slug"])
+	if !router.IsValidSlug(SlugValue) {
+		return TagParamSlugParams{}, false
+	}
+	out.Slug = SlugValue
+	return out, true
+}
+
 func parseTalesParams(requestPath string) (TalesParams, bool) {
 	_, ok := router.MatchPathPattern("/tales", requestPath)
+	if !ok {
+		return TalesParams{}, false
+	}
+	return TalesParams{}, true
+}
+
+func parseTalesLiveParams(requestPath string) (TalesParams, bool) {
+	_, ok := router.MatchPathPattern("/.live/tales", requestPath)
 	if !ok {
 		return TalesParams{}, false
 	}

@@ -40,9 +40,15 @@ type RouteResolver interface {
 	ResolveAuthorParamSlugLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams, state appcore.AuthorSignalState) (appcore.AuthorPageView, error)
 	ResolveChannelsPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (appcore.NotesPageView, error)
 	ResolveMicroTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (appcore.NotesPageView, error)
+	ParseMicroTalesLiveState(r *http.Request) (appcore.NotesSignalState, error)
+	ResolveMicroTalesLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams, state appcore.NotesSignalState) (appcore.NotesPageView, error)
 	ResolveNoteParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (appcore.NotePageView, error)
 	ResolveTagParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (appcore.NotesPageView, error)
+	ParseTagParamSlugLiveState(r *http.Request) (appcore.NotesSignalState, error)
+	ResolveTagParamSlugLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams, state appcore.NotesSignalState) (appcore.NotesPageView, error)
 	ResolveTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (appcore.NotesPageView, error)
+	ParseTalesLiveState(r *http.Request) (appcore.NotesSignalState, error)
+	ResolveTalesLive(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams, state appcore.NotesSignalState) (appcore.NotesPageView, error)
 }
 
 type Resolver struct{}

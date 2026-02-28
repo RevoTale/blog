@@ -12,6 +12,9 @@ import (
 	"github.com/starfederation/datastar-go/datastar"
 )
 
+const liveNavigationQueryKey = "__live"
+const liveNavigationQueryValue = "navigation"
+
 func LoadNotesPage(
 	ctx context.Context,
 	appCtx *Context,
@@ -94,6 +97,24 @@ func LoadTagPage(
 	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{RequireTag: true}, SidebarModeFiltered)
 }
 
+func LoadTagLivePage(
+	ctx context.Context,
+	appCtx *Context,
+	r *http.Request,
+	params framework.SlugParams,
+	state NotesSignalState,
+) (NotesPageView, error) {
+	fallback := listFilterFromQuery(r, notes.ListFilter{TagName: params.Slug})
+	filter := notes.ListFilter{
+		Page:       sanitizePage(state.Page),
+		AuthorSlug: cleanOrFallback(state.Author, fallback.AuthorSlug),
+		TagName:    strings.TrimSpace(params.Slug),
+		Type:       notes.ParseNoteType(cleanOrFallback(state.Type, string(fallback.Type))),
+	}
+
+	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{RequireTag: true}, SidebarModeFiltered)
+}
+
 func LoadNotesTalesPage(
 	ctx context.Context,
 	appCtx *Context,
@@ -107,6 +128,24 @@ func LoadNotesTalesPage(
 	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
 }
 
+func LoadNotesTalesLivePage(
+	ctx context.Context,
+	appCtx *Context,
+	r *http.Request,
+	_ framework.EmptyParams,
+	state NotesSignalState,
+) (NotesPageView, error) {
+	fallback := listFilterFromQuery(r, notes.ListFilter{Type: notes.NoteTypeLong})
+	filter := notes.ListFilter{
+		Page:       sanitizePage(state.Page),
+		AuthorSlug: cleanOrFallback(state.Author, fallback.AuthorSlug),
+		TagName:    cleanOrFallback(state.Tag, fallback.TagName),
+		Type:       notes.NoteTypeLong,
+	}
+
+	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
+}
+
 func LoadNotesMicroTalesPage(
 	ctx context.Context,
 	appCtx *Context,
@@ -116,6 +155,24 @@ func LoadNotesMicroTalesPage(
 	defaults := notes.ListFilter{Type: notes.NoteTypeShort}
 	filter := listFilterFromQuery(r, defaults)
 	filter.Type = notes.NoteTypeShort
+
+	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
+}
+
+func LoadNotesMicroTalesLivePage(
+	ctx context.Context,
+	appCtx *Context,
+	r *http.Request,
+	_ framework.EmptyParams,
+	state NotesSignalState,
+) (NotesPageView, error) {
+	fallback := listFilterFromQuery(r, notes.ListFilter{Type: notes.NoteTypeShort})
+	filter := notes.ListFilter{
+		Page:       sanitizePage(state.Page),
+		AuthorSlug: cleanOrFallback(state.Author, fallback.AuthorSlug),
+		TagName:    cleanOrFallback(state.Tag, fallback.TagName),
+		Type:       notes.NoteTypeShort,
+	}
 
 	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
 }
@@ -357,6 +414,32 @@ func BuildAuthorURL(slug string, page int) string {
 	return "/author/" + slug + "?" + q.Encode()
 }
 
+func BuildLiveNavigationURL(pageURL string) string {
+	canonicalPath, query := normalizePageURL(pageURL)
+	livePath := livePathFromCanonical(canonicalPath)
+	query.Set(liveNavigationQueryKey, liveNavigationQueryValue)
+
+	encoded := query.Encode()
+	if encoded == "" {
+		return livePath
+	}
+
+	return livePath + "?" + encoded
+}
+
+func BuildPagerLiveAction(pageURL string, page int) string {
+	canonicalPath, canonicalQuery := normalizePageURL(pageURL)
+	canonicalURL := canonicalPath
+	encodedCanonical := canonicalQuery.Encode()
+	if encodedCanonical != "" {
+		canonicalURL += "?" + encodedCanonical
+	}
+
+	return "$page = " + strconv.Itoa(sanitizePage(page)) +
+		"; history.pushState({}, '', " + strconv.Quote(canonicalURL) + ")" +
+		"; @get(" + strconv.Quote(BuildLiveNavigationURL(pageURL)) + ")"
+}
+
 func BuildTagURL(tagSlug string) string {
 	tagSlug = strings.TrimSpace(tagSlug)
 	if tagSlug == "" {
@@ -415,7 +498,36 @@ func BuildMicroTalesURL(page int, authorSlug string, tagName string) string {
 }
 
 func BuildAuthorLiveURL(slug string) string {
-	return "/author/" + slug + "/live"
+	return livePathFromCanonical(BuildAuthorURL(slug, 1))
+}
+
+func normalizePageURL(pageURL string) (string, url.Values) {
+	parsed, err := url.Parse(strings.TrimSpace(pageURL))
+	if err != nil {
+		return "/", make(url.Values)
+	}
+
+	pathValue := strings.TrimSpace(parsed.Path)
+	if pathValue == "" {
+		pathValue = "/"
+	}
+	if !strings.HasPrefix(pathValue, "/") {
+		pathValue = "/" + pathValue
+	}
+
+	return pathValue, parsed.Query()
+}
+
+func livePathFromCanonical(canonicalPath string) string {
+	canonicalPath = strings.TrimSpace(canonicalPath)
+	if canonicalPath == "" || canonicalPath == "/" {
+		return "/.live/"
+	}
+	if !strings.HasPrefix(canonicalPath, "/") {
+		canonicalPath = "/" + canonicalPath
+	}
+
+	return "/.live" + canonicalPath
 }
 
 func parsePage(value string) int {

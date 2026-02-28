@@ -36,8 +36,12 @@ type PaginationView struct {
 	TotalPages int
 	HasPrev    bool
 	HasNext    bool
+	FirstPage  int
+	LastPage   int
 	PrevPage   int
 	NextPage   int
+	FirstURL   string
+	LastURL    string
 	PrevURL    string
 	NextURL    string
 }
@@ -344,8 +348,12 @@ func newPaginationView(filter notes.ListFilter, totalPages int) PaginationView {
 		TotalPages: totalPages,
 		HasPrev:    hasPrev,
 		HasNext:    hasNext,
+		FirstPage:  1,
+		LastPage:   totalPages,
 		PrevPage:   prevPage,
 		NextPage:   nextPage,
+		FirstURL:   BuildNotesFilterURL(1, filter.AuthorSlug, filter.TagName, filter.Type),
+		LastURL:    BuildNotesFilterURL(totalPages, filter.AuthorSlug, filter.TagName, filter.Type),
 		PrevURL:    BuildNotesFilterURL(prevPage, filter.AuthorSlug, filter.TagName, filter.Type),
 		NextURL:    BuildNotesFilterURL(nextPage, filter.AuthorSlug, filter.TagName, filter.Type),
 	}

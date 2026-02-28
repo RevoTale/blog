@@ -16,6 +16,8 @@ const defaultCacheControlPolicy = "public, max-age=3600, s-maxage=3600"
 const defaultHealthPath = "/healthz"
 const defaultHealthBody = "ok"
 const defaultStaticPrefix = "/.revotale/"
+const liveNavigationMarkerKey = "__live"
+const liveNavigationMarkerValue = "navigation"
 
 type StaticMount struct {
 	URLPrefix string
@@ -23,11 +25,12 @@ type StaticMount struct {
 }
 
 type CachePolicies struct {
-	HTML   string
-	Live   string
-	Static string
-	Health string
-	Error  string
+	HTML           string
+	Live           string
+	LiveNavigation string
+	Static         string
+	Health         string
+	Error          string
 }
 
 func DefaultCachePolicies() CachePolicies {
@@ -150,8 +153,18 @@ func (s *server[C]) patchLive(
 	component templ.Component,
 ) error {
 	sse := datastar.NewSSE(w, r)
-	setCachePolicy(w, s.cachePolicies.Live)
+	setCachePolicy(w, s.liveCachePolicyFor(r))
 	return sse.PatchElementTempl(component, datastar.WithSelectorID(selectorID))
+}
+
+func (s *server[C]) liveCachePolicyFor(r *http.Request) string {
+	if r != nil &&
+		strings.TrimSpace(r.URL.Query().Get(liveNavigationMarkerKey)) == liveNavigationMarkerValue &&
+		strings.TrimSpace(s.cachePolicies.LiveNavigation) != "" {
+		return s.cachePolicies.LiveNavigation
+	}
+
+	return s.cachePolicies.Live
 }
 
 func (s *server[C]) handleNotFound(
