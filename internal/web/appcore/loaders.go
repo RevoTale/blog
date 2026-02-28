@@ -38,6 +38,7 @@ func LoadNotesLivePage(
 		AuthorSlug: cleanOrFallback(state.Author, fallback.AuthorSlug),
 		TagName:    cleanOrFallback(state.Tag, fallback.TagName),
 		Type:       notes.ParseNoteType(cleanOrFallback(state.Type, string(fallback.Type))),
+		Query:      fallback.Query,
 	}
 
 	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, sidebarModeForFilter(filter))
@@ -74,6 +75,7 @@ func LoadAuthorLivePage(
 		AuthorSlug: params.Slug,
 		TagName:    cleanOrFallback(state.Tag, fallback.TagName),
 		Type:       notes.ParseNoteType(cleanOrFallback(state.Type, string(fallback.Type))),
+		Query:      fallback.Query,
 	}
 
 	view, err := loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{RequireAuthor: true}, SidebarModeFiltered)
@@ -110,6 +112,7 @@ func LoadTagLivePage(
 		AuthorSlug: cleanOrFallback(state.Author, fallback.AuthorSlug),
 		TagName:    strings.TrimSpace(params.Slug),
 		Type:       notes.ParseNoteType(cleanOrFallback(state.Type, string(fallback.Type))),
+		Query:      fallback.Query,
 	}
 
 	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{RequireTag: true}, SidebarModeFiltered)
@@ -141,6 +144,7 @@ func LoadNotesTalesLivePage(
 		AuthorSlug: cleanOrFallback(state.Author, fallback.AuthorSlug),
 		TagName:    cleanOrFallback(state.Tag, fallback.TagName),
 		Type:       notes.NoteTypeLong,
+		Query:      fallback.Query,
 	}
 
 	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
@@ -172,6 +176,7 @@ func LoadNotesMicroTalesLivePage(
 		AuthorSlug: cleanOrFallback(state.Author, fallback.AuthorSlug),
 		TagName:    cleanOrFallback(state.Tag, fallback.TagName),
 		Type:       notes.NoteTypeShort,
+		Query:      fallback.Query,
 	}
 
 	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
@@ -309,6 +314,7 @@ func listFilterFromQuery(r *http.Request, defaults notes.ListFilter) notes.ListF
 		AuthorSlug: strings.TrimSpace(query.Get("author")),
 		TagName:    strings.TrimSpace(query.Get("tag")),
 		Type:       notes.ParseNoteType(query.Get("type")),
+		Query:      strings.TrimSpace(query.Get("q")),
 	}
 
 	if filter.Page < 1 {
@@ -323,6 +329,9 @@ func listFilterFromQuery(r *http.Request, defaults notes.ListFilter) notes.ListF
 	if filter.Type == notes.NoteTypeAll {
 		filter.Type = notes.ParseNoteType(string(defaults.Type))
 	}
+	if filter.Query == "" {
+		filter.Query = strings.TrimSpace(defaults.Query)
+	}
 
 	return filter
 }
@@ -336,11 +345,11 @@ func cleanOrFallback(value string, fallback string) string {
 	return trimmed
 }
 
-func BuildNotesURL(page int, tag string) string {
-	return BuildNotesFilterURL(page, "", tag, notes.NoteTypeAll)
+func BuildNotesURL(page int, tag string, searchQuery string) string {
+	return BuildNotesFilterURL(page, "", tag, notes.NoteTypeAll, searchQuery)
 }
 
-func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType notes.NoteType) string {
+func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType notes.NoteType, searchQuery string) string {
 	if page < 1 {
 		page = 1
 	}
@@ -348,6 +357,7 @@ func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType n
 	noteType = notes.ParseNoteType(string(noteType))
 	authorSlug = strings.TrimSpace(authorSlug)
 	tagName = strings.TrimSpace(tagName)
+	searchQuery = strings.TrimSpace(searchQuery)
 
 	q := make(url.Values)
 	if page > 1 {
@@ -362,6 +372,9 @@ func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType n
 	if noteType == notes.NoteTypeLong || noteType == notes.NoteTypeShort {
 		q.Set("type", noteType.QueryValue())
 	}
+	if searchQuery != "" {
+		q.Set("q", searchQuery)
+	}
 
 	encoded := q.Encode()
 	if encoded == "" {
@@ -371,10 +384,11 @@ func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType n
 	return "/?" + encoded
 }
 
-func BuildChannelsURL(authorSlug string, tagName string, noteType notes.NoteType) string {
+func BuildChannelsURL(authorSlug string, tagName string, noteType notes.NoteType, searchQuery string) string {
 	noteType = notes.ParseNoteType(string(noteType))
 	authorSlug = strings.TrimSpace(authorSlug)
 	tagName = strings.TrimSpace(tagName)
+	searchQuery = strings.TrimSpace(searchQuery)
 
 	q := make(url.Values)
 	if authorSlug != "" {
@@ -385,6 +399,9 @@ func BuildChannelsURL(authorSlug string, tagName string, noteType notes.NoteType
 	}
 	if noteType == notes.NoteTypeLong || noteType == notes.NoteTypeShort {
 		q.Set("type", noteType.QueryValue())
+	}
+	if searchQuery != "" {
+		q.Set("q", searchQuery)
 	}
 
 	encoded := q.Encode()
@@ -547,6 +564,10 @@ func sanitizePage(page int) int {
 }
 
 func sidebarModeForFilter(filter notes.ListFilter) SidebarMode {
+	if strings.TrimSpace(filter.Query) != "" {
+		return SidebarModeFiltered
+	}
+
 	if strings.TrimSpace(filter.AuthorSlug) != "" || strings.TrimSpace(filter.TagName) != "" {
 		return SidebarModeFiltered
 	}

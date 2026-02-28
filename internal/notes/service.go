@@ -30,6 +30,7 @@ type ListFilter struct {
 	AuthorSlug string
 	TagName    string
 	Type       NoteType
+	Query      string
 }
 
 type ListOptions struct {
@@ -236,6 +237,10 @@ func (s *Service) listNotesByFilter(
 	filter ListFilter,
 	tagIDs []string,
 ) ([]NoteSummary, int, error) {
+	if filter.Query != "" {
+		return s.searchNotesByFilter(ctx, filter, tagIDs)
+	}
+
 	hasAuthor := filter.AuthorSlug != ""
 	hasTag := len(tagIDs) > 0
 	hasType := filter.Type == NoteTypeLong || filter.Type == NoteTypeShort
@@ -320,6 +325,144 @@ func (s *Service) listNotesByFilter(
 			return nil, 0, err
 		}
 		notes, totalPages := mapNotesList(response)
+		return notes, totalPages, nil
+	}
+}
+
+func (s *Service) searchNotesByFilter(
+	ctx context.Context,
+	filter ListFilter,
+	tagIDs []string,
+) ([]NoteSummary, int, error) {
+	hasAuthor := filter.AuthorSlug != ""
+	hasTag := len(tagIDs) > 0
+	hasType := filter.Type == NoteTypeLong || filter.Type == NoteTypeShort
+
+	postType, _ := toPostTypeInput(filter.Type)
+
+	switch {
+	case hasAuthor && hasTag && hasType:
+		response, err := gql.SearchNotesByAuthorTagIDsAndType(
+			ctx,
+			s.client,
+			filter.Query,
+			filter.AuthorSlug,
+			filter.Page,
+			s.pageSize,
+			tagIDs,
+			postType,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		notes, totalPages := mapSearchNotesByAuthorTagIDsAndType(response)
+		return notes, totalPages, nil
+
+	case hasAuthor && hasTag:
+		response, err := gql.SearchNotesByAuthorAndTagIDs(
+			ctx,
+			s.client,
+			filter.Query,
+			filter.AuthorSlug,
+			filter.Page,
+			s.pageSize,
+			tagIDs,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		notes, totalPages := mapSearchNotesByAuthorAndTagIDs(response)
+		return notes, totalPages, nil
+
+	case hasAuthor && hasType:
+		response, err := gql.SearchNotesByAuthorSlugAndType(
+			ctx,
+			s.client,
+			filter.Query,
+			filter.AuthorSlug,
+			filter.Page,
+			s.pageSize,
+			postType,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		notes, totalPages := mapSearchNotesByAuthorSlugAndType(response)
+		return notes, totalPages, nil
+
+	case hasAuthor:
+		response, err := gql.SearchNotesByAuthorSlug(
+			ctx,
+			s.client,
+			filter.Query,
+			filter.AuthorSlug,
+			filter.Page,
+			s.pageSize,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		notes, totalPages := mapSearchNotesByAuthorSlug(response)
+		return notes, totalPages, nil
+
+	case hasTag && hasType:
+		response, err := gql.SearchNotesByTagIDsAndType(
+			ctx,
+			s.client,
+			filter.Query,
+			filter.Page,
+			s.pageSize,
+			tagIDs,
+			postType,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		notes, totalPages := mapSearchNotesByTagIDsAndType(response)
+		return notes, totalPages, nil
+
+	case hasTag:
+		response, err := gql.SearchNotesByTagIDs(
+			ctx,
+			s.client,
+			filter.Query,
+			filter.Page,
+			s.pageSize,
+			tagIDs,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		notes, totalPages := mapSearchNotesByTagIDs(response)
+		return notes, totalPages, nil
+
+	case hasType:
+		response, err := gql.SearchNotesByType(
+			ctx,
+			s.client,
+			filter.Query,
+			filter.Page,
+			s.pageSize,
+			postType,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		notes, totalPages := mapSearchNotesByType(response)
+		return notes, totalPages, nil
+
+	default:
+		response, err := gql.SearchNotes(
+			ctx,
+			s.client,
+			filter.Query,
+			filter.Page,
+			s.pageSize,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		notes, totalPages := mapSearchNotes(response)
 		return notes, totalPages, nil
 	}
 }
@@ -527,6 +670,222 @@ func mapNotesList(response *gql.ListNotesResponse) ([]NoteSummary, int) {
 			mapListAttachment(doc.Attachment),
 			mapListAuthors(doc.Authors),
 			mapListTags(doc.Tags),
+		))
+	}
+
+	return items, response.Micro_posts.TotalPages
+}
+
+func mapSearchNotes(response *gql.SearchNotesResponse) ([]NoteSummary, int) {
+	if response == nil || response.Micro_posts == nil {
+		return []NoteSummary{}, 1
+	}
+
+	items := make([]NoteSummary, 0, len(response.Micro_posts.Docs))
+	for _, doc := range response.Micro_posts.Docs {
+		description := ""
+		if doc.Meta != nil {
+			description = strOr(doc.Meta.Description, "")
+		}
+		items = append(items, summaryFromListDoc(
+			doc.Id,
+			doc.Slug,
+			doc.Title,
+			doc.Content,
+			doc.PublishedAt,
+			description,
+			mapListAttachment(doc.Attachment),
+			mapListAuthors(doc.Authors),
+			mapListTags(doc.Tags),
+		))
+	}
+
+	return items, response.Micro_posts.TotalPages
+}
+
+func mapSearchNotesByType(response *gql.SearchNotesByTypeResponse) ([]NoteSummary, int) {
+	if response == nil || response.Micro_posts == nil {
+		return []NoteSummary{}, 1
+	}
+
+	items := make([]NoteSummary, 0, len(response.Micro_posts.Docs))
+	for _, doc := range response.Micro_posts.Docs {
+		description := ""
+		if doc.Meta != nil {
+			description = strOr(doc.Meta.Description, "")
+		}
+		items = append(items, summaryFromListDoc(
+			doc.Id,
+			doc.Slug,
+			doc.Title,
+			doc.Content,
+			doc.PublishedAt,
+			description,
+			mapListByTypeAttachment(doc.Attachment),
+			mapListByTypeAuthors(doc.Authors),
+			mapListByTypeTags(doc.Tags),
+		))
+	}
+
+	return items, response.Micro_posts.TotalPages
+}
+
+func mapSearchNotesByTagIDs(response *gql.SearchNotesByTagIDsResponse) ([]NoteSummary, int) {
+	if response == nil || response.Micro_posts == nil {
+		return []NoteSummary{}, 1
+	}
+
+	items := make([]NoteSummary, 0, len(response.Micro_posts.Docs))
+	for _, doc := range response.Micro_posts.Docs {
+		description := ""
+		if doc.Meta != nil {
+			description = strOr(doc.Meta.Description, "")
+		}
+		items = append(items, summaryFromListDoc(
+			doc.Id,
+			doc.Slug,
+			doc.Title,
+			doc.Content,
+			doc.PublishedAt,
+			description,
+			mapTagListAttachment(doc.Attachment),
+			mapTagListAuthors(doc.Authors),
+			mapTagListTags(doc.Tags),
+		))
+	}
+
+	return items, response.Micro_posts.TotalPages
+}
+
+func mapSearchNotesByTagIDsAndType(response *gql.SearchNotesByTagIDsAndTypeResponse) ([]NoteSummary, int) {
+	if response == nil || response.Micro_posts == nil {
+		return []NoteSummary{}, 1
+	}
+
+	items := make([]NoteSummary, 0, len(response.Micro_posts.Docs))
+	for _, doc := range response.Micro_posts.Docs {
+		description := ""
+		if doc.Meta != nil {
+			description = strOr(doc.Meta.Description, "")
+		}
+		items = append(items, summaryFromListDoc(
+			doc.Id,
+			doc.Slug,
+			doc.Title,
+			doc.Content,
+			doc.PublishedAt,
+			description,
+			mapTagByTypeAttachment(doc.Attachment),
+			mapTagByTypeAuthors(doc.Authors),
+			mapTagByTypeTags(doc.Tags),
+		))
+	}
+
+	return items, response.Micro_posts.TotalPages
+}
+
+func mapSearchNotesByAuthorSlug(response *gql.SearchNotesByAuthorSlugResponse) ([]NoteSummary, int) {
+	if response == nil || response.Micro_posts == nil {
+		return []NoteSummary{}, 1
+	}
+
+	items := make([]NoteSummary, 0, len(response.Micro_posts.Docs))
+	for _, doc := range response.Micro_posts.Docs {
+		description := ""
+		if doc.Meta != nil {
+			description = strOr(doc.Meta.Description, "")
+		}
+		items = append(items, summaryFromListDoc(
+			doc.Id,
+			doc.Slug,
+			doc.Title,
+			doc.Content,
+			doc.PublishedAt,
+			description,
+			mapAuthorListAttachment(doc.Attachment),
+			mapAuthorListAuthors(doc.Authors),
+			mapAuthorListTags(doc.Tags),
+		))
+	}
+
+	return items, response.Micro_posts.TotalPages
+}
+
+func mapSearchNotesByAuthorSlugAndType(response *gql.SearchNotesByAuthorSlugAndTypeResponse) ([]NoteSummary, int) {
+	if response == nil || response.Micro_posts == nil {
+		return []NoteSummary{}, 1
+	}
+
+	items := make([]NoteSummary, 0, len(response.Micro_posts.Docs))
+	for _, doc := range response.Micro_posts.Docs {
+		description := ""
+		if doc.Meta != nil {
+			description = strOr(doc.Meta.Description, "")
+		}
+		items = append(items, summaryFromListDoc(
+			doc.Id,
+			doc.Slug,
+			doc.Title,
+			doc.Content,
+			doc.PublishedAt,
+			description,
+			mapAuthorByTypeAttachment(doc.Attachment),
+			mapAuthorByTypeAuthors(doc.Authors),
+			mapAuthorByTypeTags(doc.Tags),
+		))
+	}
+
+	return items, response.Micro_posts.TotalPages
+}
+
+func mapSearchNotesByAuthorAndTagIDs(response *gql.SearchNotesByAuthorAndTagIDsResponse) ([]NoteSummary, int) {
+	if response == nil || response.Micro_posts == nil {
+		return []NoteSummary{}, 1
+	}
+
+	items := make([]NoteSummary, 0, len(response.Micro_posts.Docs))
+	for _, doc := range response.Micro_posts.Docs {
+		description := ""
+		if doc.Meta != nil {
+			description = strOr(doc.Meta.Description, "")
+		}
+		items = append(items, summaryFromListDoc(
+			doc.Id,
+			doc.Slug,
+			doc.Title,
+			doc.Content,
+			doc.PublishedAt,
+			description,
+			mapAuthorTagAttachment(doc.Attachment),
+			mapAuthorTagAuthors(doc.Authors),
+			mapAuthorTagTags(doc.Tags),
+		))
+	}
+
+	return items, response.Micro_posts.TotalPages
+}
+
+func mapSearchNotesByAuthorTagIDsAndType(response *gql.SearchNotesByAuthorTagIDsAndTypeResponse) ([]NoteSummary, int) {
+	if response == nil || response.Micro_posts == nil {
+		return []NoteSummary{}, 1
+	}
+
+	items := make([]NoteSummary, 0, len(response.Micro_posts.Docs))
+	for _, doc := range response.Micro_posts.Docs {
+		description := ""
+		if doc.Meta != nil {
+			description = strOr(doc.Meta.Description, "")
+		}
+		items = append(items, summaryFromListDoc(
+			doc.Id,
+			doc.Slug,
+			doc.Title,
+			doc.Content,
+			doc.PublishedAt,
+			description,
+			mapAuthorTagTypeAttachment(doc.Attachment),
+			mapAuthorTagTypeAuthors(doc.Authors),
+			mapAuthorTagTypeTags(doc.Tags),
 		))
 	}
 
@@ -1040,6 +1399,7 @@ func normalizeFilter(filter ListFilter) ListFilter {
 	filter.AuthorSlug = strings.TrimSpace(filter.AuthorSlug)
 	filter.TagName = strings.TrimSpace(filter.TagName)
 	filter.Type = ParseNoteType(string(filter.Type))
+	filter.Query = strings.TrimSpace(filter.Query)
 
 	return filter
 }

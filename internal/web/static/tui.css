@@ -345,16 +345,82 @@ p + p {
 }
 
 .topbar-search {
-  min-width: 190px;
-  min-height: 31px;
-  border-radius: var(--radius-sm);
-  border: 1px solid #2c2f34;
-  background: #1f2023;
-  color: var(--text-muted);
+  min-width: clamp(220px, 32vw, 360px);
+  min-height: 36px;
+  border-radius: 12px;
+  border: 1px solid #323744;
+  background:
+    linear-gradient(180deg, rgba(38, 41, 48, 0.9), rgba(29, 31, 37, 0.96));
   display: inline-flex;
-  align-items: center;
-  padding: 0 0.65rem;
-  font-size: 0.9rem;
+  align-items: stretch;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 3px 12px rgba(6, 8, 12, 0.22);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.topbar-search:focus-within {
+  border-color: #8ea4ff;
+  background:
+    linear-gradient(180deg, rgba(41, 44, 52, 0.95), rgba(31, 34, 41, 0.98));
+  box-shadow:
+    0 0 0 2px rgba(142, 164, 255, 0.25),
+    0 8px 22px rgba(9, 12, 17, 0.48);
+}
+
+.topbar-search-input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  line-height: 1.2;
+  padding: 0 0.72rem;
+}
+
+.topbar-search-input::placeholder {
+  color: #959ba7;
+}
+
+.topbar-search-input:focus {
+  outline: none;
+}
+
+.topbar-search-submit {
+  min-width: 78px;
+  border: 0;
+  border-left: 1px solid #343946;
+  background:
+    linear-gradient(180deg, rgba(52, 57, 68, 0.5), rgba(41, 45, 54, 0.5));
+  color: #777f8d;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: not-allowed;
+  pointer-events: none;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.topbar-search-input:not(:placeholder-shown) + .topbar-search-submit {
+  border-left-color: #4a5161;
+  background:
+    linear-gradient(180deg, rgba(75, 83, 99, 0.9), rgba(60, 67, 81, 0.95));
+  color: var(--text-primary);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.topbar-search-input:not(:placeholder-shown) + .topbar-search-submit:hover {
+  background:
+    linear-gradient(180deg, rgba(87, 96, 114, 0.95), rgba(69, 77, 92, 0.98));
+}
+
+.topbar-search-input:not(:placeholder-shown) + .topbar-search-submit:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(186, 201, 255, 0.38);
 }
 
 .container {
@@ -1100,7 +1166,7 @@ p + p {
   }
 
   .topbar-search {
-    min-width: 150px;
+    min-width: clamp(190px, 28vw, 300px);
   }
 }
 
@@ -1214,8 +1280,20 @@ p + p {
   }
 
   .topbar-search {
+    width: 100%;
     flex: 1;
     min-width: 0;
+    min-height: 40px;
+    border-radius: 11px;
+  }
+
+  .topbar-search-input {
+    font-size: 0.95rem;
+    padding-inline: 0.72rem;
+  }
+
+  .topbar-search-submit {
+    min-width: 84px;
   }
 
   .feed-toolbar {

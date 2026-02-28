@@ -189,6 +189,240 @@ query ListNotesByAuthorTagIDsAndType(
   }
 }
 
+query SearchNotes($query: String!, $page: Int!, $limit: Int!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      OR: [
+        { title: { like: $query } }
+        { title: { contains: $query } }
+        { content: { like: $query } }
+        { content: { contains: $query } }
+        { meta__description: { like: $query } }
+        { meta__description: { contains: $query } }
+      ]
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query SearchNotesByType(
+  $query: String!
+  $page: Int!
+  $limit: Int!
+  $postType: Micro_post_post_type_Input!
+) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      post_type: { equals: $postType }
+      OR: [
+        { title: { like: $query } }
+        { title: { contains: $query } }
+        { content: { like: $query } }
+        { content: { contains: $query } }
+        { meta__description: { like: $query } }
+        { meta__description: { contains: $query } }
+      ]
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query SearchNotesByTagIDs($query: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      tags: { in: $tagIDs }
+      OR: [
+        { title: { like: $query } }
+        { title: { contains: $query } }
+        { content: { like: $query } }
+        { content: { contains: $query } }
+        { meta__description: { like: $query } }
+        { meta__description: { contains: $query } }
+      ]
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query SearchNotesByTagIDsAndType(
+  $query: String!
+  $page: Int!
+  $limit: Int!
+  $tagIDs: [JSON!]!
+  $postType: Micro_post_post_type_Input!
+) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      tags: { in: $tagIDs }
+      post_type: { equals: $postType }
+      OR: [
+        { title: { like: $query } }
+        { title: { contains: $query } }
+        { content: { like: $query } }
+        { content: { contains: $query } }
+        { meta__description: { like: $query } }
+        { meta__description: { contains: $query } }
+      ]
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query SearchNotesByAuthorSlug($query: String!, $slug: String!, $page: Int!, $limit: Int!) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      authorSlug: { equals: $slug }
+      OR: [
+        { title: { like: $query } }
+        { title: { contains: $query } }
+        { content: { like: $query } }
+        { content: { contains: $query } }
+        { meta__description: { like: $query } }
+        { meta__description: { contains: $query } }
+      ]
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query SearchNotesByAuthorSlugAndType(
+  $query: String!
+  $slug: String!
+  $page: Int!
+  $limit: Int!
+  $postType: Micro_post_post_type_Input!
+) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      authorSlug: { equals: $slug }
+      post_type: { equals: $postType }
+      OR: [
+        { title: { like: $query } }
+        { title: { contains: $query } }
+        { content: { like: $query } }
+        { content: { contains: $query } }
+        { meta__description: { like: $query } }
+        { meta__description: { contains: $query } }
+      ]
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query SearchNotesByAuthorAndTagIDs(
+  $query: String!
+  $slug: String!
+  $page: Int!
+  $limit: Int!
+  $tagIDs: [JSON!]!
+) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      authorSlug: { equals: $slug }
+      tags: { in: $tagIDs }
+      OR: [
+        { title: { like: $query } }
+        { title: { contains: $query } }
+        { content: { like: $query } }
+        { content: { contains: $query } }
+        { meta__description: { like: $query } }
+        { meta__description: { contains: $query } }
+      ]
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
+query SearchNotesByAuthorTagIDsAndType(
+  $query: String!
+  $slug: String!
+  $page: Int!
+  $limit: Int!
+  $tagIDs: [JSON!]!
+  $postType: Micro_post_post_type_Input!
+) {
+  Micro_posts(
+    page: $page
+    limit: $limit
+    sort: "-publishedAt"
+    where: {
+      _status: { equals: published }
+      authorSlug: { equals: $slug }
+      tags: { in: $tagIDs }
+      post_type: { equals: $postType }
+      OR: [
+        { title: { like: $query } }
+        { title: { contains: $query } }
+        { content: { like: $query } }
+        { content: { contains: $query } }
+        { meta__description: { like: $query } }
+        { meta__description: { contains: $query } }
+      ]
+    }
+  ) {
+    totalPages
+    docs {
+      ...NoteListDoc
+    }
+  }
+}
+
 query TagIDsByNames($tagNames: [String!]!) {
   Tags(where: { name: { in: $tagNames } }) {
     docs {

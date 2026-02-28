@@ -10,7 +10,7 @@ templ Page(view appcore.NotesPageView) {
 		<header class="channels-page-header channels-desktop-hint">
 			<h1>Channels</h1>
 			<p class="muted">Use the left channel list to navigate.</p>
-			<a class="back-link channels-back-button" href={ appcore.BuildNotesFilterURL(1, view.Filter.AuthorSlug, view.Filter.TagName, view.Filter.Type) }>Back to feed</a>
+			<a class="back-link channels-back-button" href={ appcore.BuildNotesFilterURL(1, view.Filter.AuthorSlug, view.Filter.TagName, view.Filter.Type, view.Filter.Query) }>Back to feed</a>
 		</header>
 
 		<section class="channel-panel-standalone channels-mobile-panel">

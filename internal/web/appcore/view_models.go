@@ -16,6 +16,7 @@ const (
 
 type RootLayoutView interface {
 	LayoutPageTitle() string
+	LayoutSearchQuery() string
 	SidebarAuthors() []notes.Author
 	SidebarTags() []notes.Tag
 	SidebarCurrentAuthorSlug() string
@@ -84,6 +85,10 @@ func (v NotesPageView) LayoutPageTitle() string {
 	return v.PageTitle
 }
 
+func (v NotesPageView) LayoutSearchQuery() string {
+	return strings.TrimSpace(v.Filter.Query)
+}
+
 func (v NotesPageView) SidebarAuthors() []notes.Author {
 	return v.Authors
 }
@@ -105,35 +110,35 @@ func (v NotesPageView) SidebarCurrentType() notes.NoteType {
 }
 
 func (v NotesPageView) SidebarChannelsURL() string {
-	return BuildChannelsURL(v.Filter.AuthorSlug, v.Filter.TagName, v.Filter.Type)
+	return BuildChannelsURL(v.Filter.AuthorSlug, v.Filter.TagName, v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAllURL() string {
-	return "/"
+	return BuildNotesFilterURL(1, "", "", notes.NoteTypeAll, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAnyAuthorURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return "/"
+		return BuildNotesFilterURL(1, "", "", notes.NoteTypeAll, v.Filter.Query)
 	}
 
-	return BuildNotesFilterURL(1, "", v.Filter.TagName, v.Filter.Type)
+	return BuildNotesFilterURL(1, "", v.Filter.TagName, v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAnyTagURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return "/"
+		return BuildNotesFilterURL(1, "", "", notes.NoteTypeAll, v.Filter.Query)
 	}
 
-	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, "", v.Filter.Type)
+	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, "", v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAnyTypeURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return "/"
+		return BuildNotesFilterURL(1, "", "", notes.NoteTypeAll, v.Filter.Query)
 	}
 
-	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, notes.NoteTypeAll)
+	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, notes.NoteTypeAll, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAuthorURL(authorSlug string) string {
@@ -146,7 +151,7 @@ func (v NotesPageView) SidebarAuthorURL(authorSlug string) string {
 		return BuildAuthorURL(authorSlug, 1)
 	}
 
-	return BuildNotesFilterURL(1, authorSlug, v.Filter.TagName, v.Filter.Type)
+	return BuildNotesFilterURL(1, authorSlug, v.Filter.TagName, v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarTagURL(tagName string) string {
@@ -159,7 +164,7 @@ func (v NotesPageView) SidebarTagURL(tagName string) string {
 		return BuildTagURL(tagName)
 	}
 
-	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, tagName, v.Filter.Type)
+	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, tagName, v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarTypeURL(noteType notes.NoteType) string {
@@ -178,11 +183,15 @@ func (v NotesPageView) SidebarTypeURL(noteType notes.NoteType) string {
 		}
 	}
 
-	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, noteType)
+	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, noteType, v.Filter.Query)
 }
 
 func (v NotePageView) LayoutPageTitle() string {
 	return v.PageTitle
+}
+
+func (v NotePageView) LayoutSearchQuery() string {
+	return ""
 }
 
 func (v NotePageView) SidebarAuthors() []notes.Author {
@@ -352,10 +361,10 @@ func newPaginationView(filter notes.ListFilter, totalPages int) PaginationView {
 		LastPage:   totalPages,
 		PrevPage:   prevPage,
 		NextPage:   nextPage,
-		FirstURL:   BuildNotesFilterURL(1, filter.AuthorSlug, filter.TagName, filter.Type),
-		LastURL:    BuildNotesFilterURL(totalPages, filter.AuthorSlug, filter.TagName, filter.Type),
-		PrevURL:    BuildNotesFilterURL(prevPage, filter.AuthorSlug, filter.TagName, filter.Type),
-		NextURL:    BuildNotesFilterURL(nextPage, filter.AuthorSlug, filter.TagName, filter.Type),
+		FirstURL:   BuildNotesFilterURL(1, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
+		LastURL:    BuildNotesFilterURL(totalPages, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
+		PrevURL:    BuildNotesFilterURL(prevPage, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
+		NextURL:    BuildNotesFilterURL(nextPage, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
 	}
 }
 

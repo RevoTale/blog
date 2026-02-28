@@ -26,6 +26,7 @@ func (fakeGraphQLClient) MakeRequest(
 ) error {
 	slug := requestVarString(req, "slug")
 	name := requestVarString(req, "name")
+	queryValue := requestVarString(req, "query")
 
 	switch req.OpName {
 	case "AvailableTagsByPostType":
@@ -76,6 +77,26 @@ func (fakeGraphQLClient) MakeRequest(
 	case "ListNotesByAuthorAndTagIDs":
 		fallthrough
 	case "ListNotesByAuthorTagIDsAndType":
+		fallthrough
+	case "SearchNotes":
+		fallthrough
+	case "SearchNotesByType":
+		fallthrough
+	case "SearchNotesByTagIDs":
+		fallthrough
+	case "SearchNotesByTagIDsAndType":
+		fallthrough
+	case "SearchNotesByAuthorAndTagIDs":
+		fallthrough
+	case "SearchNotesByAuthorTagIDsAndType":
+		if queryValue == "nomatch" {
+			return decodeGraphQLData(resp, `{
+				"Micro_posts": {
+					"totalPages": 1,
+					"docs": []
+				}
+			}`)
+		}
 		return decodeGraphQLData(resp, `{
 			"Micro_posts": {
 				"totalPages": 2,
@@ -94,6 +115,11 @@ func (fakeGraphQLClient) MakeRequest(
 			}
 		}`)
 	case "NotesByAuthorSlug":
+		fallthrough
+	case "SearchNotesByAuthorSlug":
+		if queryValue == "nomatch" {
+			return decodeGraphQLData(resp, `{"Micro_posts": {"totalPages": 1, "docs": []}}`)
+		}
 		if slug == "missing" {
 			return decodeGraphQLData(resp, `{"Micro_posts": {"totalPages": 1, "docs": []}}`)
 		}
@@ -115,6 +141,11 @@ func (fakeGraphQLClient) MakeRequest(
 			}
 		}`)
 	case "NotesByAuthorSlugAndType":
+		fallthrough
+	case "SearchNotesByAuthorSlugAndType":
+		if queryValue == "nomatch" {
+			return decodeGraphQLData(resp, `{"Micro_posts": {"totalPages": 1, "docs": []}}`)
+		}
 		if slug == "missing" {
 			return decodeGraphQLData(resp, `{"Micro_posts": {"totalPages": 1, "docs": []}}`)
 		}
@@ -263,6 +294,7 @@ func TestHandlerPageRoutesRenderHTML(t *testing.T) {
 	}{
 		{path: "/channels", mustContain: "<title>Channels :: blog</title>"},
 		{path: "/", mustContain: "<title>Notes :: blog</title>"},
+		{path: "/?q=hello", mustContain: "<title>Notes :: blog</title>"},
 		{path: "/?author=l-you&tag=go&type=short", mustContain: "<h1>L You</h1>"},
 		{path: "/note/hello-world", mustContain: "<title>Hello World :: blog</title>"},
 		{path: "/author/l-you", mustContain: "<title>L You :: blog</title>"},
@@ -321,6 +353,24 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	}
 	if strings.Contains(rootBody, `href="/?tag=`) {
 		t.Fatalf("root notes should not render tag # All clear link when no tag filter")
+	}
+
+	search := performRequest(mux, http.MethodGet, "/?q=hello")
+	searchBody := requireBody(t, search.Body)
+	if !strings.Contains(searchBody, `<form class="topbar-search" role="search" method="get" action="/">`) {
+		t.Fatalf("search page should render topbar search form")
+	}
+	if !strings.Contains(searchBody, `name="q"`) || !strings.Contains(searchBody, `value="hello"`) {
+		t.Fatalf("search page should preserve q value in search input")
+	}
+	if !strings.Contains(searchBody, `href="/channels?q=hello"`) {
+		t.Fatalf("search page should preserve q in channels link")
+	}
+	if !strings.Contains(searchBody, `href="/?author=l-you&amp;q=hello"`) {
+		t.Fatalf("search page should preserve q in author links")
+	}
+	if !strings.Contains(searchBody, `href="/?q=hello&amp;tag=go"`) {
+		t.Fatalf("search page should preserve q in tag links")
 	}
 
 	filtered := performRequest(mux, http.MethodGet, "/author/l-you?tag=go&type=short")
@@ -424,6 +474,15 @@ func TestPagerLinksIncludeLiveNavigationActions(t *testing.T) {
 	if !strings.Contains(nextBody, `data-live-nav-url="/.live/?__live=navigation&amp;author=l-you&amp;page=2&amp;tag=go&amp;type=short"`) {
 		t.Fatalf("next link should include live navigation url marker")
 	}
+
+	recSearch := performRequest(mux, http.MethodGet, "/?q=hello&author=l-you&tag=go&type=short")
+	if recSearch.Code != http.StatusOK {
+		t.Fatalf("pager next search page status: expected %d, got %d", http.StatusOK, recSearch.Code)
+	}
+	searchBody := requireBody(t, recSearch.Body)
+	if !strings.Contains(searchBody, `data-live-nav-url="/.live/?__live=navigation&amp;author=l-you&amp;page=2&amp;q=hello&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("next link should preserve q in live navigation url marker")
+	}
 	if !strings.Contains(nextBody, `data-on-click__prevent=`) {
 		t.Fatalf("pager links should include datastar click action")
 	}
@@ -453,6 +512,10 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	}
 	if !strings.Contains(recStatic.Header().Get("Content-Type"), "text/css") {
 		t.Fatalf("static content-type: expected css, got %q", recStatic.Header().Get("Content-Type"))
+	}
+	staticBody := requireBody(t, recStatic.Body)
+	if !strings.Contains(staticBody, `.topbar-search-input:not(:placeholder-shown) + .topbar-search-submit`) {
+		t.Fatalf("static css should include active selector for search submit button")
 	}
 
 	recMissingNote := performRequest(mux, http.MethodGet, "/note/missing")

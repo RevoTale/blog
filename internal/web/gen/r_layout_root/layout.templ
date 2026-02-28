@@ -70,9 +70,27 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 								</div>
 							</div>
 							<nav class="topbar-nav" aria-label="utility">
-								<div class="topbar-search" role="search">
-									<span>Search notes</span>
-								</div>
+								<form class="topbar-search" role="search" method="get" action="/">
+									if view.SidebarCurrentAuthorSlug() != "" {
+										<input type="hidden" name="author" value={ view.SidebarCurrentAuthorSlug() }/>
+									}
+									if view.SidebarCurrentTagName() != "" {
+										<input type="hidden" name="tag" value={ view.SidebarCurrentTagName() }/>
+									}
+									if view.SidebarCurrentType() != "all" {
+										<input type="hidden" name="type" value={ string(view.SidebarCurrentType()) }/>
+									}
+									<input
+										id="notes-search"
+										class="topbar-search-input"
+										type="search"
+										name="q"
+										value={ view.LayoutSearchQuery() }
+										placeholder="Search notes"
+										required
+									/>
+									<button class="topbar-search-submit" type="submit">Search</button>
+								</form>
 							</nav>
 						</header>
 

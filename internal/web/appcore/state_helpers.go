@@ -157,7 +157,8 @@ func SidebarAllActive(view RootLayoutView) bool {
 
 	return strings.TrimSpace(view.SidebarCurrentAuthorSlug()) == "" &&
 		strings.TrimSpace(view.SidebarCurrentTagName()) == "" &&
-		notes.ParseNoteType(string(view.SidebarCurrentType())) == notes.NoteTypeAll
+		notes.ParseNoteType(string(view.SidebarCurrentType())) == notes.NoteTypeAll &&
+		strings.TrimSpace(view.LayoutSearchQuery()) == ""
 }
 
 func NoteCardClass(hasAttachment bool) string {
