@@ -90,6 +90,9 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 										required
 									/>
 									<button class="topbar-search-submit" type="submit">Search</button>
+									if view.LayoutSearchQuery() != "" {
+										<a class="topbar-search-clear" href={ appcore.BuildNotesFilterURL(1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>Clear</a>
+									}
 								</form>
 							</nav>
 						</header>

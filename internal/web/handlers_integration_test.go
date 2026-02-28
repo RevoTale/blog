@@ -354,6 +354,9 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	if strings.Contains(rootBody, `href="/?tag=`) {
 		t.Fatalf("root notes should not render tag # All clear link when no tag filter")
 	}
+	if strings.Contains(rootBody, `topbar-search-clear`) {
+		t.Fatalf("root page should not render search clear action when q is empty")
+	}
 
 	search := performRequest(mux, http.MethodGet, "/?q=hello")
 	searchBody := requireBody(t, search.Body)
@@ -371,6 +374,12 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	}
 	if !strings.Contains(searchBody, `href="/?q=hello&amp;tag=go"`) {
 		t.Fatalf("search page should preserve q in tag links")
+	}
+	if !strings.Contains(searchBody, `class="topbar-search-clear"`) {
+		t.Fatalf("search page should render search clear action when q is present")
+	}
+	if !strings.Contains(searchBody, `class="topbar-search-clear" href="/"`) {
+		t.Fatalf("search clear action should reset to root when only q is active")
 	}
 
 	filtered := performRequest(mux, http.MethodGet, "/author/l-you?tag=go&type=short")
@@ -482,6 +491,9 @@ func TestPagerLinksIncludeLiveNavigationActions(t *testing.T) {
 	searchBody := requireBody(t, recSearch.Body)
 	if !strings.Contains(searchBody, `data-live-nav-url="/.live/?__live=navigation&amp;author=l-you&amp;page=2&amp;q=hello&amp;tag=go&amp;type=short"`) {
 		t.Fatalf("next link should preserve q in live navigation url marker")
+	}
+	if !strings.Contains(searchBody, `class="topbar-search-clear" href="/?author=l-you&amp;tag=go&amp;type=short"`) {
+		t.Fatalf("search clear action should preserve author/tag/type and drop q")
 	}
 	if !strings.Contains(nextBody, `data-on-click__prevent=`) {
 		t.Fatalf("pager links should include datastar click action")
