@@ -14,16 +14,16 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<title>{ view.LayoutPageTitle() } :: blog</title>
 			<meta name="color-scheme" content="light dark"/>
-			<link rel="stylesheet" href="/.revotale/tui.css"/>
+			<link rel="stylesheet" href={ appcore.StaticAssetURL("tui.css") }/>
 			@templ.Raw(appcore.ChromaStyleTag())
-			<script src="/.revotale/vendor/htmx.min.js"></script>
-			@templ.Raw(appcore.HTMXNavigationScriptTag())
+			<script src={ appcore.StaticAssetURL("vendor/htmx.min.js") }></script>
+			<script src={ appcore.StaticAssetURL("app.js") }></script>
 		</head>
 		<body>
 			<div class="app-shell">
 				<aside class="server-rail" aria-label="workspace navigation">
 					<a class="server-button is-active" href="/" aria-label="blog home">
-						<img class="server-logo" src="/.revotale/revtale-logo.svg" alt="RevTale"/>
+						<img class="server-logo" src={ appcore.StaticAssetURL("revtale-logo.svg") } alt="RevTale"/>
 					</a>
 					<span class="server-divider" aria-hidden="true"></span>
 					<a class="server-button" href="/" aria-label="notes channel">#</a>

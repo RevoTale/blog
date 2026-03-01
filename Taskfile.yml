@@ -9,6 +9,7 @@ tasks:
   go:gen:
     desc: Run Go code generation
     cmds:
+      - go run ./framework/cmd/staticassetsgen -source internal/web/static -out internal/web/static-build -manifest internal/web/static-build/manifest.json -url-prefix /.revotale/
       - go generate ./internal/gql
       - go generate ./internal/web
       - go run ./internal/cmd/techstackgen -in go.mod -out internal/techstack/generated.go

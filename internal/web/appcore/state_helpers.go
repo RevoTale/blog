@@ -152,7 +152,3 @@ func AttachmentLabel(filename string) string {
 func ChromaStyleTag() string {
 	return "<style>" + string(markdown.ChromaCSS()) + "</style>"
 }
-
-func HTMXNavigationScriptTag() string {
-	return `<script src="/.revotale/app.js"></script>`
-}

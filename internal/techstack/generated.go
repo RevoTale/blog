@@ -11,6 +11,7 @@ var packages = []Package{
 	{Name: "github.com/Khan/genqlient", URL: "https://pkg.go.dev/github.com/Khan/genqlient"},
 	{Name: "github.com/a-h/templ", URL: "https://pkg.go.dev/github.com/a-h/templ"},
 	{Name: "github.com/alecthomas/chroma/v2", URL: "https://pkg.go.dev/github.com/alecthomas/chroma/v2"},
+	{Name: "github.com/evanw/esbuild", URL: "https://pkg.go.dev/github.com/evanw/esbuild"},
 	{Name: "github.com/gomarkdown/markdown", URL: "https://pkg.go.dev/github.com/gomarkdown/markdown"},
 	{Name: "golang.org/x/mod", URL: "https://pkg.go.dev/golang.org/x/mod"},
 }

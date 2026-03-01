@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"net/http/httptest"
-
 	"blog/framework/httpserver"
+	"blog/framework/staticassets"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
@@ -244,8 +244,28 @@ func requestVarString(req *graphql.Request, key string) string {
 	return strings.TrimSpace(value)
 }
 
-func newTestMux(t *testing.T) http.Handler {
+type testServer struct {
+	handler http.Handler
+	bundle  *staticassets.Bundle
+}
+
+func newTestServer(t *testing.T) testServer {
 	t.Helper()
+
+	bundle, err := staticassets.Build(staticassets.BuildConfig{
+		SourceDir: "../../internal/web/static",
+		URLPrefix: "/.revotale/",
+	})
+	if err != nil {
+		t.Fatalf("build static assets: %v", err)
+	}
+	t.Cleanup(func() {
+		if cleanupErr := bundle.Cleanup(); cleanupErr != nil {
+			t.Fatalf("cleanup static assets: %v", cleanupErr)
+		}
+	})
+
+	appcore.SetStaticAssetBasePath(bundle.URLPrefix())
 
 	svc := notes.NewService(fakeGraphQLClient{}, 12, "")
 	handler, err := httpserver.New(httpserver.Config[*appcore.Context]{
@@ -254,8 +274,8 @@ func newTestMux(t *testing.T) http.Handler {
 		IsNotFoundError: appcore.IsNotFoundError,
 		NotFoundPage:    webgen.NotFoundPage,
 		Static: httpserver.StaticMount{
-			URLPrefix: "/.revotale/",
-			Dir:       "../../internal/web/static",
+			URLPrefix: bundle.URLPrefix(),
+			Dir:       bundle.Dir(),
 		},
 		CachePolicies: httpserver.DefaultCachePolicies(),
 		LogServerError: func(error) {
@@ -264,7 +284,11 @@ func newTestMux(t *testing.T) http.Handler {
 	if err != nil {
 		t.Fatalf("new handler: %v", err)
 	}
-	return handler
+
+	return testServer{
+		handler: handler,
+		bundle:  bundle,
+	}
 }
 
 func requireBody(t *testing.T, body io.Reader) string {
@@ -301,7 +325,8 @@ func performRequestWithHeaders(
 
 func TestHandlerPageRoutesRenderHTML(t *testing.T) {
 	t.Parallel()
-	mux := newTestMux(t)
+	testSrv := newTestServer(t)
+	mux := testSrv.handler
 
 	cases := []struct {
 		path        string
@@ -344,7 +369,8 @@ func TestHandlerPageRoutesRenderHTML(t *testing.T) {
 
 func TestSidebarLinkBehavior(t *testing.T) {
 	t.Parallel()
-	mux := newTestMux(t)
+	testSrv := newTestServer(t)
+	mux := testSrv.handler
 
 	root := performRequest(mux, http.MethodGet, "/")
 	rootBody := requireBody(t, root.Body)
@@ -448,7 +474,8 @@ func TestSidebarLinkBehavior(t *testing.T) {
 
 func TestHandlerHTMXRoutesReturnPartial(t *testing.T) {
 	t.Parallel()
-	mux := newTestMux(t)
+	testSrv := newTestServer(t)
+	mux := testSrv.handler
 
 	cases := []struct {
 		path        string
@@ -484,7 +511,8 @@ func TestHandlerHTMXRoutesReturnPartial(t *testing.T) {
 
 func TestPagerLinksIncludeHTMXNavigationActions(t *testing.T) {
 	t.Parallel()
-	mux := newTestMux(t)
+	testSrv := newTestServer(t)
+	mux := testSrv.handler
 
 	recPrev := performRequest(mux, http.MethodGet, "/?page=2&author=l-you&tag=go&type=short")
 	if recPrev.Code != http.StatusOK {
@@ -518,7 +546,10 @@ func TestPagerLinksIncludeHTMXNavigationActions(t *testing.T) {
 		t.Fatalf("pager next search page status: expected %d, got %d", http.StatusOK, recSearch.Code)
 	}
 	searchBody := requireBody(t, recSearch.Body)
-	if !strings.Contains(searchBody, `hx-get="/?__live=navigation&amp;author=l-you&amp;page=2&amp;q=hello&amp;tag=go&amp;type=short"`) {
+	if !strings.Contains(
+		searchBody,
+		`hx-get="/?__live=navigation&amp;author=l-you&amp;page=2&amp;q=hello&amp;tag=go&amp;type=short"`,
+	) {
 		t.Fatalf("next link should preserve q in htmx navigation url marker")
 	}
 	if !strings.Contains(searchBody, `class="topbar-search-clear" href="/?author=l-you&amp;tag=go&amp;type=short"`) {
@@ -527,17 +558,18 @@ func TestPagerLinksIncludeHTMXNavigationActions(t *testing.T) {
 	if !strings.Contains(nextBody, `hx-push-url="/?author=l-you&amp;page=2&amp;tag=go&amp;type=short"`) {
 		t.Fatalf("pager links should push canonical url to history")
 	}
-	if !strings.Contains(nextBody, `/.revotale/vendor/htmx.min.js`) {
+	if !strings.Contains(nextBody, testSrv.bundle.URL("vendor/htmx.min.js")) {
 		t.Fatalf("layout should include self-hosted htmx script")
 	}
-	if !strings.Contains(nextBody, `/.revotale/app.js`) {
+	if !strings.Contains(nextBody, testSrv.bundle.URL("app.js")) {
 		t.Fatalf("layout should include self-hosted app script")
 	}
 }
 
 func TestHandlerNotFoundAndHealth(t *testing.T) {
 	t.Parallel()
-	mux := newTestMux(t)
+	testSrv := newTestServer(t)
+	mux := testSrv.handler
 
 	recHealth := performRequest(mux, http.MethodGet, "/healthz")
 	if recHealth.Code != http.StatusOK {
@@ -548,18 +580,23 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	}
 
 	recStatic := performRequest(mux, http.MethodGet, "/.revotale/tui.css")
-	if recStatic.Code != http.StatusOK {
-		t.Fatalf("static status: expected %d, got %d", http.StatusOK, recStatic.Code)
+	if recStatic.Code != http.StatusNotFound {
+		t.Fatalf("unhashed static status: expected %d, got %d", http.StatusNotFound, recStatic.Code)
 	}
-	if !strings.Contains(recStatic.Header().Get("Content-Type"), "text/css") {
-		t.Fatalf("static content-type: expected css, got %q", recStatic.Header().Get("Content-Type"))
+
+	recHashedStatic := performRequest(mux, http.MethodGet, testSrv.bundle.URL("tui.css"))
+	if recHashedStatic.Code != http.StatusOK {
+		t.Fatalf("hashed static status: expected %d, got %d", http.StatusOK, recHashedStatic.Code)
 	}
-	staticBody := requireBody(t, recStatic.Body)
-	if !strings.Contains(staticBody, `.topbar-search-input:not(:placeholder-shown) + .topbar-search-submit`) {
+	if !strings.Contains(recHashedStatic.Header().Get("Content-Type"), "text/css") {
+		t.Fatalf("hashed static content-type: expected css, got %q", recHashedStatic.Header().Get("Content-Type"))
+	}
+	staticBody := requireBody(t, recHashedStatic.Body)
+	if !strings.Contains(staticBody, `:placeholder-shown)+.topbar-search-submit`) {
 		t.Fatalf("static css should include active selector for search submit button")
 	}
 
-	recScript := performRequest(mux, http.MethodGet, "/.revotale/app.js")
+	recScript := performRequest(mux, http.MethodGet, testSrv.bundle.URL("app.js"))
 	if recScript.Code != http.StatusOK {
 		t.Fatalf("static script status: expected %d, got %d", http.StatusOK, recScript.Code)
 	}
@@ -567,10 +604,10 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 		t.Fatalf("static script content-type: expected javascript, got %q", recScript.Header().Get("Content-Type"))
 	}
 	scriptBody := requireBody(t, recScript.Body)
-	if !strings.Contains(scriptBody, `window.scrollTo({ top: 0, left: 0, behavior: "smooth" });`) {
+	if !strings.Contains(scriptBody, `scrollTo`) || !strings.Contains(scriptBody, `behavior:"smooth"`) {
 		t.Fatalf("static script should include smooth scroll to top behavior")
 	}
-	if !strings.Contains(scriptBody, `target.closest(".code-copy-button")`) {
+	if !strings.Contains(scriptBody, `.code-copy-button`) || !strings.Contains(scriptBody, `clipboard`) {
 		t.Fatalf("static script should include copy button behavior")
 	}
 
