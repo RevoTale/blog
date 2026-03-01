@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	frameworki18n "blog/framework/i18n"
 	"github.com/a-h/templ"
 )
 
@@ -54,6 +55,7 @@ const (
 type NotFoundContext struct {
 	RequestPath         string
 	MatchedRoutePattern string
+	Locale              string
 	Source              NotFoundSource
 }
 
@@ -124,6 +126,7 @@ func handleLoadError[C interface{}](
 		runtime.RespondNotFound(w, r, NotFoundContext{
 			RequestPath:         r.URL.Path,
 			MatchedRoutePattern: routePattern,
+			Locale:              frameworki18n.LocaleFromContext(r.Context()),
 			Source:              source,
 		})
 		return

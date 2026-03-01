@@ -2,6 +2,7 @@ package components
 
 import (
 	"blog/internal/web/appcore"
+	webi18n "blog/internal/web/i18n"
 	"strconv"
 )
 
@@ -9,8 +10,8 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 	<section class="context-panel">
 		<h1>{ view.ContextTitle }</h1>
 		if view.ContextSubtitle != "" {
-			if view.ContextSubtitle == "feed" {
-				<p class="muted">{ view.ContextSubtitle } · page { strconv.Itoa(view.Pagination.Page) }</p>
+			if view.ContextSubtitle == appcore.Message(view.MessagesMap(), webi18n.KeyContextFeed) {
+				<p class="muted">{ view.ContextSubtitle } · { appcore.Message(view.MessagesMap(), webi18n.KeyPagerPage) } { strconv.Itoa(view.Pagination.Page) }</p>
 			} else {
 				<p class="muted">{ view.ContextSubtitle }</p>
 			}
@@ -20,10 +21,10 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 		}
 	</section>
 
-	<section class="message-list" aria-label="notes feed">
+	<section class="message-list" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyNotesAriaFeed) }>
 		if len(view.Notes) > 0 {
 			for _, note := range view.Notes {
-				@NoteCard(note)
+				@NoteCard(view.LocaleCode(), view.MessagesMap(), note)
 			}
 		} else {
 			<article class="panel empty-state">
@@ -33,7 +34,7 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 	</section>
 
 	<section class="feed-toolbar">
-		<p class="muted">{ appcore.PagerStatusText(view.Pagination) }</p>
+		<p class="muted">{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerPage) } { strconv.Itoa(view.Pagination.Page) } / { strconv.Itoa(view.Pagination.TotalPages) }</p>
 		<div class="pager-controls">
 			if view.Pagination.HasPrev {
 				<a
@@ -44,9 +45,9 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 					hx-select="#notes-content"
 					hx-swap="outerHTML"
 					hx-push-url={ view.Pagination.FirstURL }
-				>first</a>
+				>{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerFirst) }</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">first</span>
+				<span class="pager-link" aria-disabled="true">{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerFirst) }</span>
 			}
 			if view.Pagination.HasPrev {
 				<a
@@ -57,9 +58,9 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 					hx-select="#notes-content"
 					hx-swap="outerHTML"
 					hx-push-url={ view.Pagination.PrevURL }
-				>prev</a>
+				>{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerPrev) }</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">prev</span>
+				<span class="pager-link" aria-disabled="true">{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerPrev) }</span>
 			}
 			if view.Pagination.HasNext {
 				<a
@@ -70,9 +71,9 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 					hx-select="#notes-content"
 					hx-swap="outerHTML"
 					hx-push-url={ view.Pagination.NextURL }
-				>next</a>
+				>{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerNext) }</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">next</span>
+				<span class="pager-link" aria-disabled="true">{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerNext) }</span>
 			}
 			if view.Pagination.HasNext {
 				<a
@@ -83,14 +84,14 @@ templ NotesFeed(view appcore.NotesPageView, emptyMessage string) {
 					hx-select="#notes-content"
 					hx-swap="outerHTML"
 					hx-push-url={ view.Pagination.LastURL }
-				>last</a>
+				>{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerLast) }</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">last</span>
+				<span class="pager-link" aria-disabled="true">{ appcore.Message(view.MessagesMap(), webi18n.KeyPagerLast) }</span>
 			}
 		</div>
 	</section>
 
 	<section class="composer" aria-disabled="true">
-		<p>You do not have permission to send messages in this channel. It is READ-only! :)</p>
+		<p>{ appcore.Message(view.MessagesMap(), webi18n.KeyComposerReadOnly) }</p>
 	</section>
 }

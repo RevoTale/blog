@@ -159,6 +159,32 @@ func (v *AvailableTagsByPostTypeResponse) GetAvailableTagsByMicroPostType() []Av
 	return v.AvailableTagsByMicroPostType
 }
 
+type FallbackLocaleInputType string
+
+const (
+	FallbackLocaleInputTypeEnUs FallbackLocaleInputType = "en_US"
+	FallbackLocaleInputTypeUkUa FallbackLocaleInputType = "uk_UA"
+	FallbackLocaleInputTypeDeDe FallbackLocaleInputType = "de_DE"
+	FallbackLocaleInputTypeHiIn FallbackLocaleInputType = "hi_IN"
+	FallbackLocaleInputTypeJaJp FallbackLocaleInputType = "ja_JP"
+	FallbackLocaleInputTypeRuRu FallbackLocaleInputType = "ru_RU"
+	FallbackLocaleInputTypeFrFr FallbackLocaleInputType = "fr_FR"
+	FallbackLocaleInputTypeEsEs FallbackLocaleInputType = "es_ES"
+	FallbackLocaleInputTypeNone FallbackLocaleInputType = "none"
+)
+
+var AllFallbackLocaleInputType = []FallbackLocaleInputType{
+	FallbackLocaleInputTypeEnUs,
+	FallbackLocaleInputTypeUkUa,
+	FallbackLocaleInputTypeDeDe,
+	FallbackLocaleInputTypeHiIn,
+	FallbackLocaleInputTypeJaJp,
+	FallbackLocaleInputTypeRuRu,
+	FallbackLocaleInputTypeFrFr,
+	FallbackLocaleInputTypeEsEs,
+	FallbackLocaleInputTypeNone,
+}
+
 // ListNotesByAuthorAndTagIDsMicro_posts includes the requested fields of the GraphQL type Micro_posts.
 type ListNotesByAuthorAndTagIDsMicro_posts struct {
 	TotalPages int                                                   `json:"totalPages"`
@@ -978,6 +1004,30 @@ type ListNotesResponse struct {
 
 // GetMicro_posts returns ListNotesResponse.Micro_posts, and is useful for accessing the field via an interface.
 func (v *ListNotesResponse) GetMicro_posts() *ListNotesMicro_posts { return v.Micro_posts }
+
+type LocaleInputType string
+
+const (
+	LocaleInputTypeEnUs LocaleInputType = "en_US"
+	LocaleInputTypeUkUa LocaleInputType = "uk_UA"
+	LocaleInputTypeDeDe LocaleInputType = "de_DE"
+	LocaleInputTypeHiIn LocaleInputType = "hi_IN"
+	LocaleInputTypeJaJp LocaleInputType = "ja_JP"
+	LocaleInputTypeRuRu LocaleInputType = "ru_RU"
+	LocaleInputTypeFrFr LocaleInputType = "fr_FR"
+	LocaleInputTypeEsEs LocaleInputType = "es_ES"
+)
+
+var AllLocaleInputType = []LocaleInputType{
+	LocaleInputTypeEnUs,
+	LocaleInputTypeUkUa,
+	LocaleInputTypeDeDe,
+	LocaleInputTypeHiIn,
+	LocaleInputTypeJaJp,
+	LocaleInputTypeRuRu,
+	LocaleInputTypeFrFr,
+	LocaleInputTypeEsEs,
+}
 
 type Micro_post_post_type_Input string
 
@@ -2783,34 +2833,58 @@ func (v *TagIDsByNamesTagsDocsTag) GetTitle() *string { return v.Title }
 
 // __AuthorBySlugInput is used internally by genqlient
 type __AuthorBySlugInput struct {
-	Slug string `json:"slug"`
+	Slug           string                   `json:"slug"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetSlug returns __AuthorBySlugInput.Slug, and is useful for accessing the field via an interface.
 func (v *__AuthorBySlugInput) GetSlug() string { return v.Slug }
 
+// GetLocale returns __AuthorBySlugInput.Locale, and is useful for accessing the field via an interface.
+func (v *__AuthorBySlugInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __AuthorBySlugInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__AuthorBySlugInput) GetFallbackLocale() *FallbackLocaleInputType { return v.FallbackLocale }
+
 // __AvailableAuthorsInput is used internally by genqlient
 type __AvailableAuthorsInput struct {
-	Limit int `json:"limit"`
+	Limit          int                      `json:"limit"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetLimit returns __AvailableAuthorsInput.Limit, and is useful for accessing the field via an interface.
 func (v *__AvailableAuthorsInput) GetLimit() int { return v.Limit }
 
+// GetLocale returns __AvailableAuthorsInput.Locale, and is useful for accessing the field via an interface.
+func (v *__AvailableAuthorsInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __AvailableAuthorsInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__AvailableAuthorsInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __AvailableTagsByPostTypeInput is used internally by genqlient
 type __AvailableTagsByPostTypeInput struct {
-	PostType *string `json:"postType"`
+	PostType *string          `json:"postType"`
+	Locale   *LocaleInputType `json:"locale"`
 }
 
 // GetPostType returns __AvailableTagsByPostTypeInput.PostType, and is useful for accessing the field via an interface.
 func (v *__AvailableTagsByPostTypeInput) GetPostType() *string { return v.PostType }
 
+// GetLocale returns __AvailableTagsByPostTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__AvailableTagsByPostTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
 // __ListNotesByAuthorAndTagIDsInput is used internally by genqlient
 type __ListNotesByAuthorAndTagIDsInput struct {
-	Slug   string   `json:"slug"`
-	Page   int      `json:"page"`
-	Limit  int      `json:"limit"`
-	TagIDs []string `json:"tagIDs"`
+	Slug           string                   `json:"slug"`
+	Page           int                      `json:"page"`
+	Limit          int                      `json:"limit"`
+	TagIDs         []string                 `json:"tagIDs"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetSlug returns __ListNotesByAuthorAndTagIDsInput.Slug, and is useful for accessing the field via an interface.
@@ -2825,13 +2899,23 @@ func (v *__ListNotesByAuthorAndTagIDsInput) GetLimit() int { return v.Limit }
 // GetTagIDs returns __ListNotesByAuthorAndTagIDsInput.TagIDs, and is useful for accessing the field via an interface.
 func (v *__ListNotesByAuthorAndTagIDsInput) GetTagIDs() []string { return v.TagIDs }
 
+// GetLocale returns __ListNotesByAuthorAndTagIDsInput.Locale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorAndTagIDsInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __ListNotesByAuthorAndTagIDsInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorAndTagIDsInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __ListNotesByAuthorTagIDsAndTypeInput is used internally by genqlient
 type __ListNotesByAuthorTagIDsAndTypeInput struct {
-	Slug     string                     `json:"slug"`
-	Page     int                        `json:"page"`
-	Limit    int                        `json:"limit"`
-	TagIDs   []string                   `json:"tagIDs"`
-	PostType Micro_post_post_type_Input `json:"postType"`
+	Slug           string                     `json:"slug"`
+	Page           int                        `json:"page"`
+	Limit          int                        `json:"limit"`
+	TagIDs         []string                   `json:"tagIDs"`
+	PostType       Micro_post_post_type_Input `json:"postType"`
+	Locale         *LocaleInputType           `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType   `json:"fallbackLocale"`
 }
 
 // GetSlug returns __ListNotesByAuthorTagIDsAndTypeInput.Slug, and is useful for accessing the field via an interface.
@@ -2851,12 +2935,22 @@ func (v *__ListNotesByAuthorTagIDsAndTypeInput) GetPostType() Micro_post_post_ty
 	return v.PostType
 }
 
+// GetLocale returns __ListNotesByAuthorTagIDsAndTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorTagIDsAndTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __ListNotesByAuthorTagIDsAndTypeInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByAuthorTagIDsAndTypeInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __ListNotesByTagIDsAndTypeInput is used internally by genqlient
 type __ListNotesByTagIDsAndTypeInput struct {
-	Page     int                        `json:"page"`
-	Limit    int                        `json:"limit"`
-	TagIDs   []string                   `json:"tagIDs"`
-	PostType Micro_post_post_type_Input `json:"postType"`
+	Page           int                        `json:"page"`
+	Limit          int                        `json:"limit"`
+	TagIDs         []string                   `json:"tagIDs"`
+	PostType       Micro_post_post_type_Input `json:"postType"`
+	Locale         *LocaleInputType           `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType   `json:"fallbackLocale"`
 }
 
 // GetPage returns __ListNotesByTagIDsAndTypeInput.Page, and is useful for accessing the field via an interface.
@@ -2871,11 +2965,21 @@ func (v *__ListNotesByTagIDsAndTypeInput) GetTagIDs() []string { return v.TagIDs
 // GetPostType returns __ListNotesByTagIDsAndTypeInput.PostType, and is useful for accessing the field via an interface.
 func (v *__ListNotesByTagIDsAndTypeInput) GetPostType() Micro_post_post_type_Input { return v.PostType }
 
+// GetLocale returns __ListNotesByTagIDsAndTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTagIDsAndTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __ListNotesByTagIDsAndTypeInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTagIDsAndTypeInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __ListNotesByTagIDsInput is used internally by genqlient
 type __ListNotesByTagIDsInput struct {
-	Page   int      `json:"page"`
-	Limit  int      `json:"limit"`
-	TagIDs []string `json:"tagIDs"`
+	Page           int                      `json:"page"`
+	Limit          int                      `json:"limit"`
+	TagIDs         []string                 `json:"tagIDs"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetPage returns __ListNotesByTagIDsInput.Page, and is useful for accessing the field via an interface.
@@ -2887,11 +2991,21 @@ func (v *__ListNotesByTagIDsInput) GetLimit() int { return v.Limit }
 // GetTagIDs returns __ListNotesByTagIDsInput.TagIDs, and is useful for accessing the field via an interface.
 func (v *__ListNotesByTagIDsInput) GetTagIDs() []string { return v.TagIDs }
 
+// GetLocale returns __ListNotesByTagIDsInput.Locale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTagIDsInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __ListNotesByTagIDsInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTagIDsInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __ListNotesByTypeInput is used internally by genqlient
 type __ListNotesByTypeInput struct {
-	Page     int                        `json:"page"`
-	Limit    int                        `json:"limit"`
-	PostType Micro_post_post_type_Input `json:"postType"`
+	Page           int                        `json:"page"`
+	Limit          int                        `json:"limit"`
+	PostType       Micro_post_post_type_Input `json:"postType"`
+	Locale         *LocaleInputType           `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType   `json:"fallbackLocale"`
 }
 
 // GetPage returns __ListNotesByTypeInput.Page, and is useful for accessing the field via an interface.
@@ -2903,10 +3017,20 @@ func (v *__ListNotesByTypeInput) GetLimit() int { return v.Limit }
 // GetPostType returns __ListNotesByTypeInput.PostType, and is useful for accessing the field via an interface.
 func (v *__ListNotesByTypeInput) GetPostType() Micro_post_post_type_Input { return v.PostType }
 
+// GetLocale returns __ListNotesByTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __ListNotesByTypeInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__ListNotesByTypeInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __ListNotesInput is used internally by genqlient
 type __ListNotesInput struct {
-	Page  int `json:"page"`
-	Limit int `json:"limit"`
+	Page           int                      `json:"page"`
+	Limit          int                      `json:"limit"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetPage returns __ListNotesInput.Page, and is useful for accessing the field via an interface.
@@ -2915,20 +3039,36 @@ func (v *__ListNotesInput) GetPage() int { return v.Page }
 // GetLimit returns __ListNotesInput.Limit, and is useful for accessing the field via an interface.
 func (v *__ListNotesInput) GetLimit() int { return v.Limit }
 
+// GetLocale returns __ListNotesInput.Locale, and is useful for accessing the field via an interface.
+func (v *__ListNotesInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __ListNotesInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__ListNotesInput) GetFallbackLocale() *FallbackLocaleInputType { return v.FallbackLocale }
+
 // __NoteBySlugInput is used internally by genqlient
 type __NoteBySlugInput struct {
-	Slug string `json:"slug"`
+	Slug           string                   `json:"slug"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetSlug returns __NoteBySlugInput.Slug, and is useful for accessing the field via an interface.
 func (v *__NoteBySlugInput) GetSlug() string { return v.Slug }
 
+// GetLocale returns __NoteBySlugInput.Locale, and is useful for accessing the field via an interface.
+func (v *__NoteBySlugInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __NoteBySlugInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__NoteBySlugInput) GetFallbackLocale() *FallbackLocaleInputType { return v.FallbackLocale }
+
 // __NotesByAuthorSlugAndTypeInput is used internally by genqlient
 type __NotesByAuthorSlugAndTypeInput struct {
-	Slug     string                     `json:"slug"`
-	Page     int                        `json:"page"`
-	Limit    int                        `json:"limit"`
-	PostType Micro_post_post_type_Input `json:"postType"`
+	Slug           string                     `json:"slug"`
+	Page           int                        `json:"page"`
+	Limit          int                        `json:"limit"`
+	PostType       Micro_post_post_type_Input `json:"postType"`
+	Locale         *LocaleInputType           `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType   `json:"fallbackLocale"`
 }
 
 // GetSlug returns __NotesByAuthorSlugAndTypeInput.Slug, and is useful for accessing the field via an interface.
@@ -2943,11 +3083,21 @@ func (v *__NotesByAuthorSlugAndTypeInput) GetLimit() int { return v.Limit }
 // GetPostType returns __NotesByAuthorSlugAndTypeInput.PostType, and is useful for accessing the field via an interface.
 func (v *__NotesByAuthorSlugAndTypeInput) GetPostType() Micro_post_post_type_Input { return v.PostType }
 
+// GetLocale returns __NotesByAuthorSlugAndTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__NotesByAuthorSlugAndTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __NotesByAuthorSlugAndTypeInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__NotesByAuthorSlugAndTypeInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __NotesByAuthorSlugInput is used internally by genqlient
 type __NotesByAuthorSlugInput struct {
-	Slug  string `json:"slug"`
-	Page  int    `json:"page"`
-	Limit int    `json:"limit"`
+	Slug           string                   `json:"slug"`
+	Page           int                      `json:"page"`
+	Limit          int                      `json:"limit"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetSlug returns __NotesByAuthorSlugInput.Slug, and is useful for accessing the field via an interface.
@@ -2959,13 +3109,23 @@ func (v *__NotesByAuthorSlugInput) GetPage() int { return v.Page }
 // GetLimit returns __NotesByAuthorSlugInput.Limit, and is useful for accessing the field via an interface.
 func (v *__NotesByAuthorSlugInput) GetLimit() int { return v.Limit }
 
+// GetLocale returns __NotesByAuthorSlugInput.Locale, and is useful for accessing the field via an interface.
+func (v *__NotesByAuthorSlugInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __NotesByAuthorSlugInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__NotesByAuthorSlugInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __SearchNotesByAuthorAndTagIDsInput is used internally by genqlient
 type __SearchNotesByAuthorAndTagIDsInput struct {
-	Query  string   `json:"query"`
-	Slug   string   `json:"slug"`
-	Page   int      `json:"page"`
-	Limit  int      `json:"limit"`
-	TagIDs []string `json:"tagIDs"`
+	Query          string                   `json:"query"`
+	Slug           string                   `json:"slug"`
+	Page           int                      `json:"page"`
+	Limit          int                      `json:"limit"`
+	TagIDs         []string                 `json:"tagIDs"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetQuery returns __SearchNotesByAuthorAndTagIDsInput.Query, and is useful for accessing the field via an interface.
@@ -2983,13 +3143,23 @@ func (v *__SearchNotesByAuthorAndTagIDsInput) GetLimit() int { return v.Limit }
 // GetTagIDs returns __SearchNotesByAuthorAndTagIDsInput.TagIDs, and is useful for accessing the field via an interface.
 func (v *__SearchNotesByAuthorAndTagIDsInput) GetTagIDs() []string { return v.TagIDs }
 
+// GetLocale returns __SearchNotesByAuthorAndTagIDsInput.Locale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByAuthorAndTagIDsInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __SearchNotesByAuthorAndTagIDsInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByAuthorAndTagIDsInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __SearchNotesByAuthorSlugAndTypeInput is used internally by genqlient
 type __SearchNotesByAuthorSlugAndTypeInput struct {
-	Query    string                     `json:"query"`
-	Slug     string                     `json:"slug"`
-	Page     int                        `json:"page"`
-	Limit    int                        `json:"limit"`
-	PostType Micro_post_post_type_Input `json:"postType"`
+	Query          string                     `json:"query"`
+	Slug           string                     `json:"slug"`
+	Page           int                        `json:"page"`
+	Limit          int                        `json:"limit"`
+	PostType       Micro_post_post_type_Input `json:"postType"`
+	Locale         *LocaleInputType           `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType   `json:"fallbackLocale"`
 }
 
 // GetQuery returns __SearchNotesByAuthorSlugAndTypeInput.Query, and is useful for accessing the field via an interface.
@@ -3009,12 +3179,22 @@ func (v *__SearchNotesByAuthorSlugAndTypeInput) GetPostType() Micro_post_post_ty
 	return v.PostType
 }
 
+// GetLocale returns __SearchNotesByAuthorSlugAndTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByAuthorSlugAndTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __SearchNotesByAuthorSlugAndTypeInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByAuthorSlugAndTypeInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __SearchNotesByAuthorSlugInput is used internally by genqlient
 type __SearchNotesByAuthorSlugInput struct {
-	Query string `json:"query"`
-	Slug  string `json:"slug"`
-	Page  int    `json:"page"`
-	Limit int    `json:"limit"`
+	Query          string                   `json:"query"`
+	Slug           string                   `json:"slug"`
+	Page           int                      `json:"page"`
+	Limit          int                      `json:"limit"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetQuery returns __SearchNotesByAuthorSlugInput.Query, and is useful for accessing the field via an interface.
@@ -3029,14 +3209,24 @@ func (v *__SearchNotesByAuthorSlugInput) GetPage() int { return v.Page }
 // GetLimit returns __SearchNotesByAuthorSlugInput.Limit, and is useful for accessing the field via an interface.
 func (v *__SearchNotesByAuthorSlugInput) GetLimit() int { return v.Limit }
 
+// GetLocale returns __SearchNotesByAuthorSlugInput.Locale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByAuthorSlugInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __SearchNotesByAuthorSlugInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByAuthorSlugInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __SearchNotesByAuthorTagIDsAndTypeInput is used internally by genqlient
 type __SearchNotesByAuthorTagIDsAndTypeInput struct {
-	Query    string                     `json:"query"`
-	Slug     string                     `json:"slug"`
-	Page     int                        `json:"page"`
-	Limit    int                        `json:"limit"`
-	TagIDs   []string                   `json:"tagIDs"`
-	PostType Micro_post_post_type_Input `json:"postType"`
+	Query          string                     `json:"query"`
+	Slug           string                     `json:"slug"`
+	Page           int                        `json:"page"`
+	Limit          int                        `json:"limit"`
+	TagIDs         []string                   `json:"tagIDs"`
+	PostType       Micro_post_post_type_Input `json:"postType"`
+	Locale         *LocaleInputType           `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType   `json:"fallbackLocale"`
 }
 
 // GetQuery returns __SearchNotesByAuthorTagIDsAndTypeInput.Query, and is useful for accessing the field via an interface.
@@ -3059,13 +3249,23 @@ func (v *__SearchNotesByAuthorTagIDsAndTypeInput) GetPostType() Micro_post_post_
 	return v.PostType
 }
 
+// GetLocale returns __SearchNotesByAuthorTagIDsAndTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByAuthorTagIDsAndTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __SearchNotesByAuthorTagIDsAndTypeInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByAuthorTagIDsAndTypeInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __SearchNotesByTagIDsAndTypeInput is used internally by genqlient
 type __SearchNotesByTagIDsAndTypeInput struct {
-	Query    string                     `json:"query"`
-	Page     int                        `json:"page"`
-	Limit    int                        `json:"limit"`
-	TagIDs   []string                   `json:"tagIDs"`
-	PostType Micro_post_post_type_Input `json:"postType"`
+	Query          string                     `json:"query"`
+	Page           int                        `json:"page"`
+	Limit          int                        `json:"limit"`
+	TagIDs         []string                   `json:"tagIDs"`
+	PostType       Micro_post_post_type_Input `json:"postType"`
+	Locale         *LocaleInputType           `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType   `json:"fallbackLocale"`
 }
 
 // GetQuery returns __SearchNotesByTagIDsAndTypeInput.Query, and is useful for accessing the field via an interface.
@@ -3085,12 +3285,22 @@ func (v *__SearchNotesByTagIDsAndTypeInput) GetPostType() Micro_post_post_type_I
 	return v.PostType
 }
 
+// GetLocale returns __SearchNotesByTagIDsAndTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByTagIDsAndTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __SearchNotesByTagIDsAndTypeInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByTagIDsAndTypeInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __SearchNotesByTagIDsInput is used internally by genqlient
 type __SearchNotesByTagIDsInput struct {
-	Query  string   `json:"query"`
-	Page   int      `json:"page"`
-	Limit  int      `json:"limit"`
-	TagIDs []string `json:"tagIDs"`
+	Query          string                   `json:"query"`
+	Page           int                      `json:"page"`
+	Limit          int                      `json:"limit"`
+	TagIDs         []string                 `json:"tagIDs"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetQuery returns __SearchNotesByTagIDsInput.Query, and is useful for accessing the field via an interface.
@@ -3105,12 +3315,22 @@ func (v *__SearchNotesByTagIDsInput) GetLimit() int { return v.Limit }
 // GetTagIDs returns __SearchNotesByTagIDsInput.TagIDs, and is useful for accessing the field via an interface.
 func (v *__SearchNotesByTagIDsInput) GetTagIDs() []string { return v.TagIDs }
 
+// GetLocale returns __SearchNotesByTagIDsInput.Locale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByTagIDsInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __SearchNotesByTagIDsInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByTagIDsInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __SearchNotesByTypeInput is used internally by genqlient
 type __SearchNotesByTypeInput struct {
-	Query    string                     `json:"query"`
-	Page     int                        `json:"page"`
-	Limit    int                        `json:"limit"`
-	PostType Micro_post_post_type_Input `json:"postType"`
+	Query          string                     `json:"query"`
+	Page           int                        `json:"page"`
+	Limit          int                        `json:"limit"`
+	PostType       Micro_post_post_type_Input `json:"postType"`
+	Locale         *LocaleInputType           `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType   `json:"fallbackLocale"`
 }
 
 // GetQuery returns __SearchNotesByTypeInput.Query, and is useful for accessing the field via an interface.
@@ -3125,11 +3345,21 @@ func (v *__SearchNotesByTypeInput) GetLimit() int { return v.Limit }
 // GetPostType returns __SearchNotesByTypeInput.PostType, and is useful for accessing the field via an interface.
 func (v *__SearchNotesByTypeInput) GetPostType() Micro_post_post_type_Input { return v.PostType }
 
+// GetLocale returns __SearchNotesByTypeInput.Locale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByTypeInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __SearchNotesByTypeInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesByTypeInput) GetFallbackLocale() *FallbackLocaleInputType {
+	return v.FallbackLocale
+}
+
 // __SearchNotesInput is used internally by genqlient
 type __SearchNotesInput struct {
-	Query string `json:"query"`
-	Page  int    `json:"page"`
-	Limit int    `json:"limit"`
+	Query          string                   `json:"query"`
+	Page           int                      `json:"page"`
+	Limit          int                      `json:"limit"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetQuery returns __SearchNotesInput.Query, and is useful for accessing the field via an interface.
@@ -3141,26 +3371,48 @@ func (v *__SearchNotesInput) GetPage() int { return v.Page }
 // GetLimit returns __SearchNotesInput.Limit, and is useful for accessing the field via an interface.
 func (v *__SearchNotesInput) GetLimit() int { return v.Limit }
 
+// GetLocale returns __SearchNotesInput.Locale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __SearchNotesInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__SearchNotesInput) GetFallbackLocale() *FallbackLocaleInputType { return v.FallbackLocale }
+
 // __TagByNameInput is used internally by genqlient
 type __TagByNameInput struct {
-	Name string `json:"name"`
+	Name           string                   `json:"name"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetName returns __TagByNameInput.Name, and is useful for accessing the field via an interface.
 func (v *__TagByNameInput) GetName() string { return v.Name }
 
+// GetLocale returns __TagByNameInput.Locale, and is useful for accessing the field via an interface.
+func (v *__TagByNameInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __TagByNameInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__TagByNameInput) GetFallbackLocale() *FallbackLocaleInputType { return v.FallbackLocale }
+
 // __TagIDsByNamesInput is used internally by genqlient
 type __TagIDsByNamesInput struct {
-	TagNames []string `json:"tagNames"`
+	TagNames       []string                 `json:"tagNames"`
+	Locale         *LocaleInputType         `json:"locale"`
+	FallbackLocale *FallbackLocaleInputType `json:"fallbackLocale"`
 }
 
 // GetTagNames returns __TagIDsByNamesInput.TagNames, and is useful for accessing the field via an interface.
 func (v *__TagIDsByNamesInput) GetTagNames() []string { return v.TagNames }
 
+// GetLocale returns __TagIDsByNamesInput.Locale, and is useful for accessing the field via an interface.
+func (v *__TagIDsByNamesInput) GetLocale() *LocaleInputType { return v.Locale }
+
+// GetFallbackLocale returns __TagIDsByNamesInput.FallbackLocale, and is useful for accessing the field via an interface.
+func (v *__TagIDsByNamesInput) GetFallbackLocale() *FallbackLocaleInputType { return v.FallbackLocale }
+
 // The query executed by AuthorBySlug.
 const AuthorBySlug_Operation = `
-query AuthorBySlug ($slug: String!) {
-	Authors(where: {slug:{equals:$slug}}, limit: 1) {
+query AuthorBySlug ($slug: String!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Authors(where: {slug:{equals:$slug}}, limit: 1, locale: $locale, fallbackLocale: $fallbackLocale) {
 		docs {
 			id
 			name
@@ -3181,12 +3433,16 @@ func AuthorBySlug(
 	ctx_ context.Context,
 	client_ graphql.Client,
 	slug string,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *AuthorBySlugResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "AuthorBySlug",
 		Query:  AuthorBySlug_Operation,
 		Variables: &__AuthorBySlugInput{
-			Slug: slug,
+			Slug:           slug,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3204,8 +3460,8 @@ func AuthorBySlug(
 
 // The query executed by AvailableAuthors.
 const AvailableAuthors_Operation = `
-query AvailableAuthors ($limit: Int!) {
-	Authors(limit: $limit, sort: "name") {
+query AvailableAuthors ($limit: Int!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Authors(limit: $limit, sort: "name", locale: $locale, fallbackLocale: $fallbackLocale) {
 		docs {
 			id
 			name
@@ -3226,12 +3482,16 @@ func AvailableAuthors(
 	ctx_ context.Context,
 	client_ graphql.Client,
 	limit int,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *AvailableAuthorsResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "AvailableAuthors",
 		Query:  AvailableAuthors_Operation,
 		Variables: &__AvailableAuthorsInput{
-			Limit: limit,
+			Limit:          limit,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3249,8 +3509,8 @@ func AvailableAuthors(
 
 // The query executed by AvailableTagsByPostType.
 const AvailableTagsByPostType_Operation = `
-query AvailableTagsByPostType ($postType: String) {
-	availableTagsByMicroPostType(postType: $postType) {
+query AvailableTagsByPostType ($postType: String, $locale: LocaleInputType) {
+	availableTagsByMicroPostType(postType: $postType, locale: $locale) {
 		id
 		name
 		title
@@ -3262,12 +3522,14 @@ func AvailableTagsByPostType(
 	ctx_ context.Context,
 	client_ graphql.Client,
 	postType *string,
+	locale *LocaleInputType,
 ) (data_ *AvailableTagsByPostTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "AvailableTagsByPostType",
 		Query:  AvailableTagsByPostType_Operation,
 		Variables: &__AvailableTagsByPostTypeInput{
 			PostType: postType,
+			Locale:   locale,
 		},
 	}
 
@@ -3285,8 +3547,8 @@ func AvailableTagsByPostType(
 
 // The query executed by ListNotes.
 const ListNotes_Operation = `
-query ListNotes ($page: Int!, $limit: Int!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published}}) {
+query ListNotes ($page: Int!, $limit: Int!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published}}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -3334,13 +3596,17 @@ func ListNotes(
 	client_ graphql.Client,
 	page int,
 	limit int,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *ListNotesResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "ListNotes",
 		Query:  ListNotes_Operation,
 		Variables: &__ListNotesInput{
-			Page:  page,
-			Limit: limit,
+			Page:           page,
+			Limit:          limit,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3358,8 +3624,8 @@ func ListNotes(
 
 // The query executed by ListNotesByAuthorAndTagIDs.
 const ListNotesByAuthorAndTagIDs_Operation = `
-query ListNotesByAuthorAndTagIDs ($slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs}}) {
+query ListNotesByAuthorAndTagIDs ($slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs}}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -3409,15 +3675,19 @@ func ListNotesByAuthorAndTagIDs(
 	page int,
 	limit int,
 	tagIDs []string,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *ListNotesByAuthorAndTagIDsResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "ListNotesByAuthorAndTagIDs",
 		Query:  ListNotesByAuthorAndTagIDs_Operation,
 		Variables: &__ListNotesByAuthorAndTagIDsInput{
-			Slug:   slug,
-			Page:   page,
-			Limit:  limit,
-			TagIDs: tagIDs,
+			Slug:           slug,
+			Page:           page,
+			Limit:          limit,
+			TagIDs:         tagIDs,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3435,8 +3705,8 @@ func ListNotesByAuthorAndTagIDs(
 
 // The query executed by ListNotesByAuthorTagIDsAndType.
 const ListNotesByAuthorTagIDsAndType_Operation = `
-query ListNotesByAuthorTagIDsAndType ($slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs},post_type:{equals:$postType}}) {
+query ListNotesByAuthorTagIDsAndType ($slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs},post_type:{equals:$postType}}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -3487,16 +3757,20 @@ func ListNotesByAuthorTagIDsAndType(
 	limit int,
 	tagIDs []string,
 	postType Micro_post_post_type_Input,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *ListNotesByAuthorTagIDsAndTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "ListNotesByAuthorTagIDsAndType",
 		Query:  ListNotesByAuthorTagIDsAndType_Operation,
 		Variables: &__ListNotesByAuthorTagIDsAndTypeInput{
-			Slug:     slug,
-			Page:     page,
-			Limit:    limit,
-			TagIDs:   tagIDs,
-			PostType: postType,
+			Slug:           slug,
+			Page:           page,
+			Limit:          limit,
+			TagIDs:         tagIDs,
+			PostType:       postType,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3514,8 +3788,8 @@ func ListNotesByAuthorTagIDsAndType(
 
 // The query executed by ListNotesByTagIDs.
 const ListNotesByTagIDs_Operation = `
-query ListNotesByTagIDs ($page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs}}) {
+query ListNotesByTagIDs ($page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs}}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -3564,14 +3838,18 @@ func ListNotesByTagIDs(
 	page int,
 	limit int,
 	tagIDs []string,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *ListNotesByTagIDsResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "ListNotesByTagIDs",
 		Query:  ListNotesByTagIDs_Operation,
 		Variables: &__ListNotesByTagIDsInput{
-			Page:   page,
-			Limit:  limit,
-			TagIDs: tagIDs,
+			Page:           page,
+			Limit:          limit,
+			TagIDs:         tagIDs,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3589,8 +3867,8 @@ func ListNotesByTagIDs(
 
 // The query executed by ListNotesByTagIDsAndType.
 const ListNotesByTagIDsAndType_Operation = `
-query ListNotesByTagIDsAndType ($page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs},post_type:{equals:$postType}}) {
+query ListNotesByTagIDsAndType ($page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs},post_type:{equals:$postType}}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -3640,15 +3918,19 @@ func ListNotesByTagIDsAndType(
 	limit int,
 	tagIDs []string,
 	postType Micro_post_post_type_Input,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *ListNotesByTagIDsAndTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "ListNotesByTagIDsAndType",
 		Query:  ListNotesByTagIDsAndType_Operation,
 		Variables: &__ListNotesByTagIDsAndTypeInput{
-			Page:     page,
-			Limit:    limit,
-			TagIDs:   tagIDs,
-			PostType: postType,
+			Page:           page,
+			Limit:          limit,
+			TagIDs:         tagIDs,
+			PostType:       postType,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3666,8 +3948,8 @@ func ListNotesByTagIDsAndType(
 
 // The query executed by ListNotesByType.
 const ListNotesByType_Operation = `
-query ListNotesByType ($page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},post_type:{equals:$postType}}) {
+query ListNotesByType ($page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},post_type:{equals:$postType}}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -3716,14 +3998,18 @@ func ListNotesByType(
 	page int,
 	limit int,
 	postType Micro_post_post_type_Input,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *ListNotesByTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "ListNotesByType",
 		Query:  ListNotesByType_Operation,
 		Variables: &__ListNotesByTypeInput{
-			Page:     page,
-			Limit:    limit,
-			PostType: postType,
+			Page:           page,
+			Limit:          limit,
+			PostType:       postType,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3741,8 +4027,8 @@ func ListNotesByType(
 
 // The query executed by NoteBySlug.
 const NoteBySlug_Operation = `
-query NoteBySlug ($slug: String!) {
-	Micro_posts(limit: 1, where: {_status:{equals:published},slug:{equals:$slug}}) {
+query NoteBySlug ($slug: String!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(limit: 1, locale: $locale, fallbackLocale: $fallbackLocale, where: {_status:{equals:published},slug:{equals:$slug}}) {
 		docs {
 			id
 			slug
@@ -3794,12 +4080,16 @@ func NoteBySlug(
 	ctx_ context.Context,
 	client_ graphql.Client,
 	slug string,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *NoteBySlugResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "NoteBySlug",
 		Query:  NoteBySlug_Operation,
 		Variables: &__NoteBySlugInput{
-			Slug: slug,
+			Slug:           slug,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3817,8 +4107,8 @@ func NoteBySlug(
 
 // The query executed by NotesByAuthorSlug.
 const NotesByAuthorSlug_Operation = `
-query NotesByAuthorSlug ($slug: String!, $page: Int!, $limit: Int!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug}}) {
+query NotesByAuthorSlug ($slug: String!, $page: Int!, $limit: Int!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug}}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -3867,14 +4157,18 @@ func NotesByAuthorSlug(
 	slug string,
 	page int,
 	limit int,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *NotesByAuthorSlugResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "NotesByAuthorSlug",
 		Query:  NotesByAuthorSlug_Operation,
 		Variables: &__NotesByAuthorSlugInput{
-			Slug:  slug,
-			Page:  page,
-			Limit: limit,
+			Slug:           slug,
+			Page:           page,
+			Limit:          limit,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3892,8 +4186,8 @@ func NotesByAuthorSlug(
 
 // The query executed by NotesByAuthorSlugAndType.
 const NotesByAuthorSlugAndType_Operation = `
-query NotesByAuthorSlugAndType ($slug: String!, $page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},post_type:{equals:$postType}}) {
+query NotesByAuthorSlugAndType ($slug: String!, $page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},post_type:{equals:$postType}}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -3943,15 +4237,19 @@ func NotesByAuthorSlugAndType(
 	page int,
 	limit int,
 	postType Micro_post_post_type_Input,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *NotesByAuthorSlugAndTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "NotesByAuthorSlugAndType",
 		Query:  NotesByAuthorSlugAndType_Operation,
 		Variables: &__NotesByAuthorSlugAndTypeInput{
-			Slug:     slug,
-			Page:     page,
-			Limit:    limit,
-			PostType: postType,
+			Slug:           slug,
+			Page:           page,
+			Limit:          limit,
+			PostType:       postType,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -3969,8 +4267,8 @@ func NotesByAuthorSlugAndType(
 
 // The query executed by SearchNotes.
 const SearchNotes_Operation = `
-query SearchNotes ($query: String!, $page: Int!, $limit: Int!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
+query SearchNotes ($query: String!, $page: Int!, $limit: Int!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -4019,14 +4317,18 @@ func SearchNotes(
 	query string,
 	page int,
 	limit int,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *SearchNotesResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "SearchNotes",
 		Query:  SearchNotes_Operation,
 		Variables: &__SearchNotesInput{
-			Query: query,
-			Page:  page,
-			Limit: limit,
+			Query:          query,
+			Page:           page,
+			Limit:          limit,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4044,8 +4346,8 @@ func SearchNotes(
 
 // The query executed by SearchNotesByAuthorAndTagIDs.
 const SearchNotesByAuthorAndTagIDs_Operation = `
-query SearchNotesByAuthorAndTagIDs ($query: String!, $slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
+query SearchNotesByAuthorAndTagIDs ($query: String!, $slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -4096,16 +4398,20 @@ func SearchNotesByAuthorAndTagIDs(
 	page int,
 	limit int,
 	tagIDs []string,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *SearchNotesByAuthorAndTagIDsResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "SearchNotesByAuthorAndTagIDs",
 		Query:  SearchNotesByAuthorAndTagIDs_Operation,
 		Variables: &__SearchNotesByAuthorAndTagIDsInput{
-			Query:  query,
-			Slug:   slug,
-			Page:   page,
-			Limit:  limit,
-			TagIDs: tagIDs,
+			Query:          query,
+			Slug:           slug,
+			Page:           page,
+			Limit:          limit,
+			TagIDs:         tagIDs,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4123,8 +4429,8 @@ func SearchNotesByAuthorAndTagIDs(
 
 // The query executed by SearchNotesByAuthorSlug.
 const SearchNotesByAuthorSlug_Operation = `
-query SearchNotesByAuthorSlug ($query: String!, $slug: String!, $page: Int!, $limit: Int!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
+query SearchNotesByAuthorSlug ($query: String!, $slug: String!, $page: Int!, $limit: Int!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -4174,15 +4480,19 @@ func SearchNotesByAuthorSlug(
 	slug string,
 	page int,
 	limit int,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *SearchNotesByAuthorSlugResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "SearchNotesByAuthorSlug",
 		Query:  SearchNotesByAuthorSlug_Operation,
 		Variables: &__SearchNotesByAuthorSlugInput{
-			Query: query,
-			Slug:  slug,
-			Page:  page,
-			Limit: limit,
+			Query:          query,
+			Slug:           slug,
+			Page:           page,
+			Limit:          limit,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4200,8 +4510,8 @@ func SearchNotesByAuthorSlug(
 
 // The query executed by SearchNotesByAuthorSlugAndType.
 const SearchNotesByAuthorSlugAndType_Operation = `
-query SearchNotesByAuthorSlugAndType ($query: String!, $slug: String!, $page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},post_type:{equals:$postType},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
+query SearchNotesByAuthorSlugAndType ($query: String!, $slug: String!, $page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},post_type:{equals:$postType},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -4252,16 +4562,20 @@ func SearchNotesByAuthorSlugAndType(
 	page int,
 	limit int,
 	postType Micro_post_post_type_Input,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *SearchNotesByAuthorSlugAndTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "SearchNotesByAuthorSlugAndType",
 		Query:  SearchNotesByAuthorSlugAndType_Operation,
 		Variables: &__SearchNotesByAuthorSlugAndTypeInput{
-			Query:    query,
-			Slug:     slug,
-			Page:     page,
-			Limit:    limit,
-			PostType: postType,
+			Query:          query,
+			Slug:           slug,
+			Page:           page,
+			Limit:          limit,
+			PostType:       postType,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4279,8 +4593,8 @@ func SearchNotesByAuthorSlugAndType(
 
 // The query executed by SearchNotesByAuthorTagIDsAndType.
 const SearchNotesByAuthorTagIDsAndType_Operation = `
-query SearchNotesByAuthorTagIDsAndType ($query: String!, $slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs},post_type:{equals:$postType},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
+query SearchNotesByAuthorTagIDsAndType ($query: String!, $slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},authorSlug:{equals:$slug},tags:{in:$tagIDs},post_type:{equals:$postType},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -4332,17 +4646,21 @@ func SearchNotesByAuthorTagIDsAndType(
 	limit int,
 	tagIDs []string,
 	postType Micro_post_post_type_Input,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *SearchNotesByAuthorTagIDsAndTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "SearchNotesByAuthorTagIDsAndType",
 		Query:  SearchNotesByAuthorTagIDsAndType_Operation,
 		Variables: &__SearchNotesByAuthorTagIDsAndTypeInput{
-			Query:    query,
-			Slug:     slug,
-			Page:     page,
-			Limit:    limit,
-			TagIDs:   tagIDs,
-			PostType: postType,
+			Query:          query,
+			Slug:           slug,
+			Page:           page,
+			Limit:          limit,
+			TagIDs:         tagIDs,
+			PostType:       postType,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4360,8 +4678,8 @@ func SearchNotesByAuthorTagIDsAndType(
 
 // The query executed by SearchNotesByTagIDs.
 const SearchNotesByTagIDs_Operation = `
-query SearchNotesByTagIDs ($query: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
+query SearchNotesByTagIDs ($query: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -4411,15 +4729,19 @@ func SearchNotesByTagIDs(
 	page int,
 	limit int,
 	tagIDs []string,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *SearchNotesByTagIDsResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "SearchNotesByTagIDs",
 		Query:  SearchNotesByTagIDs_Operation,
 		Variables: &__SearchNotesByTagIDsInput{
-			Query:  query,
-			Page:   page,
-			Limit:  limit,
-			TagIDs: tagIDs,
+			Query:          query,
+			Page:           page,
+			Limit:          limit,
+			TagIDs:         tagIDs,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4437,8 +4759,8 @@ func SearchNotesByTagIDs(
 
 // The query executed by SearchNotesByTagIDsAndType.
 const SearchNotesByTagIDsAndType_Operation = `
-query SearchNotesByTagIDsAndType ($query: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs},post_type:{equals:$postType},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
+query SearchNotesByTagIDsAndType ($query: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!, $postType: Micro_post_post_type_Input!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},tags:{in:$tagIDs},post_type:{equals:$postType},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -4489,16 +4811,20 @@ func SearchNotesByTagIDsAndType(
 	limit int,
 	tagIDs []string,
 	postType Micro_post_post_type_Input,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *SearchNotesByTagIDsAndTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "SearchNotesByTagIDsAndType",
 		Query:  SearchNotesByTagIDsAndType_Operation,
 		Variables: &__SearchNotesByTagIDsAndTypeInput{
-			Query:    query,
-			Page:     page,
-			Limit:    limit,
-			TagIDs:   tagIDs,
-			PostType: postType,
+			Query:          query,
+			Page:           page,
+			Limit:          limit,
+			TagIDs:         tagIDs,
+			PostType:       postType,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4516,8 +4842,8 @@ func SearchNotesByTagIDsAndType(
 
 // The query executed by SearchNotesByType.
 const SearchNotesByType_Operation = `
-query SearchNotesByType ($query: String!, $page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!) {
-	Micro_posts(page: $page, limit: $limit, sort: "-publishedAt", where: {_status:{equals:published},post_type:{equals:$postType},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
+query SearchNotesByType ($query: String!, $page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Micro_posts(page: $page, limit: $limit, locale: $locale, fallbackLocale: $fallbackLocale, sort: "-publishedAt", where: {_status:{equals:published},post_type:{equals:$postType},OR:[{title:{like:$query}},{title:{contains:$query}},{content:{like:$query}},{content:{contains:$query}},{meta__description:{like:$query}},{meta__description:{contains:$query}}]}) {
 		totalPages
 		docs {
 			... NoteListDoc
@@ -4567,15 +4893,19 @@ func SearchNotesByType(
 	page int,
 	limit int,
 	postType Micro_post_post_type_Input,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *SearchNotesByTypeResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "SearchNotesByType",
 		Query:  SearchNotesByType_Operation,
 		Variables: &__SearchNotesByTypeInput{
-			Query:    query,
-			Page:     page,
-			Limit:    limit,
-			PostType: postType,
+			Query:          query,
+			Page:           page,
+			Limit:          limit,
+			PostType:       postType,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4593,8 +4923,8 @@ func SearchNotesByType(
 
 // The query executed by TagByName.
 const TagByName_Operation = `
-query TagByName ($name: String!) {
-	Tags(where: {name:{equals:$name}}, limit: 1) {
+query TagByName ($name: String!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Tags(where: {name:{equals:$name}}, limit: 1, locale: $locale, fallbackLocale: $fallbackLocale) {
 		docs {
 			id
 			name
@@ -4608,12 +4938,16 @@ func TagByName(
 	ctx_ context.Context,
 	client_ graphql.Client,
 	name string,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *TagByNameResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "TagByName",
 		Query:  TagByName_Operation,
 		Variables: &__TagByNameInput{
-			Name: name,
+			Name:           name,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 
@@ -4631,8 +4965,8 @@ func TagByName(
 
 // The query executed by TagIDsByNames.
 const TagIDsByNames_Operation = `
-query TagIDsByNames ($tagNames: [String!]!) {
-	Tags(where: {name:{in:$tagNames}}) {
+query TagIDsByNames ($tagNames: [String!]!, $locale: LocaleInputType, $fallbackLocale: FallbackLocaleInputType) {
+	Tags(where: {name:{in:$tagNames}}, locale: $locale, fallbackLocale: $fallbackLocale) {
 		docs {
 			id
 			name
@@ -4646,12 +4980,16 @@ func TagIDsByNames(
 	ctx_ context.Context,
 	client_ graphql.Client,
 	tagNames []string,
+	locale *LocaleInputType,
+	fallbackLocale *FallbackLocaleInputType,
 ) (data_ *TagIDsByNamesResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "TagIDsByNames",
 		Query:  TagIDsByNames_Operation,
 		Variables: &__TagIDsByNamesInput{
-			TagNames: tagNames,
+			TagNames:       tagNames,
+			Locale:         locale,
+			FallbackLocale: fallbackLocale,
 		},
 	}
 

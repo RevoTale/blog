@@ -9,12 +9,14 @@ import (
 	"strings"
 
 	"blog/framework/httpserver"
+	frameworki18n "blog/framework/i18n"
 	"blog/framework/staticassets"
 	"blog/internal/config"
 	"blog/internal/gql"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
+	webi18n "blog/internal/web/i18n"
 )
 
 const immutableStaticCachePolicy = "public, max-age=31536000, immutable"
@@ -37,7 +39,21 @@ func run() error {
 		)
 	}
 
+	i18nConfig, err := frameworki18n.NormalizeConfig(webi18n.Config())
+	if err != nil {
+		return fmt.Errorf("normalize i18n config: %w", err)
+	}
+	i18nCatalog, err := webi18n.LoadCatalog()
+	if err != nil {
+		return fmt.Errorf("load i18n catalog: %w", err)
+	}
+	i18nResolver, err := frameworki18n.NewResolver(i18nConfig)
+	if err != nil {
+		return fmt.Errorf("create i18n resolver: %w", err)
+	}
+
 	appcore.SetStaticAssetBasePath(manifest.URLPrefix)
+	appcore.SetLocalizationConfig(i18nConfig)
 
 	graphqlClient := gql.NewClient(cfg)
 	noteService := notes.NewService(graphqlClient, cfg.PageSize, cfg.RootURL)
@@ -64,7 +80,7 @@ func run() error {
 	)
 
 	handler, err := httpserver.New(httpserver.Config[*appcore.Context]{
-		AppContext:      appcore.NewContext(noteService),
+		AppContext:      appcore.NewContext(noteService, i18nConfig, i18nCatalog),
 		Handlers:        webgen.Handlers(webgen.NewRouteResolvers()),
 		IsNotFoundError: appcore.IsNotFoundError,
 		NotFoundPage:    webgen.NotFoundPage,
@@ -80,6 +96,15 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("handler setup failed: %w", err)
 	}
+	handler = frameworki18n.Middleware(frameworki18n.MiddlewareConfig{
+		Resolver: i18nResolver,
+		BypassPrefixes: []string{
+			manifest.URLPrefix,
+		},
+		BypassExact: []string{
+			"/healthz",
+		},
+	})(handler)
 
 	log.Printf("blog server listening on %s", cfg.ListenAddr)
 	if err := http.ListenAndServe(cfg.ListenAddr, handler); err != nil {

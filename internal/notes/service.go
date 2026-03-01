@@ -146,7 +146,12 @@ func (t NoteType) QueryValue() string {
 	return ""
 }
 
-func (s *Service) ListNotes(ctx context.Context, filter ListFilter, options ListOptions) (NotesListResult, error) {
+func (s *Service) ListNotes(
+	ctx context.Context,
+	locale string,
+	filter ListFilter,
+	options ListOptions,
+) (NotesListResult, error) {
 	filter = normalizeFilter(filter)
 	result := NotesListResult{
 		ActiveFilter: filter,
@@ -154,20 +159,28 @@ func (s *Service) ListNotes(ctx context.Context, filter ListFilter, options List
 		TotalPages:   1,
 	}
 
-	authorsResponse, err := gql.AvailableAuthors(ctx, s.client, 200)
+	gqlLocale := gql.LocaleInputFromCode(locale)
+	gqlFallbackLocale := gql.FallbackLocaleInputFromCode(s.defaultLocale())
+
+	authorsResponse, err := gql.AvailableAuthors(ctx, s.client, 200, gqlLocale, gqlFallbackLocale)
 	if err != nil {
 		return NotesListResult{}, err
 	}
 	result.Authors = mapAvailableAuthors(authorsResponse)
 
-	tagsResponse, err := gql.AvailableTagsByPostType(ctx, s.client, postTypeFilterArg(filter.Type))
+	tagsResponse, err := gql.AvailableTagsByPostType(
+		ctx,
+		s.client,
+		postTypeFilterArg(filter.Type),
+		gqlLocale,
+	)
 	if err != nil {
 		return NotesListResult{}, err
 	}
 	result.Tags = mapAvailableTags(tagsResponse)
 
 	if filter.AuthorSlug != "" {
-		author, authorErr := s.GetAuthorBySlug(ctx, filter.AuthorSlug)
+		author, authorErr := s.GetAuthorBySlug(ctx, locale, filter.AuthorSlug)
 		if authorErr != nil {
 			if errors.Is(authorErr, ErrNotFound) && !options.RequireAuthor {
 				result.Notes = []NoteSummary{}
@@ -183,7 +196,7 @@ func (s *Service) ListNotes(ctx context.Context, filter ListFilter, options List
 
 	tagIDs := []string{}
 	if filter.TagName != "" {
-		tag, tagErr := s.GetTagByName(ctx, filter.TagName)
+		tag, tagErr := s.GetTagByName(ctx, locale, filter.TagName)
 		if tagErr != nil {
 			if errors.Is(tagErr, ErrNotFound) && !options.RequireTag {
 				result.Notes = []NoteSummary{}
@@ -196,7 +209,7 @@ func (s *Service) ListNotes(ctx context.Context, filter ListFilter, options List
 		result.ActiveTag = tag
 		result.Tags = mergeTag(result.Tags, *tag)
 
-		tagIDs, err = s.findTagIDs(ctx, []string{filter.TagName})
+		tagIDs, err = s.findTagIDs(ctx, locale, []string{filter.TagName})
 		if err != nil {
 			return NotesListResult{}, err
 		}
@@ -211,7 +224,7 @@ func (s *Service) ListNotes(ctx context.Context, filter ListFilter, options List
 		}
 	}
 
-	notes, totalPages, err := s.listNotesByFilter(ctx, filter, tagIDs)
+	notes, totalPages, err := s.listNotesByFilter(ctx, locale, filter, tagIDs)
 	if err != nil {
 		return NotesListResult{}, err
 	}
@@ -234,11 +247,12 @@ func (s *Service) ListNotes(ctx context.Context, filter ListFilter, options List
 
 func (s *Service) listNotesByFilter(
 	ctx context.Context,
+	locale string,
 	filter ListFilter,
 	tagIDs []string,
 ) ([]NoteSummary, int, error) {
 	if filter.Query != "" {
-		return s.searchNotesByFilter(ctx, filter, tagIDs)
+		return s.searchNotesByFilter(ctx, locale, filter, tagIDs)
 	}
 
 	hasAuthor := filter.AuthorSlug != ""
@@ -246,6 +260,8 @@ func (s *Service) listNotesByFilter(
 	hasType := filter.Type == NoteTypeLong || filter.Type == NoteTypeShort
 
 	postType, _ := toPostTypeInput(filter.Type)
+	gqlLocale := gql.LocaleInputFromCode(locale)
+	gqlFallbackLocale := gql.FallbackLocaleInputFromCode(s.defaultLocale())
 
 	switch {
 	case hasAuthor && hasTag && hasType:
@@ -257,6 +273,8 @@ func (s *Service) listNotesByFilter(
 			s.pageSize,
 			tagIDs,
 			postType,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -265,7 +283,16 @@ func (s *Service) listNotesByFilter(
 		return notes, totalPages, nil
 
 	case hasAuthor && hasTag:
-		response, err := gql.ListNotesByAuthorAndTagIDs(ctx, s.client, filter.AuthorSlug, filter.Page, s.pageSize, tagIDs)
+		response, err := gql.ListNotesByAuthorAndTagIDs(
+			ctx,
+			s.client,
+			filter.AuthorSlug,
+			filter.Page,
+			s.pageSize,
+			tagIDs,
+			gqlLocale,
+			gqlFallbackLocale,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -280,6 +307,8 @@ func (s *Service) listNotesByFilter(
 			filter.Page,
 			s.pageSize,
 			postType,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -288,7 +317,15 @@ func (s *Service) listNotesByFilter(
 		return notes, totalPages, nil
 
 	case hasAuthor:
-		response, err := gql.NotesByAuthorSlug(ctx, s.client, filter.AuthorSlug, filter.Page, s.pageSize)
+		response, err := gql.NotesByAuthorSlug(
+			ctx,
+			s.client,
+			filter.AuthorSlug,
+			filter.Page,
+			s.pageSize,
+			gqlLocale,
+			gqlFallbackLocale,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -296,7 +333,16 @@ func (s *Service) listNotesByFilter(
 		return notes, totalPages, nil
 
 	case hasTag && hasType:
-		response, err := gql.ListNotesByTagIDsAndType(ctx, s.client, filter.Page, s.pageSize, tagIDs, postType)
+		response, err := gql.ListNotesByTagIDsAndType(
+			ctx,
+			s.client,
+			filter.Page,
+			s.pageSize,
+			tagIDs,
+			postType,
+			gqlLocale,
+			gqlFallbackLocale,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -304,7 +350,15 @@ func (s *Service) listNotesByFilter(
 		return notes, totalPages, nil
 
 	case hasTag:
-		response, err := gql.ListNotesByTagIDs(ctx, s.client, filter.Page, s.pageSize, tagIDs)
+		response, err := gql.ListNotesByTagIDs(
+			ctx,
+			s.client,
+			filter.Page,
+			s.pageSize,
+			tagIDs,
+			gqlLocale,
+			gqlFallbackLocale,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -312,7 +366,15 @@ func (s *Service) listNotesByFilter(
 		return notes, totalPages, nil
 
 	case hasType:
-		response, err := gql.ListNotesByType(ctx, s.client, filter.Page, s.pageSize, postType)
+		response, err := gql.ListNotesByType(
+			ctx,
+			s.client,
+			filter.Page,
+			s.pageSize,
+			postType,
+			gqlLocale,
+			gqlFallbackLocale,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -320,7 +382,7 @@ func (s *Service) listNotesByFilter(
 		return notes, totalPages, nil
 
 	default:
-		response, err := gql.ListNotes(ctx, s.client, filter.Page, s.pageSize)
+		response, err := gql.ListNotes(ctx, s.client, filter.Page, s.pageSize, gqlLocale, gqlFallbackLocale)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -331,6 +393,7 @@ func (s *Service) listNotesByFilter(
 
 func (s *Service) searchNotesByFilter(
 	ctx context.Context,
+	locale string,
 	filter ListFilter,
 	tagIDs []string,
 ) ([]NoteSummary, int, error) {
@@ -339,6 +402,8 @@ func (s *Service) searchNotesByFilter(
 	hasType := filter.Type == NoteTypeLong || filter.Type == NoteTypeShort
 
 	postType, _ := toPostTypeInput(filter.Type)
+	gqlLocale := gql.LocaleInputFromCode(locale)
+	gqlFallbackLocale := gql.FallbackLocaleInputFromCode(s.defaultLocale())
 
 	switch {
 	case hasAuthor && hasTag && hasType:
@@ -351,6 +416,8 @@ func (s *Service) searchNotesByFilter(
 			s.pageSize,
 			tagIDs,
 			postType,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -367,6 +434,8 @@ func (s *Service) searchNotesByFilter(
 			filter.Page,
 			s.pageSize,
 			tagIDs,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -383,6 +452,8 @@ func (s *Service) searchNotesByFilter(
 			filter.Page,
 			s.pageSize,
 			postType,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -398,6 +469,8 @@ func (s *Service) searchNotesByFilter(
 			filter.AuthorSlug,
 			filter.Page,
 			s.pageSize,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -414,6 +487,8 @@ func (s *Service) searchNotesByFilter(
 			s.pageSize,
 			tagIDs,
 			postType,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -429,6 +504,8 @@ func (s *Service) searchNotesByFilter(
 			filter.Page,
 			s.pageSize,
 			tagIDs,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -444,6 +521,8 @@ func (s *Service) searchNotesByFilter(
 			filter.Page,
 			s.pageSize,
 			postType,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -458,6 +537,8 @@ func (s *Service) searchNotesByFilter(
 			filter.Query,
 			filter.Page,
 			s.pageSize,
+			gqlLocale,
+			gqlFallbackLocale,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -467,13 +548,19 @@ func (s *Service) searchNotesByFilter(
 	}
 }
 
-func (s *Service) GetAuthorBySlug(ctx context.Context, slug string) (*Author, error) {
+func (s *Service) GetAuthorBySlug(ctx context.Context, locale string, slug string) (*Author, error) {
 	slug = strings.TrimSpace(slug)
 	if slug == "" {
 		return nil, ErrNotFound
 	}
 
-	response, err := gql.AuthorBySlug(ctx, s.client, slug)
+	response, err := gql.AuthorBySlug(
+		ctx,
+		s.client,
+		slug,
+		gql.LocaleInputFromCode(locale),
+		gql.FallbackLocaleInputFromCode(s.defaultLocale()),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -489,13 +576,19 @@ func (s *Service) GetAuthorBySlug(ctx context.Context, slug string) (*Author, er
 	return &author, nil
 }
 
-func (s *Service) GetTagByName(ctx context.Context, name string) (*Tag, error) {
+func (s *Service) GetTagByName(ctx context.Context, locale string, name string) (*Tag, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return nil, ErrNotFound
 	}
 
-	response, err := gql.TagByName(ctx, s.client, name)
+	response, err := gql.TagByName(
+		ctx,
+		s.client,
+		name,
+		gql.LocaleInputFromCode(locale),
+		gql.FallbackLocaleInputFromCode(s.defaultLocale()),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -511,14 +604,19 @@ func (s *Service) GetTagByName(ctx context.Context, name string) (*Tag, error) {
 	return &tag, nil
 }
 
-func (s *Service) GetAuthorPage(ctx context.Context, slug string, page int) (*AuthorPageResult, error) {
+func (s *Service) GetAuthorPage(
+	ctx context.Context,
+	locale string,
+	slug string,
+	page int,
+) (*AuthorPageResult, error) {
 	filter := ListFilter{
 		Page:       sanitizePage(page),
 		AuthorSlug: strings.TrimSpace(slug),
 		Type:       NoteTypeAll,
 	}
 
-	result, err := s.ListNotes(ctx, filter, ListOptions{RequireAuthor: true})
+	result, err := s.ListNotes(ctx, locale, filter, ListOptions{RequireAuthor: true})
 	if err != nil {
 		return nil, err
 	}
@@ -535,8 +633,14 @@ func (s *Service) GetAuthorPage(ctx context.Context, slug string, page int) (*Au
 	}, nil
 }
 
-func (s *Service) GetNoteBySlug(ctx context.Context, slug string) (*NoteDetail, error) {
-	response, err := gql.NoteBySlug(ctx, s.client, slug)
+func (s *Service) GetNoteBySlug(ctx context.Context, locale string, slug string) (*NoteDetail, error) {
+	response, err := gql.NoteBySlug(
+		ctx,
+		s.client,
+		slug,
+		gql.LocaleInputFromCode(locale),
+		gql.FallbackLocaleInputFromCode(s.defaultLocale()),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -547,14 +651,14 @@ func (s *Service) GetNoteBySlug(ctx context.Context, slug string) (*NoteDetail, 
 
 	doc := response.Micro_posts.Docs[0]
 	translateLinks := noteTranslateLinks(doc)
+	markdownOptions := markdownOptionsForLocale(locale)
+	markdownOptions.TranslateLinks = translateLinks
+	markdownOptions.RootURL = s.rootURL
 	note := NoteDetail{
-		ID:    doc.Id,
-		Slug:  strOr(doc.Slug, slug),
-		Title: pickTitle(doc.Title),
-		BodyHTML: md.ToHTML(strOr(doc.Content, ""), md.Options{
-			TranslateLinks: translateLinks,
-			RootURL:        s.rootURL,
-		}),
+		ID:          doc.Id,
+		Slug:        strOr(doc.Slug, slug),
+		Title:       pickTitle(doc.Title),
+		BodyHTML:    md.ToHTML(strOr(doc.Content, ""), markdownOptions),
 		PublishedAt: formatDate(doc.PublishedAt),
 		Attachment:  mapNoteAttachment(doc.Attachment),
 		Authors:     mapNoteAuthors(doc.Authors),
@@ -571,12 +675,18 @@ func (s *Service) GetNoteBySlug(ctx context.Context, slug string) (*NoteDetail, 
 	return &note, nil
 }
 
-func (s *Service) findTagIDs(ctx context.Context, tagNames []string) ([]string, error) {
+func (s *Service) findTagIDs(ctx context.Context, locale string, tagNames []string) ([]string, error) {
 	if len(tagNames) == 0 {
 		return nil, nil
 	}
 
-	response, err := gql.TagIDsByNames(ctx, s.client, tagNames)
+	response, err := gql.TagIDsByNames(
+		ctx,
+		s.client,
+		tagNames,
+		gql.LocaleInputFromCode(locale),
+		gql.FallbackLocaleInputFromCode(s.defaultLocale()),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -591,6 +701,103 @@ func (s *Service) findTagIDs(ctx context.Context, tagNames []string) ([]string, 
 	}
 
 	return tagIDs, nil
+}
+
+func (s *Service) defaultLocale() string {
+	return "en"
+}
+
+type markdownLabels struct {
+	copyLabel      string
+	copiedLabel    string
+	plainTextLabel string
+	codeBlockLabel string
+	tableLabel     string
+	imageLabel     string
+}
+
+var markdownLabelsByLocale = map[string]markdownLabels{
+	"en": {
+		copyLabel:      "copy",
+		copiedLabel:    "copied",
+		plainTextLabel: "plain text",
+		codeBlockLabel: "[code block]",
+		tableLabel:     "[table]",
+		imageLabel:     "[image]",
+	},
+	"de": {
+		copyLabel:      "kopieren",
+		copiedLabel:    "kopiert",
+		plainTextLabel: "klartext",
+		codeBlockLabel: "[codeblock]",
+		tableLabel:     "[tabelle]",
+		imageLabel:     "[bild]",
+	},
+	"uk": {
+		copyLabel:      "kopiyuvaty",
+		copiedLabel:    "skopiyovano",
+		plainTextLabel: "zvychaynyy tekst",
+		codeBlockLabel: "[blok kodu]",
+		tableLabel:     "[tablytsya]",
+		imageLabel:     "[zobrazhennya]",
+	},
+	"hi": {
+		copyLabel:      "copy",
+		copiedLabel:    "copied",
+		plainTextLabel: "plain text",
+		codeBlockLabel: "[code block]",
+		tableLabel:     "[table]",
+		imageLabel:     "[image]",
+	},
+	"ru": {
+		copyLabel:      "kopirovat",
+		copiedLabel:    "skopirovano",
+		plainTextLabel: "obychnyy tekst",
+		codeBlockLabel: "[blok koda]",
+		tableLabel:     "[tablitsa]",
+		imageLabel:     "[izobrazhenie]",
+	},
+	"ja": {
+		copyLabel:      "copy",
+		copiedLabel:    "copied",
+		plainTextLabel: "plain text",
+		codeBlockLabel: "[code block]",
+		tableLabel:     "[table]",
+		imageLabel:     "[image]",
+	},
+	"fr": {
+		copyLabel:      "copier",
+		copiedLabel:    "copie effectuee",
+		plainTextLabel: "texte brut",
+		codeBlockLabel: "[bloc de code]",
+		tableLabel:     "[tableau]",
+		imageLabel:     "[image]",
+	},
+	"es": {
+		copyLabel:      "copiar",
+		copiedLabel:    "copiado",
+		plainTextLabel: "texto plano",
+		codeBlockLabel: "[bloque de codigo]",
+		tableLabel:     "[tabla]",
+		imageLabel:     "[imagen]",
+	},
+}
+
+func markdownOptionsForLocale(locale string) md.Options {
+	normalized := strings.ToLower(strings.TrimSpace(locale))
+	labels, ok := markdownLabelsByLocale[normalized]
+	if !ok {
+		labels = markdownLabelsByLocale["en"]
+	}
+
+	return md.Options{
+		CodeCopyLabel:         labels.copyLabel,
+		CodeCopiedLabel:       labels.copiedLabel,
+		PlainTextLabel:        labels.plainTextLabel,
+		ExcerptCodeBlockLabel: labels.codeBlockLabel,
+		ExcerptTableLabel:     labels.tableLabel,
+		ExcerptImageLabel:     labels.imageLabel,
+	}
 }
 
 func mapAvailableTags(response *gql.AvailableTagsByPostTypeResponse) []Tag {

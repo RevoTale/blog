@@ -27,6 +27,9 @@ pages from CMS GraphQL data.
 ### Working Agreements
 - MUST follow root interaction protocol from [../AGENTS.md](../AGENTS.md) before finalizing policy changes.
 - MUST ask user to choose test/lint scope when scope is ambiguous (`all packages` vs `subset`).
+- MUST keep all user-facing copy localized via `internal/web/i18n` typed keys; avoid hardcoded English text in
+  `.templ` files and app-facing view-model helpers.
+- MUST update all locale files in `internal/web/i18n/messages/` when adding or changing message IDs.
 
 ## Taskfile Workflow Module
 

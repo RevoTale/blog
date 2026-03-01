@@ -8,7 +8,9 @@ import (
 	"strings"
 
 	"blog/framework"
+	frameworki18n "blog/framework/i18n"
 	"blog/internal/notes"
+	webi18n "blog/internal/web/i18n"
 )
 
 const liveNavigationQueryKey = "__live"
@@ -20,8 +22,21 @@ func LoadNotesPage(
 	r *http.Request,
 	_ framework.EmptyParams,
 ) (NotesPageView, error) {
+	locale := localeFromRequest(appCtx, r)
 	filter := listFilterFromQuery(r, notes.ListFilter{})
-	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, sidebarModeForFilter(filter))
+	view, err := loadNotesListPage(
+		ctx,
+		appCtx,
+		locale,
+		filter,
+		notes.ListOptions{},
+		sidebarModeForFilter(filter),
+	)
+	if err != nil {
+		return NotesPageView{}, err
+	}
+	view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyRoot)
+	return view, nil
 }
 
 func LoadAuthorPage(
@@ -30,15 +45,24 @@ func LoadAuthorPage(
 	r *http.Request,
 	params framework.SlugParams,
 ) (AuthorPageView, error) {
+	locale := localeFromRequest(appCtx, r)
 	defaults := notes.ListFilter{AuthorSlug: params.Slug}
 	filter := listFilterFromQuery(r, defaults)
 	filter.AuthorSlug = strings.TrimSpace(params.Slug)
 
-	view, err := loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{RequireAuthor: true}, SidebarModeFiltered)
+	view, err := loadNotesListPage(
+		ctx,
+		appCtx,
+		locale,
+		filter,
+		notes.ListOptions{RequireAuthor: true},
+		SidebarModeFiltered,
+	)
 	if err != nil {
 		return AuthorPageView{}, err
 	}
 
+	view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyAuthor)
 	return view, nil
 }
 
@@ -48,11 +72,24 @@ func LoadTagPage(
 	r *http.Request,
 	params framework.SlugParams,
 ) (NotesPageView, error) {
+	locale := localeFromRequest(appCtx, r)
 	defaults := notes.ListFilter{TagName: params.Slug}
 	filter := listFilterFromQuery(r, defaults)
 	filter.TagName = strings.TrimSpace(params.Slug)
 
-	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{RequireTag: true}, SidebarModeFiltered)
+	view, err := loadNotesListPage(
+		ctx,
+		appCtx,
+		locale,
+		filter,
+		notes.ListOptions{RequireTag: true},
+		SidebarModeFiltered,
+	)
+	if err != nil {
+		return NotesPageView{}, err
+	}
+	view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyTag)
+	return view, nil
 }
 
 func LoadNotesTalesPage(
@@ -61,11 +98,17 @@ func LoadNotesTalesPage(
 	r *http.Request,
 	_ framework.EmptyParams,
 ) (NotesPageView, error) {
+	locale := localeFromRequest(appCtx, r)
 	defaults := notes.ListFilter{Type: notes.NoteTypeLong}
 	filter := listFilterFromQuery(r, defaults)
 	filter.Type = notes.NoteTypeLong
 
-	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
+	view, err := loadNotesListPage(ctx, appCtx, locale, filter, notes.ListOptions{}, SidebarModeFiltered)
+	if err != nil {
+		return NotesPageView{}, err
+	}
+	view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyTales)
+	return view, nil
 }
 
 func LoadNotesMicroTalesPage(
@@ -74,11 +117,17 @@ func LoadNotesMicroTalesPage(
 	r *http.Request,
 	_ framework.EmptyParams,
 ) (NotesPageView, error) {
+	locale := localeFromRequest(appCtx, r)
 	defaults := notes.ListFilter{Type: notes.NoteTypeShort}
 	filter := listFilterFromQuery(r, defaults)
 	filter.Type = notes.NoteTypeShort
 
-	return loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, SidebarModeFiltered)
+	view, err := loadNotesListPage(ctx, appCtx, locale, filter, notes.ListOptions{}, SidebarModeFiltered)
+	if err != nil {
+		return NotesPageView{}, err
+	}
+	view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyMicro)
+	return view, nil
 }
 
 func LoadChannelsPage(
@@ -87,19 +136,21 @@ func LoadChannelsPage(
 	r *http.Request,
 	_ framework.EmptyParams,
 ) (NotesPageView, error) {
+	locale := localeFromRequest(appCtx, r)
 	filter := listFilterFromQuery(r, notes.ListFilter{})
-	view, err := loadNotesListPage(ctx, appCtx, filter, notes.ListOptions{}, sidebarModeForFilter(filter))
+	view, err := loadNotesListPage(ctx, appCtx, locale, filter, notes.ListOptions{}, sidebarModeForFilter(filter))
 	if err != nil {
 		return NotesPageView{}, err
 	}
 
-	view.PageTitle = "Channels"
+	view.PageTitle = Message(view.Messages, webi18n.KeyChannelsPageTitle)
 	return view, nil
 }
 
 func loadNotesListPage(
 	ctx context.Context,
 	appCtx *Context,
+	locale string,
 	filter notes.ListFilter,
 	options notes.ListOptions,
 	mode SidebarMode,
@@ -109,35 +160,39 @@ func loadNotesListPage(
 		return NotesPageView{}, err
 	}
 
-	result, err := service.ListNotes(ctx, filter, options)
+	result, err := service.ListNotes(ctx, locale, filter, options)
 	if err != nil {
 		return NotesPageView{}, err
 	}
 
-	return newNotesPageView(result, mode), nil
+	return newNotesPageView(locale, localizedMessages(appCtx, locale), result, mode), nil
 }
 
 func LoadNotePage(
 	ctx context.Context,
 	appCtx *Context,
-	_ *http.Request,
+	r *http.Request,
 	params framework.SlugParams,
 ) (NotePageView, error) {
+	locale := localeFromRequest(appCtx, r)
 	service, err := notesService(appCtx)
 	if err != nil {
 		return NotePageView{}, err
 	}
 
-	note, err := service.GetNoteBySlug(ctx, params.Slug)
+	note, err := service.GetNoteBySlug(ctx, locale, params.Slug)
 	if err != nil {
 		return NotePageView{}, err
 	}
+	messages := localizedMessages(appCtx, locale)
 	pageTitle := strings.TrimSpace(note.Title)
 	if pageTitle == "" {
-		pageTitle = "Note"
+		pageTitle = Message(messages, webi18n.KeyNoteTitleFallback)
 	}
 
 	return NotePageView{
+		Locale:             locale,
+		Messages:           messages,
 		PageTitle:          pageTitle,
 		Note:               *note,
 		SidebarAuthorItems: uniqueSortedAuthors(note.Authors),
@@ -182,11 +237,18 @@ func listFilterFromQuery(r *http.Request, defaults notes.ListFilter) notes.ListF
 	return filter
 }
 
-func BuildNotesURL(page int, tag string, searchQuery string) string {
-	return BuildNotesFilterURL(page, "", tag, notes.NoteTypeAll, searchQuery)
+func BuildNotesURL(locale string, page int, tag string, searchQuery string) string {
+	return BuildNotesFilterURL(locale, page, "", tag, notes.NoteTypeAll, searchQuery)
 }
 
-func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType notes.NoteType, searchQuery string) string {
+func BuildNotesFilterURL(
+	locale string,
+	page int,
+	authorSlug string,
+	tagName string,
+	noteType notes.NoteType,
+	searchQuery string,
+) string {
 	if page < 1 {
 		page = 1
 	}
@@ -215,13 +277,19 @@ func BuildNotesFilterURL(page int, authorSlug string, tagName string, noteType n
 
 	encoded := q.Encode()
 	if encoded == "" {
-		return "/"
+		return LocalizeAppPath(locale, "/")
 	}
 
-	return "/?" + encoded
+	return buildLocalizedPathWithQuery(locale, "/", q)
 }
 
-func BuildChannelsURL(authorSlug string, tagName string, noteType notes.NoteType, searchQuery string) string {
+func BuildChannelsURL(
+	locale string,
+	authorSlug string,
+	tagName string,
+	noteType notes.NoteType,
+	searchQuery string,
+) string {
 	noteType = notes.ParseNoteType(string(noteType))
 	authorSlug = strings.TrimSpace(authorSlug)
 	tagName = strings.TrimSpace(tagName)
@@ -243,16 +311,16 @@ func BuildChannelsURL(authorSlug string, tagName string, noteType notes.NoteType
 
 	encoded := q.Encode()
 	if encoded == "" {
-		return "/channels"
+		return LocalizeAppPath(locale, "/channels")
 	}
 
-	return "/channels?" + encoded
+	return buildLocalizedPathWithQuery(locale, "/channels", q)
 }
 
-func BuildAuthorURL(slug string, page int) string {
+func BuildAuthorURL(locale string, slug string, page int) string {
 	slug = strings.TrimSpace(slug)
 	if slug == "" {
-		return "/"
+		return LocalizeAppPath(locale, "/")
 	}
 
 	if page < 1 {
@@ -260,12 +328,12 @@ func BuildAuthorURL(slug string, page int) string {
 	}
 
 	if page == 1 {
-		return "/author/" + slug
+		return LocalizeAppPath(locale, "/author/"+slug)
 	}
 
 	q := make(url.Values)
 	q.Set("page", strconv.Itoa(page))
-	return "/author/" + slug + "?" + q.Encode()
+	return buildLocalizedPathWithQuery(locale, "/author/"+slug, q)
 }
 
 func BuildHTMXNavigationURL(pageURL string) string {
@@ -280,16 +348,16 @@ func BuildHTMXNavigationURL(pageURL string) string {
 	return canonicalPath + "?" + encoded
 }
 
-func BuildTagURL(tagSlug string) string {
+func BuildTagURL(locale string, tagSlug string) string {
 	tagSlug = strings.TrimSpace(tagSlug)
 	if tagSlug == "" {
-		return "/"
+		return LocalizeAppPath(locale, "/")
 	}
 
-	return "/tag/" + tagSlug
+	return LocalizeAppPath(locale, "/tag/"+tagSlug)
 }
 
-func BuildTalesURL(page int, authorSlug string, tagName string) string {
+func BuildTalesURL(locale string, page int, authorSlug string, tagName string) string {
 	if page < 1 {
 		page = 1
 	}
@@ -307,13 +375,13 @@ func BuildTalesURL(page int, authorSlug string, tagName string) string {
 
 	encoded := q.Encode()
 	if encoded == "" {
-		return "/tales"
+		return LocalizeAppPath(locale, "/tales")
 	}
 
-	return "/tales?" + encoded
+	return buildLocalizedPathWithQuery(locale, "/tales", q)
 }
 
-func BuildMicroTalesURL(page int, authorSlug string, tagName string) string {
+func BuildMicroTalesURL(locale string, page int, authorSlug string, tagName string) string {
 	if page < 1 {
 		page = 1
 	}
@@ -331,10 +399,10 @@ func BuildMicroTalesURL(page int, authorSlug string, tagName string) string {
 
 	encoded := q.Encode()
 	if encoded == "" {
-		return "/micro-tales"
+		return LocalizeAppPath(locale, "/micro-tales")
 	}
 
-	return "/micro-tales?" + encoded
+	return buildLocalizedPathWithQuery(locale, "/micro-tales", q)
 }
 
 func normalizePageURL(pageURL string) (string, url.Values) {
@@ -360,6 +428,26 @@ func parsePage(value string) int {
 		return 1
 	}
 	return parsed
+}
+
+func localeFromRequest(appCtx *Context, r *http.Request) string {
+	requestLocale := ""
+	if r != nil {
+		requestLocale = frameworki18n.LocaleFromContext(r.Context())
+	}
+	if appCtx == nil {
+		return normalizeLocaleForApp(requestLocale)
+	}
+	return appCtx.LocaleFromRequest(requestLocale)
+}
+
+func buildLocalizedPathWithQuery(locale string, strippedPath string, query url.Values) string {
+	localizedPath := LocalizeAppPath(locale, strippedPath)
+	encoded := query.Encode()
+	if strings.TrimSpace(encoded) == "" {
+		return localizedPath
+	}
+	return localizedPath + "?" + encoded
 }
 
 func sidebarModeForFilter(filter notes.ListFilter) SidebarMode {

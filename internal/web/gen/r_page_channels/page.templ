@@ -4,14 +4,15 @@ package r_page_channels
 import (
 	"blog/internal/web/appcore"
 	"blog/internal/web/components"
+	webi18n "blog/internal/web/i18n"
 )
 
 templ Page(view appcore.NotesPageView) {
 	<section class="channels-page">
 		<header class="channels-page-header channels-desktop-hint">
-			<h1>Channels</h1>
-			<p class="muted">Use the left channel list to navigate.</p>
-			<a class="back-link channels-back-button" href={ appcore.BuildNotesFilterURL(1, view.Filter.AuthorSlug, view.Filter.TagName, view.Filter.Type, view.Filter.Query) }>Back to feed</a>
+			<h1>{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelsPageTitle) }</h1>
+			<p class="muted">{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelsPageHint) }</p>
+			<a class="back-link channels-back-button" href={ appcore.BuildNotesFilterURL(view.LocaleCode(), 1, view.Filter.AuthorSlug, view.Filter.TagName, view.Filter.Type, view.Filter.Query) }>{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelsPageBack) }</a>
 		</header>
 
 		<section class="channel-panel-standalone channels-mobile-panel">

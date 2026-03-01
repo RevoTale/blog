@@ -139,10 +139,10 @@ func NotFoundPage(notFound framework.NotFoundContext) templ.Component {
 		pathValue = "/"
 	}
 	routeID := nearestNotFoundRouteID(notFound)
-	view := appcore.NewNotFoundLayoutView()
+	view := appcore.NewNotFoundLayoutView(notFound.Locale)
 	switch routeID {
 	default:
-		component := r_not_found_root.Page(pathValue)
+		component := r_not_found_root.Page(view, pathValue)
 		component = r_layout_root.Layout(view, component)
 		return component
 	}

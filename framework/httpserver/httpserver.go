@@ -11,6 +11,7 @@ import (
 
 	"blog/framework"
 	"blog/framework/engine"
+	frameworki18n "blog/framework/i18n"
 	"github.com/a-h/templ"
 )
 
@@ -124,6 +125,7 @@ func (s *server[C]) handleRoute(w http.ResponseWriter, r *http.Request) {
 
 	s.handleNotFound(w, r, framework.NotFoundContext{
 		RequestPath: r.URL.Path,
+		Locale:      frameworki18n.LocaleFromContext(r.Context()),
 		Source:      framework.NotFoundSourceUnmatchedRoute,
 	})
 }

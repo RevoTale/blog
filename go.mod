@@ -1,6 +1,6 @@
 module blog
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/Khan/genqlient v0.8.1
@@ -8,7 +8,9 @@ require (
 	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/evanw/esbuild v0.27.3
 	github.com/gomarkdown/markdown v0.0.0-20260217112301-37c66b85d6ab
-	golang.org/x/mod v0.26.0
+	github.com/nicksnyder/go-i18n/v2 v2.6.1
+	golang.org/x/mod v0.32.0
+	golang.org/x/text v0.34.0
 )
 
 require (

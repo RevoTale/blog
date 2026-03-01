@@ -1,24 +1,27 @@
 package components
 
-import "blog/internal/web/appcore"
+import (
+	"blog/internal/web/appcore"
+	webi18n "blog/internal/web/i18n"
+)
 
 templ ChannelList(view appcore.RootLayoutView) {
-	<p class="channel-panel-label">channels</p>
+	<p class="channel-panel-label">{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelSectionChannels) }</p>
 	<a class={ appcore.ChannelLinkClass(appcore.SidebarAllActive(view)) } href={ view.SidebarAllURL() }>
 		<span class="channel-prefix">#</span>
-		<span>All</span>
+		<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelAll) }</span>
 	</a>
 
-	<p class="channel-panel-label">note type</p>
+	<p class="channel-panel-label">{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelSectionNoteType) }</p>
 	if view.SidebarCurrentType() != "all" {
-		<a class={ appcore.ChannelLinkClass(false) } href={ view.SidebarAnyTypeURL() }># All</a>
+		<a class={ appcore.ChannelLinkClass(false) } href={ view.SidebarAnyTypeURL() }># { appcore.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
 	}
-	<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>Tales</a>
-	<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>Micro-tales</a>
+	<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelTales) }</a>
+	<a class={ appcore.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelMicroTales) }</a>
 
-	<p class="channel-panel-label">authors</p>
+	<p class="channel-panel-label">{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelSectionAuthors) }</p>
 	if view.SidebarCurrentAuthorSlug() != "" {
-		<a class={ appcore.ChannelLinkClass(false) } href={ view.SidebarAnyAuthorURL() }># All</a>
+		<a class={ appcore.ChannelLinkClass(false) } href={ view.SidebarAnyAuthorURL() }># { appcore.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
 	}
 	for _, author := range view.SidebarAuthors() {
 		<a class={ appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug) } href={ view.SidebarAuthorURL(author.Slug) }>
@@ -26,9 +29,9 @@ templ ChannelList(view appcore.RootLayoutView) {
 		</a>
 	}
 
-	<p class="channel-panel-label">tags</p>
+	<p class="channel-panel-label">{ appcore.Message(view.MessagesMap(), webi18n.KeyChannelSectionTags) }</p>
 	if view.SidebarCurrentTagName() != "" {
-		<a class={ appcore.ChannelLinkClass(false) } href={ view.SidebarAnyTagURL() }># All</a>
+		<a class={ appcore.ChannelLinkClass(false) } href={ view.SidebarAnyTagURL() }># { appcore.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
 	}
 	for _, tag := range view.SidebarTags() {
 		<a class={ appcore.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name) } href={ view.SidebarTagURL(tag.Name) }>

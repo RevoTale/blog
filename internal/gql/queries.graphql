@@ -33,10 +33,17 @@ fragment NoteListDoc on Micro_post {
   }
 }
 
-query ListNotes($page: Int!, $limit: Int!) {
+query ListNotes(
+  $page: Int!
+  $limit: Int!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -49,10 +56,18 @@ query ListNotes($page: Int!, $limit: Int!) {
   }
 }
 
-query ListNotesByType($page: Int!, $limit: Int!, $postType: Micro_post_post_type_Input!) {
+query ListNotesByType(
+  $page: Int!
+  $limit: Int!
+  $postType: Micro_post_post_type_Input!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -66,10 +81,18 @@ query ListNotesByType($page: Int!, $limit: Int!, $postType: Micro_post_post_type
   }
 }
 
-query ListNotesByTagIDs($page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
+query ListNotesByTagIDs(
+  $page: Int!
+  $limit: Int!
+  $tagIDs: [JSON!]!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -88,10 +111,14 @@ query ListNotesByTagIDsAndType(
   $limit: Int!
   $tagIDs: [JSON!]!
   $postType: Micro_post_post_type_Input!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
 ) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -106,10 +133,18 @@ query ListNotesByTagIDsAndType(
   }
 }
 
-query NotesByAuthorSlug($slug: String!, $page: Int!, $limit: Int!) {
+query NotesByAuthorSlug(
+  $slug: String!
+  $page: Int!
+  $limit: Int!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -128,10 +163,14 @@ query NotesByAuthorSlugAndType(
   $page: Int!
   $limit: Int!
   $postType: Micro_post_post_type_Input!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
 ) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -146,10 +185,19 @@ query NotesByAuthorSlugAndType(
   }
 }
 
-query ListNotesByAuthorAndTagIDs($slug: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
+query ListNotesByAuthorAndTagIDs(
+  $slug: String!
+  $page: Int!
+  $limit: Int!
+  $tagIDs: [JSON!]!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -170,10 +218,14 @@ query ListNotesByAuthorTagIDsAndType(
   $limit: Int!
   $tagIDs: [JSON!]!
   $postType: Micro_post_post_type_Input!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
 ) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -189,10 +241,18 @@ query ListNotesByAuthorTagIDsAndType(
   }
 }
 
-query SearchNotes($query: String!, $page: Int!, $limit: Int!) {
+query SearchNotes(
+  $query: String!
+  $page: Int!
+  $limit: Int!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -218,10 +278,14 @@ query SearchNotesByType(
   $page: Int!
   $limit: Int!
   $postType: Micro_post_post_type_Input!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
 ) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -243,10 +307,19 @@ query SearchNotesByType(
   }
 }
 
-query SearchNotesByTagIDs($query: String!, $page: Int!, $limit: Int!, $tagIDs: [JSON!]!) {
+query SearchNotesByTagIDs(
+  $query: String!
+  $page: Int!
+  $limit: Int!
+  $tagIDs: [JSON!]!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -274,10 +347,14 @@ query SearchNotesByTagIDsAndType(
   $limit: Int!
   $tagIDs: [JSON!]!
   $postType: Micro_post_post_type_Input!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
 ) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -300,10 +377,19 @@ query SearchNotesByTagIDsAndType(
   }
 }
 
-query SearchNotesByAuthorSlug($query: String!, $slug: String!, $page: Int!, $limit: Int!) {
+query SearchNotesByAuthorSlug(
+  $query: String!
+  $slug: String!
+  $page: Int!
+  $limit: Int!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -331,10 +417,14 @@ query SearchNotesByAuthorSlugAndType(
   $page: Int!
   $limit: Int!
   $postType: Micro_post_post_type_Input!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
 ) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -363,10 +453,14 @@ query SearchNotesByAuthorAndTagIDs(
   $page: Int!
   $limit: Int!
   $tagIDs: [JSON!]!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
 ) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -396,10 +490,14 @@ query SearchNotesByAuthorTagIDsAndType(
   $limit: Int!
   $tagIDs: [JSON!]!
   $postType: Micro_post_post_type_Input!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
 ) {
   Micro_posts(
     page: $page
     limit: $limit
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     sort: "-publishedAt"
     where: {
       _status: { equals: published }
@@ -423,8 +521,12 @@ query SearchNotesByAuthorTagIDsAndType(
   }
 }
 
-query TagIDsByNames($tagNames: [String!]!) {
-  Tags(where: { name: { in: $tagNames } }) {
+query TagIDsByNames(
+  $tagNames: [String!]!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
+  Tags(where: { name: { in: $tagNames } }, locale: $locale, fallbackLocale: $fallbackLocale) {
     docs {
       id
       name
@@ -433,16 +535,20 @@ query TagIDsByNames($tagNames: [String!]!) {
   }
 }
 
-query AvailableTagsByPostType($postType: String) {
-  availableTagsByMicroPostType(postType: $postType) {
+query AvailableTagsByPostType($postType: String, $locale: LocaleInputType) {
+  availableTagsByMicroPostType(postType: $postType, locale: $locale) {
     id
     name
     title
   }
 }
 
-query AvailableAuthors($limit: Int!) {
-  Authors(limit: $limit, sort: "name") {
+query AvailableAuthors(
+  $limit: Int!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
+  Authors(limit: $limit, sort: "name", locale: $locale, fallbackLocale: $fallbackLocale) {
     docs {
       id
       name
@@ -458,8 +564,17 @@ query AvailableAuthors($limit: Int!) {
   }
 }
 
-query AuthorBySlug($slug: String!) {
-  Authors(where: { slug: { equals: $slug } }, limit: 1) {
+query AuthorBySlug(
+  $slug: String!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
+  Authors(
+    where: { slug: { equals: $slug } }
+    limit: 1
+    locale: $locale
+    fallbackLocale: $fallbackLocale
+  ) {
     docs {
       id
       name
@@ -475,8 +590,17 @@ query AuthorBySlug($slug: String!) {
   }
 }
 
-query TagByName($name: String!) {
-  Tags(where: { name: { equals: $name } }, limit: 1) {
+query TagByName(
+  $name: String!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
+  Tags(
+    where: { name: { equals: $name } }
+    limit: 1
+    locale: $locale
+    fallbackLocale: $fallbackLocale
+  ) {
     docs {
       id
       name
@@ -485,9 +609,15 @@ query TagByName($name: String!) {
   }
 }
 
-query NoteBySlug($slug: String!) {
+query NoteBySlug(
+  $slug: String!
+  $locale: LocaleInputType
+  $fallbackLocale: FallbackLocaleInputType
+) {
   Micro_posts(
     limit: 1
+    locale: $locale
+    fallbackLocale: $fallbackLocale
     where: {
       _status: { equals: published }
       slug: { equals: $slug }

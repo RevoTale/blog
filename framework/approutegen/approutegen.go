@@ -19,7 +19,9 @@ var pageViewTypePattern = regexp.MustCompile(`templ\s+Page\s*\(\s*view\s+([A-Za-
 var layoutSignaturePattern = regexp.MustCompile(
 	`templ\s+Layout\s*\(\s*view\s+([A-Za-z0-9_.]+)\s*,\s*child\s+templ\.Component\s*\)`,
 )
-var notFoundSignaturePattern = regexp.MustCompile(`templ\s+Page\s*\(\s*path\s+string\s*\)`)
+var notFoundSignaturePattern = regexp.MustCompile(
+	`templ\s+Page\s*\(\s*view\s+([A-Za-z0-9_.]+)\s*,\s*path\s+string\s*\)`,
+)
 
 type templateKind string
 
@@ -474,8 +476,21 @@ func validateNotFoundTemplateSignature(notFoundTemplatePath string) error {
 		return fmt.Errorf("read %q: %w", filepath.ToSlash(notFoundTemplatePath), err)
 	}
 
-	if !notFoundSignaturePattern.Match(source) {
-		return fmt.Errorf("%q must declare templ Page(path string)", filepath.ToSlash(notFoundTemplatePath))
+	matches := notFoundSignaturePattern.FindStringSubmatch(string(source))
+	if len(matches) < 2 {
+		return fmt.Errorf(
+			"%q must declare templ Page(view appcore.RootLayoutView, path string)",
+			filepath.ToSlash(notFoundTemplatePath),
+		)
+	}
+
+	viewType := strings.TrimSpace(matches[1])
+	if viewType != "appcore.RootLayoutView" {
+		return fmt.Errorf(
+			"%q 404 view type %q must be appcore.RootLayoutView",
+			filepath.ToSlash(notFoundTemplatePath),
+			viewType,
+		)
 	}
 
 	return nil
@@ -791,7 +806,7 @@ func writeNotFoundPageFunc(
 	buffer.WriteString("\t\tpathValue = \"/\"\n")
 	buffer.WriteString("\t}\n")
 	buffer.WriteString("\trouteID := nearestNotFoundRouteID(notFound)\n")
-	buffer.WriteString("\tview := appcore.NewNotFoundLayoutView()\n")
+	buffer.WriteString("\tview := appcore.NewNotFoundLayoutView(notFound.Locale)\n")
 	buffer.WriteString("\tswitch routeID {\n")
 	for _, routeID := range notFoundKeys {
 		if routeID == "" {
@@ -799,7 +814,7 @@ func writeNotFoundPageFunc(
 		}
 		notFound := notFounds[routeID]
 		writef(buffer, "\tcase %q:\n", routeID)
-		writef(buffer, "\t\tcomponent := %s.Page(pathValue)\n", notFound.ModuleName)
+		writef(buffer, "\t\tcomponent := %s.Page(view, pathValue)\n", notFound.ModuleName)
 		chain := layoutChain(routeID, layouts)
 		for idx := len(chain) - 1; idx >= 0; idx-- {
 			writef(buffer, "\t\tcomponent = %s.Layout(view, component)\n", chain[idx].ModuleName)
@@ -809,7 +824,7 @@ func writeNotFoundPageFunc(
 
 	rootNotFound := notFounds[""]
 	buffer.WriteString("\tdefault:\n")
-	writef(buffer, "\t\tcomponent := %s.Page(pathValue)\n", rootNotFound.ModuleName)
+	writef(buffer, "\t\tcomponent := %s.Page(view, pathValue)\n", rootNotFound.ModuleName)
 	rootChain := layoutChain("", layouts)
 	for idx := len(rootChain) - 1; idx >= 0; idx-- {
 		writef(buffer, "\t\tcomponent = %s.Layout(view, component)\n", rootChain[idx].ModuleName)

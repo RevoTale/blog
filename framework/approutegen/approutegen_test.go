@@ -87,8 +87,16 @@ func TestDiscoverRouteFilesCollectsNotFoundTemplates(t *testing.T) {
 	appRoot := filepath.Join(root, "app")
 	genRoot := filepath.Join(root, "gen")
 
-	writeTestFile(t, filepath.Join(appRoot, "404.templ"), "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
-	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "404.templ"), "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
+	writeTestFile(
+		t,
+		filepath.Join(appRoot, "404.templ"),
+		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }\n",
+	)
+	writeTestFile(
+		t,
+		filepath.Join(appRoot, "author", "[slug]", "404.templ"),
+		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }\n",
+	)
 	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\"></div> }\n")
 
 	routes, err := discoverRouteFiles(appRoot, genRoot)
@@ -159,8 +167,16 @@ func TestValidateNotFoundTemplateSignature(t *testing.T) {
 	root := t.TempDir()
 	validPath := filepath.Join(root, "404_valid.templ")
 	invalidPath := filepath.Join(root, "404_invalid.templ")
-	writeTestFile(t, validPath, "package appsrc\n\ntempl Page(path string) { <div>{ path }</div> }\n")
-	writeTestFile(t, invalidPath, "package appsrc\n\ntempl Page(target string) { <div>{ target }</div> }\n")
+	writeTestFile(
+		t,
+		validPath,
+		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }\n",
+	)
+	writeTestFile(
+		t,
+		invalidPath,
+		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotesPageView, path string) { <div>{ path }</div> }\n",
+	)
 
 	if err := validateNotFoundTemplateSignature(validPath); err != nil {
 		t.Fatalf("expected valid 404 signature, got %v", err)

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"blog/internal/notes"
+	webi18n "blog/internal/web/i18n"
 )
 
 type SidebarMode string
@@ -15,6 +16,8 @@ const (
 )
 
 type RootLayoutView interface {
+	LocaleCode() string
+	MessagesMap() map[webi18n.Key]string
 	LayoutPageTitle() string
 	LayoutSearchQuery() string
 	SidebarAuthors() []notes.Author
@@ -48,6 +51,8 @@ type PaginationView struct {
 }
 
 type NotesPageView struct {
+	Locale             string
+	Messages           map[webi18n.Key]string
 	PageTitle          string
 	Filter             notes.ListFilter
 	SidebarMode        SidebarMode
@@ -60,25 +65,41 @@ type NotesPageView struct {
 	ContextTitle       string
 	ContextSubtitle    string
 	ContextDescription string
+	EmptyStateMessage  string
 }
 
 type AuthorPageView = NotesPageView
 
 type NotePageView struct {
+	Locale             string
+	Messages           map[webi18n.Key]string
 	PageTitle          string
 	Note               notes.NoteDetail
 	SidebarAuthorItems []notes.Author
 	SidebarTagItems    []notes.Tag
 }
 
-func NewNotFoundLayoutView() RootLayoutView {
+func NewNotFoundLayoutView(locale string) RootLayoutView {
+	locale = normalizeLocaleForApp(locale)
+	messages := localizedMessages(nil, locale)
+
 	return NotesPageView{
-		PageTitle:   "404 Not Found",
+		Locale:      locale,
+		Messages:    messages,
+		PageTitle:   Message(messages, webi18n.KeyNotfoundPageTitle),
 		SidebarMode: SidebarModeRoot,
 		Filter: notes.ListFilter{
 			Type: notes.NoteTypeAll,
 		},
 	}
+}
+
+func (v NotesPageView) LocaleCode() string {
+	return normalizeLocaleForApp(v.Locale)
+}
+
+func (v NotesPageView) MessagesMap() map[webi18n.Key]string {
+	return v.Messages
 }
 
 func (v NotesPageView) LayoutPageTitle() string {
@@ -110,35 +131,35 @@ func (v NotesPageView) SidebarCurrentType() notes.NoteType {
 }
 
 func (v NotesPageView) SidebarChannelsURL() string {
-	return BuildChannelsURL(v.Filter.AuthorSlug, v.Filter.TagName, v.Filter.Type, v.Filter.Query)
+	return BuildChannelsURL(v.LocaleCode(), v.Filter.AuthorSlug, v.Filter.TagName, v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAllURL() string {
-	return BuildNotesFilterURL(1, "", "", notes.NoteTypeAll, v.Filter.Query)
+	return BuildNotesFilterURL(v.LocaleCode(), 1, "", "", notes.NoteTypeAll, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAnyAuthorURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return BuildNotesFilterURL(1, "", "", notes.NoteTypeAll, v.Filter.Query)
+		return BuildNotesFilterURL(v.LocaleCode(), 1, "", "", notes.NoteTypeAll, v.Filter.Query)
 	}
 
-	return BuildNotesFilterURL(1, "", v.Filter.TagName, v.Filter.Type, v.Filter.Query)
+	return BuildNotesFilterURL(v.LocaleCode(), 1, "", v.Filter.TagName, v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAnyTagURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return BuildNotesFilterURL(1, "", "", notes.NoteTypeAll, v.Filter.Query)
+		return BuildNotesFilterURL(v.LocaleCode(), 1, "", "", notes.NoteTypeAll, v.Filter.Query)
 	}
 
-	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, "", v.Filter.Type, v.Filter.Query)
+	return BuildNotesFilterURL(v.LocaleCode(), 1, v.Filter.AuthorSlug, "", v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAnyTypeURL() string {
 	if v.SidebarMode == SidebarModeRoot {
-		return BuildNotesFilterURL(1, "", "", notes.NoteTypeAll, v.Filter.Query)
+		return BuildNotesFilterURL(v.LocaleCode(), 1, "", "", notes.NoteTypeAll, v.Filter.Query)
 	}
 
-	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, notes.NoteTypeAll, v.Filter.Query)
+	return BuildNotesFilterURL(v.LocaleCode(), 1, v.Filter.AuthorSlug, v.Filter.TagName, notes.NoteTypeAll, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarAuthorURL(authorSlug string) string {
@@ -148,10 +169,10 @@ func (v NotesPageView) SidebarAuthorURL(authorSlug string) string {
 	}
 
 	if v.SidebarMode == SidebarModeRoot {
-		return BuildAuthorURL(authorSlug, 1)
+		return BuildAuthorURL(v.LocaleCode(), authorSlug, 1)
 	}
 
-	return BuildNotesFilterURL(1, authorSlug, v.Filter.TagName, v.Filter.Type, v.Filter.Query)
+	return BuildNotesFilterURL(v.LocaleCode(), 1, authorSlug, v.Filter.TagName, v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarTagURL(tagName string) string {
@@ -161,10 +182,10 @@ func (v NotesPageView) SidebarTagURL(tagName string) string {
 	}
 
 	if v.SidebarMode == SidebarModeRoot {
-		return BuildTagURL(tagName)
+		return BuildTagURL(v.LocaleCode(), tagName)
 	}
 
-	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, tagName, v.Filter.Type, v.Filter.Query)
+	return BuildNotesFilterURL(v.LocaleCode(), 1, v.Filter.AuthorSlug, tagName, v.Filter.Type, v.Filter.Query)
 }
 
 func (v NotesPageView) SidebarTypeURL(noteType notes.NoteType) string {
@@ -175,15 +196,23 @@ func (v NotesPageView) SidebarTypeURL(noteType notes.NoteType) string {
 
 	if v.SidebarMode == SidebarModeRoot {
 		if noteType == notes.NoteTypeLong {
-			return BuildTalesURL(1, "", "")
+			return BuildTalesURL(v.LocaleCode(), 1, "", "")
 		}
 
 		if noteType == notes.NoteTypeShort {
-			return BuildMicroTalesURL(1, "", "")
+			return BuildMicroTalesURL(v.LocaleCode(), 1, "", "")
 		}
 	}
 
-	return BuildNotesFilterURL(1, v.Filter.AuthorSlug, v.Filter.TagName, noteType, v.Filter.Query)
+	return BuildNotesFilterURL(v.LocaleCode(), 1, v.Filter.AuthorSlug, v.Filter.TagName, noteType, v.Filter.Query)
+}
+
+func (v NotePageView) LocaleCode() string {
+	return normalizeLocaleForApp(v.Locale)
+}
+
+func (v NotePageView) MessagesMap() map[webi18n.Key]string {
+	return v.Messages
 }
 
 func (v NotePageView) LayoutPageTitle() string {
@@ -215,48 +244,55 @@ func (v NotePageView) SidebarCurrentType() notes.NoteType {
 }
 
 func (v NotePageView) SidebarChannelsURL() string {
-	return "/channels"
+	return LocalizeAppPath(v.LocaleCode(), "/channels")
 }
 
 func (v NotePageView) SidebarAllURL() string {
-	return "/"
+	return LocalizeAppPath(v.LocaleCode(), "/")
 }
 
 func (v NotePageView) SidebarAnyAuthorURL() string {
-	return "/"
+	return LocalizeAppPath(v.LocaleCode(), "/")
 }
 
 func (v NotePageView) SidebarAnyTagURL() string {
-	return "/"
+	return LocalizeAppPath(v.LocaleCode(), "/")
 }
 
 func (v NotePageView) SidebarAnyTypeURL() string {
-	return "/"
+	return LocalizeAppPath(v.LocaleCode(), "/")
 }
 
 func (v NotePageView) SidebarAuthorURL(authorSlug string) string {
-	return BuildAuthorURL(authorSlug, 1)
+	return BuildAuthorURL(v.LocaleCode(), authorSlug, 1)
 }
 
 func (v NotePageView) SidebarTagURL(tagName string) string {
-	return BuildTagURL(tagName)
+	return BuildTagURL(v.LocaleCode(), tagName)
 }
 
 func (v NotePageView) SidebarTypeURL(noteType notes.NoteType) string {
 	noteType = notes.ParseNoteType(string(noteType))
 	if noteType == notes.NoteTypeLong {
-		return BuildTalesURL(1, "", "")
+		return BuildTalesURL(v.LocaleCode(), 1, "", "")
 	}
 	if noteType == notes.NoteTypeShort {
-		return BuildMicroTalesURL(1, "", "")
+		return BuildMicroTalesURL(v.LocaleCode(), 1, "", "")
 	}
 
-	return "/"
+	return LocalizeAppPath(v.LocaleCode(), "/")
 }
 
-func newNotesPageView(result notes.NotesListResult, mode SidebarMode) NotesPageView {
+func newNotesPageView(
+	locale string,
+	messages map[webi18n.Key]string,
+	result notes.NotesListResult,
+	mode SidebarMode,
+) NotesPageView {
 	view := NotesPageView{
-		PageTitle:   notesPageTitle(result),
+		Locale:      locale,
+		Messages:    messages,
+		PageTitle:   notesPageTitle(messages, result),
 		Filter:      result.ActiveFilter,
 		SidebarMode: mode,
 		Notes:       result.Notes,
@@ -276,14 +312,14 @@ func newNotesPageView(result notes.NotesListResult, mode SidebarMode) NotesPageV
 			copy := *result.ActiveTag
 			return &copy
 		}(),
-		Pagination: newPaginationView(result.ActiveFilter, result.TotalPages),
+		Pagination: newPaginationView(locale, result.ActiveFilter, result.TotalPages),
 	}
 
 	applyContext(&view)
 	return view
 }
 
-func notesPageTitle(result notes.NotesListResult) string {
+func notesPageTitle(messages map[webi18n.Key]string, result notes.NotesListResult) string {
 	if result.ActiveAuthor != nil {
 		return result.ActiveAuthor.Name
 	}
@@ -291,13 +327,13 @@ func notesPageTitle(result notes.NotesListResult) string {
 		return "#" + result.ActiveTag.Title
 	}
 	if result.ActiveFilter.Type == notes.NoteTypeLong {
-		return "Tales"
+		return Message(messages, webi18n.KeyLayoutTitleTales)
 	}
 	if result.ActiveFilter.Type == notes.NoteTypeShort {
-		return "Micro-tales"
+		return Message(messages, webi18n.KeyLayoutTitleMicroTales)
 	}
 
-	return "Notes"
+	return Message(messages, webi18n.KeyLayoutTitleNotes)
 }
 
 func applyContext(view *NotesPageView) {
@@ -312,24 +348,24 @@ func applyContext(view *NotesPageView) {
 		view.ContextDescription = view.ActiveAuthor.Bio
 	case view.ActiveTag != nil:
 		view.ContextTitle = "#" + view.ActiveTag.Title
-		view.ContextSubtitle = "tag"
-		view.ContextDescription = "notes filtered by tag"
+		view.ContextSubtitle = Message(view.Messages, webi18n.KeyContextTagSubtitle)
+		view.ContextDescription = Message(view.Messages, webi18n.KeyContextTagDescription)
 	case view.Filter.Type == notes.NoteTypeLong:
-		view.ContextTitle = "Tales"
-		view.ContextSubtitle = "type"
-		view.ContextDescription = "long-form notes"
+		view.ContextTitle = Message(view.Messages, webi18n.KeyLayoutTitleTales)
+		view.ContextSubtitle = Message(view.Messages, webi18n.KeyContextTypeSubtitle)
+		view.ContextDescription = Message(view.Messages, webi18n.KeyContextLongDescription)
 	case view.Filter.Type == notes.NoteTypeShort:
-		view.ContextTitle = "Micro-tales"
-		view.ContextSubtitle = "type"
-		view.ContextDescription = "short notes"
+		view.ContextTitle = Message(view.Messages, webi18n.KeyLayoutTitleMicroTales)
+		view.ContextSubtitle = Message(view.Messages, webi18n.KeyContextTypeSubtitle)
+		view.ContextDescription = Message(view.Messages, webi18n.KeyContextShortDescription)
 	default:
-		view.ContextTitle = "Notes"
-		view.ContextSubtitle = "feed"
+		view.ContextTitle = Message(view.Messages, webi18n.KeyLayoutTitleNotes)
+		view.ContextSubtitle = Message(view.Messages, webi18n.KeyContextFeed)
 		view.ContextDescription = ""
 	}
 }
 
-func newPaginationView(filter notes.ListFilter, totalPages int) PaginationView {
+func newPaginationView(locale string, filter notes.ListFilter, totalPages int) PaginationView {
 	if totalPages < 1 {
 		totalPages = 1
 	}
@@ -361,10 +397,10 @@ func newPaginationView(filter notes.ListFilter, totalPages int) PaginationView {
 		LastPage:   totalPages,
 		PrevPage:   prevPage,
 		NextPage:   nextPage,
-		FirstURL:   BuildNotesFilterURL(1, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
-		LastURL:    BuildNotesFilterURL(totalPages, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
-		PrevURL:    BuildNotesFilterURL(prevPage, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
-		NextURL:    BuildNotesFilterURL(nextPage, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
+		FirstURL:   BuildNotesFilterURL(locale, 1, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
+		LastURL:    BuildNotesFilterURL(locale, totalPages, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
+		PrevURL:    BuildNotesFilterURL(locale, prevPage, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
+		NextURL:    BuildNotesFilterURL(locale, nextPage, filter.AuthorSlug, filter.TagName, filter.Type, filter.Query),
 	}
 }
 

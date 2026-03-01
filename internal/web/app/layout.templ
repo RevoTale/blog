@@ -4,11 +4,12 @@ import (
 	"blog/internal/techstack"
 	"blog/internal/web/appcore"
 	"blog/internal/web/components"
+	webi18n "blog/internal/web/i18n"
 )
 
 templ Layout(view appcore.RootLayoutView, child templ.Component) {
 	<!doctype html>
-	<html lang="en">
+	<html lang={ view.LocaleCode() }>
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -21,23 +22,23 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 		</head>
 		<body>
 			<div class="app-shell">
-				<aside class="server-rail" aria-label="workspace navigation">
-					<a class="server-button is-active" href="/" aria-label="blog home">
+				<aside class="server-rail" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaWorkspaceNavigation) }>
+					<a class="server-button is-active" href={ appcore.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaBlogHome) }>
 						<img class="server-logo" src={ appcore.StaticAssetURL("revtale-logo.svg") } alt="RevTale"/>
 					</a>
 					<span class="server-divider" aria-hidden="true"></span>
-					<a class="server-button" href="/" aria-label="notes channel">#</a>
+					<a class="server-button" href={ appcore.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaNotesChannel) }>#</a>
 				</aside>
 
 				<div class="workspace">
-					<aside class="channel-panel" aria-label="channel list">
+					<aside class="channel-panel" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaChannelList) }>
 						<header class="guild-header">
-							<strong>Blog</strong>
+							<strong>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutGuildBlog) }</strong>
 							<span class="guild-presence">
 								<span class="presence-dot" aria-hidden="true"></span>
-								<span class="guild-presence-label">online</span>
+								<span class="guild-presence-label">{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutGuildOnline) }</span>
 							</span>
-							<span>Server</span>
+							<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutGuildServer) }</span>
 						</header>
 
 						<div class="channel-scroll">
@@ -46,9 +47,9 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 					</aside>
 
 					<div class="workspace-main">
-						<header class="topbar" aria-label="channel header">
+						<header class="topbar" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaChannelHeader) }>
 							<div class="topbar-left">
-								<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>Channels</a>
+								<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutChannelsButton) }</a>
 								<div class="topbar-title">
 									if view.SidebarCurrentAuthorSlug() != "" {
 										<span class="channel-marker">&#64;</span>
@@ -58,18 +59,18 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 										<span>{ view.SidebarCurrentTagName() }</span>
 									} else if view.SidebarCurrentType() == "long" {
 										<span class="channel-marker">#</span>
-										<span>Tales</span>
+										<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutTitleTales) }</span>
 									} else if view.SidebarCurrentType() == "short" {
 										<span class="channel-marker">#</span>
-										<span>Micro-tales</span>
+										<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutTitleMicroTales) }</span>
 									} else {
 										<span class="channel-marker">#</span>
-										<span>All</span>
+										<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutTitleAll) }</span>
 									}
 								</div>
 							</div>
-							<nav class="topbar-nav" aria-label="utility">
-								<form class="topbar-search" role="search" method="get" action="/">
+							<nav class="topbar-nav" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaUtility) }>
+								<form class="topbar-search" role="search" method="get" action={ appcore.LocalizeAppPath(view.LocaleCode(), "/") }>
 									if view.SidebarCurrentAuthorSlug() != "" {
 										<input type="hidden" name="author" value={ view.SidebarCurrentAuthorSlug() }/>
 									}
@@ -85,12 +86,12 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 										type="search"
 										name="q"
 										value={ view.LayoutSearchQuery() }
-										placeholder="Search notes"
+										placeholder={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutSearchPlaceholder) }
 										required
 									/>
-									<button class="topbar-search-submit" type="submit">Search</button>
+									<button class="topbar-search-submit" type="submit">{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutSearchSubmit) }</button>
 									if view.LayoutSearchQuery() != "" {
-										<a class="topbar-search-clear" href={ appcore.BuildNotesFilterURL(1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>Clear</a>
+										<a class="topbar-search-clear" href={ appcore.BuildNotesFilterURL(view.LocaleCode(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutSearchClear) }</a>
 									}
 								</form>
 							</nav>
@@ -101,11 +102,11 @@ templ Layout(view appcore.RootLayoutView, child templ.Component) {
 
 							<footer class="footer">
 								<p>
-									the code of this project is developed publicly:
-									<a href="https://github.com/RevoTale/blog" target="_blank" rel="noopener noreferrer">Browse the source on GitHub</a>
+									{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutFooterOpensourcePrefix) }
+									<a href="https://github.com/RevoTale/blog" target="_blank" rel="noopener noreferrer">{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutFooterOpensourceLink) }</a>
 								</p>
 								<p>
-									stack:
+									{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutFooterStackPrefix) }
 									for idx, pkg := range techstack.Packages() {
 										if idx > 0 {
 											,

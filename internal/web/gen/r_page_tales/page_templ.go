@@ -39,7 +39,7 @@ func Page(view appcore.NotesPageView) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.NotesFeed(view, "no tales found for this filter.").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.NotesFeed(view, view.EmptyStateMessage).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

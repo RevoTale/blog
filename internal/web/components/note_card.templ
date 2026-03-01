@@ -3,9 +3,10 @@ package components
 import (
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
+	webi18n "blog/internal/web/i18n"
 )
 
-templ NoteCard(note notes.NoteSummary) {
+templ NoteCard(locale string, messages map[webi18n.Key]string, note notes.NoteSummary) {
 	<article class={ appcore.NoteCardClass(note.Attachment != nil) }>
 		<div class="message-avatar">
 			if appcore.HasFirstAuthorAvatar(note.Authors) {
@@ -18,9 +19,9 @@ templ NoteCard(note notes.NoteSummary) {
 		<div class="message-body">
 			<header class="message-head">
 				if appcore.FirstAuthorSlug(note.Authors) != "" {
-					<a href={ "/author/" + appcore.FirstAuthorSlug(note.Authors) } class="message-author">{ appcore.FirstAuthorName(note.Authors) }</a>
+					<a href={ appcore.BuildAuthorURL(locale, appcore.FirstAuthorSlug(note.Authors), 1) } class="message-author">{ appcore.FirstAuthorName(note.Authors) }</a>
 				} else {
-					<span class="message-author">unknown author</span>
+					<span class="message-author">{ appcore.Message(messages, webi18n.KeyNoteUnknownAuthor) }</span>
 				}
 				if note.PublishedAt != "" {
 					<span class="message-time">{ note.PublishedAt }</span>
@@ -29,20 +30,20 @@ templ NoteCard(note notes.NoteSummary) {
 
 			if note.Title != "" {
 				<h2 class="note-title">
-					<a class="message-title-link" href={ "/note/" + note.Slug }>{ note.Title }</a>
+					<a class="message-title-link" href={ appcore.LocalizeAppPath(locale, "/note/" + note.Slug) }>{ note.Title }</a>
 				</h2>
 			}
 
 			if note.Description != "" {
-				<a class="message-content message-content-link" href={ "/note/" + note.Slug }>{ note.Description }</a>
+				<a class="message-content message-content-link" href={ appcore.LocalizeAppPath(locale, "/note/" + note.Slug) }>{ note.Description }</a>
 			} else if note.Excerpt != "" {
-				<a class="message-content message-content-link" href={ "/note/" + note.Slug }>{ note.Excerpt }</a>
+				<a class="message-content message-content-link" href={ appcore.LocalizeAppPath(locale, "/note/" + note.Slug) }>{ note.Excerpt }</a>
 			}
 
 			if len(note.Tags) > 0 {
 				<ul class="reaction-row">
 					for _, tag := range note.Tags {
-						<li><a class="tag" href={ appcore.BuildTagURL(tag.Name) }>{ "#" + tag.Title }</a></li>
+						<li><a class="tag" href={ appcore.BuildTagURL(locale, tag.Name) }>{ "#" + tag.Title }</a></li>
 					}
 				</ul>
 			}
@@ -61,16 +62,16 @@ templ NoteCard(note notes.NoteSummary) {
 							height={ note.Attachment.Height }
 						/>
 					} else {
-						<span class="attachment-file">attachment: { appcore.AttachmentLabel(note.Attachment.Filename) }</span>
+						<span class="attachment-file">{ appcore.Message(messages, webi18n.KeyNoteAttachmentLabelPrefix) }: { appcore.AttachmentLabel(note.Attachment.Filename) }</span>
 					}
 				</a>
 			</div>
 		}
 
 		<footer class="note-card-footer">
-			<a class="note-open-link" href={ "/note/" + note.Slug }>
+			<a class="note-open-link" href={ appcore.LocalizeAppPath(locale, "/note/" + note.Slug) }>
 				<span class="note-open-badge" aria-hidden="true"></span>
-				<span>Open full note</span>
+				<span>{ appcore.Message(messages, webi18n.KeyNoteOpenFull) }</span>
 			</a>
 		</footer>
 	</article>

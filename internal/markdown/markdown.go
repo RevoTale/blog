@@ -37,6 +37,14 @@ const (
 type Options struct {
 	TranslateLinks map[string]string
 	RootURL        string
+
+	CodeCopyLabel   string
+	CodeCopiedLabel string
+	PlainTextLabel  string
+
+	ExcerptCodeBlockLabel string
+	ExcerptTableLabel     string
+	ExcerptImageLabel     string
 }
 
 const lastGoodBreakRatio = 0.8
@@ -65,11 +73,6 @@ var (
 	markdownLeadingNewLinePattern     = regexp.MustCompile(`^\n+`)
 	markdownTrailingNewLinePattern    = regexp.MustCompile(`\n+$`)
 	excerptPlaceholders               = []string{codeBlockPlaceholder, tablePlaceholder, imagePlaceholder}
-	excerptPlaceholderReplacer        = strings.NewReplacer(
-		codeBlockPlaceholder, codeBlockLabel,
-		tablePlaceholder, tableLabel,
-		imagePlaceholder, imageLabel,
-	)
 )
 
 func ToHTML(input string, opts Options) template.HTML {
@@ -82,14 +85,20 @@ func ToHTML(input string, opts Options) template.HTML {
 	normalizeLinks(doc, opts)
 
 	renderer := mdhtml.NewRenderer(mdhtml.RendererOptions{
-		Flags:          mdhtml.CommonFlags | mdhtml.SkipHTML,
-		RenderNodeHook: renderNodeHook,
+		Flags: mdhtml.CommonFlags | mdhtml.SkipHTML,
+		RenderNodeHook: func(writer io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+			return renderNodeHook(writer, node, entering, opts)
+		},
 	})
 
 	return template.HTML(md.Render(doc, renderer))
 }
 
 func Excerpt(input string, maxChars int) string {
+	return ExcerptWithOptions(input, maxChars, Options{})
+}
+
+func ExcerptWithOptions(input string, maxChars int, opts Options) string {
 	if maxChars < 1 {
 		return ""
 	}
@@ -100,10 +109,10 @@ func Excerpt(input string, maxChars int) string {
 	}
 
 	if utf8.RuneCountInString(clean) <= maxChars {
-		return replaceExcerptPlaceholders(clean)
+		return replaceExcerptPlaceholders(clean, opts)
 	}
 
-	return replaceExcerptPlaceholders(safeTruncate(clean, maxChars))
+	return replaceExcerptPlaceholders(safeTruncate(clean, maxChars), opts)
 }
 
 func markdownToPlainText(markdown string) string {
@@ -163,8 +172,13 @@ func safeTruncate(text string, maxChars int) string {
 	return strings.TrimSpace(string(runes[:truncateAt])) + "..."
 }
 
-func replaceExcerptPlaceholders(text string) string {
-	return excerptPlaceholderReplacer.Replace(text)
+func replaceExcerptPlaceholders(text string, opts Options) string {
+	replacer := strings.NewReplacer(
+		codeBlockPlaceholder, opts.excerptCodeBlockLabel(),
+		tablePlaceholder, opts.excerptTableLabel(),
+		imagePlaceholder, opts.excerptImageLabel(),
+	)
+	return replacer.Replace(text)
 }
 
 type placeholderPosition struct {
@@ -231,14 +245,14 @@ func normalizeLinks(doc ast.Node, opts Options) {
 	})
 }
 
-func renderNodeHook(writer io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+func renderNodeHook(writer io.Writer, node ast.Node, entering bool, opts Options) (ast.WalkStatus, bool) {
 	if !entering {
 		return ast.GoToNext, false
 	}
 
 	switch typedNode := node.(type) {
 	case *ast.CodeBlock:
-		renderCodeBlock(writer, typedNode)
+		renderCodeBlock(writer, typedNode, opts)
 		return ast.SkipChildren, true
 	case *ast.Code:
 		renderInlineCode(writer, typedNode)
@@ -248,12 +262,12 @@ func renderNodeHook(writer io.Writer, node ast.Node, entering bool) (ast.WalkSta
 	}
 }
 
-func renderCodeBlock(writer io.Writer, block *ast.CodeBlock) {
+func renderCodeBlock(writer io.Writer, block *ast.CodeBlock, opts Options) {
 	code := string(block.Literal)
 	language := codeLanguage(block.Info)
 	languageLabel := language
 	if languageLabel == "" {
-		languageLabel = plainTextLabel
+		languageLabel = opts.plainTextLabel()
 	}
 
 	_, _ = io.WriteString(writer, `<figure class="code-block">`)
@@ -263,11 +277,11 @@ func renderCodeBlock(writer io.Writer, block *ast.CodeBlock) {
 	_, _ = io.WriteString(writer, `</p>`)
 	_, _ = io.WriteString(writer, `<button type="button" class="code-copy-button" aria-label="copy code"`)
 	_, _ = io.WriteString(writer, ` data-copy-label="`)
-	_, _ = io.WriteString(writer, codeCopyLabel)
+	_, _ = io.WriteString(writer, opts.codeCopyLabel())
 	_, _ = io.WriteString(writer, `" data-copied-label="`)
-	_, _ = io.WriteString(writer, codeCopiedLabel)
+	_, _ = io.WriteString(writer, opts.codeCopiedLabel())
 	_, _ = io.WriteString(writer, `"><span class="code-copy-button-label">`)
-	_, _ = io.WriteString(writer, codeCopyLabel)
+	_, _ = io.WriteString(writer, opts.codeCopyLabel())
 	_, _ = io.WriteString(writer, `</span></button>`)
 	_, _ = io.WriteString(writer, `</figcaption>`)
 
@@ -277,6 +291,38 @@ func renderCodeBlock(writer io.Writer, block *ast.CodeBlock) {
 	_, _ = io.WriteString(writer, stdhtml.EscapeString(code))
 	_, _ = io.WriteString(writer, `</textarea>`)
 	_, _ = io.WriteString(writer, `</figure>`)
+}
+
+func (opts Options) codeCopyLabel() string {
+	return nonEmpty(opts.CodeCopyLabel, codeCopyLabel)
+}
+
+func (opts Options) codeCopiedLabel() string {
+	return nonEmpty(opts.CodeCopiedLabel, codeCopiedLabel)
+}
+
+func (opts Options) plainTextLabel() string {
+	return nonEmpty(opts.PlainTextLabel, plainTextLabel)
+}
+
+func (opts Options) excerptCodeBlockLabel() string {
+	return nonEmpty(opts.ExcerptCodeBlockLabel, codeBlockLabel)
+}
+
+func (opts Options) excerptTableLabel() string {
+	return nonEmpty(opts.ExcerptTableLabel, tableLabel)
+}
+
+func (opts Options) excerptImageLabel() string {
+	return nonEmpty(opts.ExcerptImageLabel, imageLabel)
+}
+
+func nonEmpty(value string, fallback string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return fallback
+	}
+	return trimmed
 }
 
 func renderHighlightedCodeBlock(writer io.Writer, language string, code string) {

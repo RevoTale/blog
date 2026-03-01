@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -10,10 +11,12 @@ import (
 	"testing"
 
 	"blog/framework/httpserver"
+	frameworki18n "blog/framework/i18n"
 	"blog/framework/staticassets"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
+	webi18n "blog/internal/web/i18n"
 	"github.com/Khan/genqlient/graphql"
 )
 
@@ -24,6 +27,10 @@ func (fakeGraphQLClient) MakeRequest(
 	req *graphql.Request,
 	resp *graphql.Response,
 ) error {
+	if err := requireLocaleVariables(req); err != nil {
+		return err
+	}
+
 	slug := requestVarString(req, "slug")
 	name := requestVarString(req, "name")
 	queryValue := requestVarString(req, "query")
@@ -244,6 +251,79 @@ func requestVarString(req *graphql.Request, key string) string {
 	return strings.TrimSpace(value)
 }
 
+var operationsWithLocaleAndFallback = map[string]struct{}{
+	"AuthorBySlug":                     {},
+	"AvailableAuthors":                 {},
+	"ListNotes":                        {},
+	"ListNotesByType":                  {},
+	"ListNotesByTagIDs":                {},
+	"ListNotesByTagIDsAndType":         {},
+	"ListNotesByAuthorAndTagIDs":       {},
+	"ListNotesByAuthorTagIDsAndType":   {},
+	"NoteBySlug":                       {},
+	"NotesByAuthorSlug":                {},
+	"NotesByAuthorSlugAndType":         {},
+	"SearchNotes":                      {},
+	"SearchNotesByType":                {},
+	"SearchNotesByTagIDs":              {},
+	"SearchNotesByTagIDsAndType":       {},
+	"SearchNotesByAuthorSlug":          {},
+	"SearchNotesByAuthorSlugAndType":   {},
+	"SearchNotesByAuthorAndTagIDs":     {},
+	"SearchNotesByAuthorTagIDsAndType": {},
+	"TagByName":                        {},
+	"TagIDsByNames":                    {},
+}
+
+var allowedGraphQLLocales = map[string]struct{}{
+	"en_US": {},
+	"de_DE": {},
+	"uk_UA": {},
+	"hi_IN": {},
+	"ru_RU": {},
+	"ja_JP": {},
+	"fr_FR": {},
+	"es_ES": {},
+}
+
+func requireLocaleVariables(req *graphql.Request) error {
+	if req == nil {
+		return nil
+	}
+
+	if req.OpName == "AvailableTagsByPostType" {
+		locale := requestVarString(req, "locale")
+		if locale == "" {
+			return fmt.Errorf("missing locale variable for %s", req.OpName)
+		}
+		if _, ok := allowedGraphQLLocales[locale]; !ok {
+			return fmt.Errorf("unexpected locale variable %q for %s", locale, req.OpName)
+		}
+		return nil
+	}
+
+	if _, ok := operationsWithLocaleAndFallback[req.OpName]; !ok {
+		return nil
+	}
+
+	locale := requestVarString(req, "locale")
+	if locale == "" {
+		return fmt.Errorf("missing locale variable for %s", req.OpName)
+	}
+	if _, ok := allowedGraphQLLocales[locale]; !ok {
+		return fmt.Errorf("unexpected locale variable %q for %s", locale, req.OpName)
+	}
+
+	fallbackLocale := requestVarString(req, "fallbackLocale")
+	if fallbackLocale == "" {
+		return fmt.Errorf("missing fallbackLocale variable for %s", req.OpName)
+	}
+	if fallbackLocale != "en_US" {
+		return fmt.Errorf("unexpected fallbackLocale variable %q for %s", fallbackLocale, req.OpName)
+	}
+	return nil
+}
+
 type testServer struct {
 	handler http.Handler
 	bundle  *staticassets.Bundle
@@ -266,10 +346,23 @@ func newTestServer(t *testing.T) testServer {
 	})
 
 	appcore.SetStaticAssetBasePath(bundle.URLPrefix())
+	i18nConfig, err := frameworki18n.NormalizeConfig(webi18n.Config())
+	if err != nil {
+		t.Fatalf("normalize i18n config: %v", err)
+	}
+	i18nCatalog, err := webi18n.LoadCatalog()
+	if err != nil {
+		t.Fatalf("load i18n catalog: %v", err)
+	}
+	i18nResolver, err := frameworki18n.NewResolver(i18nConfig)
+	if err != nil {
+		t.Fatalf("new i18n resolver: %v", err)
+	}
+	appcore.SetLocalizationConfig(i18nConfig)
 
 	svc := notes.NewService(fakeGraphQLClient{}, 12, "")
 	handler, err := httpserver.New(httpserver.Config[*appcore.Context]{
-		AppContext:      appcore.NewContext(svc),
+		AppContext:      appcore.NewContext(svc, i18nConfig, i18nCatalog),
 		Handlers:        webgen.Handlers(webgen.NewRouteResolvers()),
 		IsNotFoundError: appcore.IsNotFoundError,
 		NotFoundPage:    webgen.NotFoundPage,
@@ -284,6 +377,15 @@ func newTestServer(t *testing.T) testServer {
 	if err != nil {
 		t.Fatalf("new handler: %v", err)
 	}
+	handler = frameworki18n.Middleware(frameworki18n.MiddlewareConfig{
+		Resolver: i18nResolver,
+		BypassPrefixes: []string{
+			bundle.URLPrefix(),
+		},
+		BypassExact: []string{
+			"/healthz",
+		},
+	})(handler)
 
 	return testServer{
 		handler: handler,
@@ -469,6 +571,55 @@ func TestSidebarLinkBehavior(t *testing.T) {
 	}
 	if !strings.Contains(channelsFilteredBody, `channels-mobile-panel`) {
 		t.Fatalf("channels page missing mobile panel block")
+	}
+}
+
+func TestI18nRoutingAndLocalizedURLs(t *testing.T) {
+	t.Parallel()
+	testSrv := newTestServer(t)
+	mux := testSrv.handler
+
+	recUK := performRequest(mux, http.MethodGet, "/uk")
+	if recUK.Code != http.StatusOK {
+		t.Fatalf("/uk status: expected %d, got %d", http.StatusOK, recUK.Code)
+	}
+	ukBody := requireBody(t, recUK.Body)
+	if !strings.Contains(ukBody, `<html lang="uk">`) {
+		t.Fatalf("/uk should render localized html lang")
+	}
+	if !strings.Contains(ukBody, `href="/uk/channels"`) {
+		t.Fatalf("/uk should render localized channels URL")
+	}
+	if !strings.Contains(ukBody, `href="/uk/author/l-you"`) {
+		t.Fatalf("/uk should render localized author URL")
+	}
+	if !strings.Contains(ukBody, `href="/uk/tag/go"`) {
+		t.Fatalf("/uk should render localized tag URL")
+	}
+	if !strings.Contains(ukBody, `href="/uk/note/hello-world"`) {
+		t.Fatalf("/uk should render localized note URL")
+	}
+
+	recUKNote := performRequest(mux, http.MethodGet, "/uk/note/hello-world")
+	if recUKNote.Code != http.StatusOK {
+		t.Fatalf("/uk/note status: expected %d, got %d", http.StatusOK, recUKNote.Code)
+	}
+	ukNoteBody := requireBody(t, recUKNote.Body)
+	if !strings.Contains(ukNoteBody, `href="/uk"`) {
+		t.Fatalf("/uk/note should keep back-link localized")
+	}
+
+	recDefaultPrefixed := performRequest(mux, http.MethodGet, "/en/note/hello-world")
+	if recDefaultPrefixed.Code != http.StatusPermanentRedirect {
+		t.Fatalf("/en/note status: expected %d, got %d", http.StatusPermanentRedirect, recDefaultPrefixed.Code)
+	}
+	if location := recDefaultPrefixed.Header().Get("Location"); location != "/note/hello-world" {
+		t.Fatalf("/en/note redirect: expected %q, got %q", "/note/hello-world", location)
+	}
+
+	recUnknownLocale := performRequest(mux, http.MethodGet, "/it/note/hello-world")
+	if recUnknownLocale.Code != http.StatusNotFound {
+		t.Fatalf("/it/note status: expected %d, got %d", http.StatusNotFound, recUnknownLocale.Code)
 	}
 }
 
