@@ -61,8 +61,26 @@ func TestToHTML_HighlightsCodeBlocks(t *testing.T) {
 	if !strings.Contains(html, `class="chroma"`) {
 		t.Fatalf("expected chroma class for fenced code block, got %s", html)
 	}
+	if !strings.Contains(html, `class="code-copy-button"`) {
+		t.Fatalf("expected copy button for fenced code block, got %s", html)
+	}
+	if !strings.Contains(html, `class="code-block-language">go</p>`) {
+		t.Fatalf("expected language label for fenced code block, got %s", html)
+	}
+	if !strings.Contains(html, `class="code-copy-source"`) {
+		t.Fatalf("expected copy source payload for fenced code block, got %s", html)
+	}
 	if !strings.Contains(html, "Println") {
 		t.Fatalf("expected code content in rendered block, got %s", html)
+	}
+}
+
+func TestToHTML_UsesPlainTextLabelWhenCodeLanguageIsMissing(t *testing.T) {
+	source := "```\nfmt.Println(\"hello\")\n```"
+	html := string(ToHTML(source, Options{}))
+
+	if !strings.Contains(html, `class="code-block-language">plain text</p>`) {
+		t.Fatalf("expected plain text label for untyped code blocks, got %s", html)
 	}
 }
 

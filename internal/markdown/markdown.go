@@ -29,6 +29,9 @@ const (
 	codeBlockLabel       = "[code block]"
 	tableLabel           = "[table]"
 	imageLabel           = "[image]"
+	codeCopyLabel        = "copy"
+	codeCopiedLabel      = "copied"
+	plainTextLabel       = "plain text"
 )
 
 type Options struct {
@@ -247,7 +250,37 @@ func renderNodeHook(writer io.Writer, node ast.Node, entering bool) (ast.WalkSta
 
 func renderCodeBlock(writer io.Writer, block *ast.CodeBlock) {
 	code := string(block.Literal)
-	lexer := pickLexer(codeLanguage(block.Info), code)
+	language := codeLanguage(block.Info)
+	languageLabel := language
+	if languageLabel == "" {
+		languageLabel = plainTextLabel
+	}
+
+	_, _ = io.WriteString(writer, `<figure class="code-block">`)
+	_, _ = io.WriteString(writer, `<figcaption class="code-block-header">`)
+	_, _ = io.WriteString(writer, `<p class="code-block-language">`)
+	_, _ = io.WriteString(writer, stdhtml.EscapeString(languageLabel))
+	_, _ = io.WriteString(writer, `</p>`)
+	_, _ = io.WriteString(writer, `<button type="button" class="code-copy-button" aria-label="copy code"`)
+	_, _ = io.WriteString(writer, ` data-copy-label="`)
+	_, _ = io.WriteString(writer, codeCopyLabel)
+	_, _ = io.WriteString(writer, `" data-copied-label="`)
+	_, _ = io.WriteString(writer, codeCopiedLabel)
+	_, _ = io.WriteString(writer, `"><span class="code-copy-button-label">`)
+	_, _ = io.WriteString(writer, codeCopyLabel)
+	_, _ = io.WriteString(writer, `</span></button>`)
+	_, _ = io.WriteString(writer, `</figcaption>`)
+
+	renderHighlightedCodeBlock(writer, language, code)
+
+	_, _ = io.WriteString(writer, `<textarea class="code-copy-source" aria-hidden="true" tabindex="-1" readonly>`)
+	_, _ = io.WriteString(writer, stdhtml.EscapeString(code))
+	_, _ = io.WriteString(writer, `</textarea>`)
+	_, _ = io.WriteString(writer, `</figure>`)
+}
+
+func renderHighlightedCodeBlock(writer io.Writer, language string, code string) {
+	lexer := pickLexer(language, code)
 	iterator, err := lexer.Tokenise(nil, code)
 	if err != nil {
 		renderPlainCodeBlock(writer, code)

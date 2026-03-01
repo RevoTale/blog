@@ -154,19 +154,5 @@ func ChromaStyleTag() string {
 }
 
 func HTMXNavigationScriptTag() string {
-	return `<script>
-(() => {
-  document.addEventListener("htmx:afterSettle", (event) => {
-    const detail = event && event.detail;
-    const target = detail && detail.target;
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
-    if (target.id !== "notes-content") {
-      return;
-    }
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  });
-})();
-</script>`
+	return `<script src="/.revotale/app.js"></script>`
 }

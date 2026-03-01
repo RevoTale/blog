@@ -530,8 +530,8 @@ func TestPagerLinksIncludeHTMXNavigationActions(t *testing.T) {
 	if !strings.Contains(nextBody, `/.revotale/vendor/htmx.min.js`) {
 		t.Fatalf("layout should include self-hosted htmx script")
 	}
-	if !strings.Contains(nextBody, `window.scrollTo({ top: 0, left: 0, behavior: "smooth" })`) {
-		t.Fatalf("layout should include smooth scroll to top behavior")
+	if !strings.Contains(nextBody, `/.revotale/app.js`) {
+		t.Fatalf("layout should include self-hosted app script")
 	}
 }
 
@@ -557,6 +557,21 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	staticBody := requireBody(t, recStatic.Body)
 	if !strings.Contains(staticBody, `.topbar-search-input:not(:placeholder-shown) + .topbar-search-submit`) {
 		t.Fatalf("static css should include active selector for search submit button")
+	}
+
+	recScript := performRequest(mux, http.MethodGet, "/.revotale/app.js")
+	if recScript.Code != http.StatusOK {
+		t.Fatalf("static script status: expected %d, got %d", http.StatusOK, recScript.Code)
+	}
+	if !strings.Contains(recScript.Header().Get("Content-Type"), "javascript") {
+		t.Fatalf("static script content-type: expected javascript, got %q", recScript.Header().Get("Content-Type"))
+	}
+	scriptBody := requireBody(t, recScript.Body)
+	if !strings.Contains(scriptBody, `window.scrollTo({ top: 0, left: 0, behavior: "smooth" });`) {
+		t.Fatalf("static script should include smooth scroll to top behavior")
+	}
+	if !strings.Contains(scriptBody, `target.closest(".code-copy-button")`) {
+		t.Fatalf("static script should include copy button behavior")
 	}
 
 	recMissingNote := performRequest(mux, http.MethodGet, "/note/missing")
