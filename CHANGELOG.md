@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.0](https://github.com/RevoTale/blog/compare/v0.2.0...v0.3.0) (2026-03-03)
+
+
+### Features
+
+* language switcher and footer design adjustments ([b7f5dff](https://github.com/RevoTale/blog/commit/b7f5dffb7e58d2529dde0b250a28a324c9c0de67))
+* rss feed button ([f8cf21d](https://github.com/RevoTale/blog/commit/f8cf21d35da52b9b54cf08be815320d5abe0121c))
+* seo sitemaps and rss feeds. ([6c494dc](https://github.com/RevoTale/blog/commit/6c494dc33f1402272a6369d110c75a28d0a3f749))
+* separate image component similat to NextJS. Custom loader for the our internal infrastructure ([b700217](https://github.com/RevoTale/blog/commit/b70021759f41422b0864ba70c54cd6e1475aaf57))
+
 ## [0.2.0](https://github.com/RevoTale/blog/compare/v0.1.0...v0.2.0) (2026-03-03)
 
 
