@@ -7,7 +7,7 @@ templ ImageFixed(className string, src string, alt string, loading string, width
 		<img
 			class={ className }
 			src={ appcore.ImageURL(src, width) }
-			srcset={ appcore.ImageFixedSrcSet(src, width) }
+			srcset={ appcore.ImageResponsiveSrcSet(src, width) }
 			sizes={ appcore.ImageDisplaySize(width) }
 			alt={ alt }
 			loading={ loading }
