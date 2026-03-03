@@ -17,7 +17,7 @@ func TestBuildRobotsTXTIncludesSitemap(t *testing.T) {
 	if !strings.Contains(robots, "Allow: /") {
 		t.Fatalf("robots.txt should include allow directive")
 	}
-	if !strings.Contains(robots, "Sitemap: https://revotale.com/blog/notes/sitemap.xml") {
+	if !strings.Contains(robots, "Sitemap: https://revotale.com/blog/notes/sitemap-index") {
 		t.Fatalf("robots.txt should include sitemap reference")
 	}
 }
@@ -44,7 +44,7 @@ func TestWithRobotsEndpoint(t *testing.T) {
 	if got := recRobots.Header().Get("Cache-Control"); got != "public, max-age=60" {
 		t.Fatalf("robots cache-control: expected %q, got %q", "public, max-age=60", got)
 	}
-	if body := recRobots.Body.String(); !strings.Contains(body, "Sitemap: https://revotale.com/blog/notes/sitemap.xml") {
+	if body := recRobots.Body.String(); !strings.Contains(body, "Sitemap: https://revotale.com/blog/notes/sitemap-index") {
 		t.Fatalf("robots body should include sitemap reference")
 	}
 

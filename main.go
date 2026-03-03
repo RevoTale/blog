@@ -116,8 +116,13 @@ func run() error {
 			"/healthz",
 		},
 	})(handler)
-	handler = withRobotsEndpoint(handler, rootURL, cachePolicies.HTML)
 	handler = publicMiddleware(handler)
+	handler = withFeedAndSitemapEndpoints(handler, feedAndSitemapConfig{
+		RootURL:    rootURL,
+		I18nConfig: i18nConfig,
+		Notes:      noteService,
+	})
+	handler = withRobotsEndpoint(handler, rootURL, cachePolicies.HTML)
 
 	log.Printf("blog server listening on %s", cfg.ListenAddr)
 	if err := http.ListenAndServe(cfg.ListenAddr, handler); err != nil {
@@ -179,7 +184,7 @@ func buildRobotsTXT(rootURL string) string {
 	}
 	trimmedRoot := strings.TrimSuffix(strings.TrimSpace(rootURL), "/")
 	if trimmedRoot != "" {
-		out = append(out, "Sitemap: "+trimmedRoot+"/sitemap.xml")
+		out = append(out, "Sitemap: "+trimmedRoot+"/sitemap-index")
 	}
 	return strings.Join(out, "\n") + "\n"
 }
