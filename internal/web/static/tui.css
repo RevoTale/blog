@@ -930,7 +930,7 @@ p + p {
 .message-content-link:hover,
 .message-content-link:focus-visible {
   color: var(--text-primary);
-  text-decoration: underline;
+  text-decoration: none;
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.14em;
 }
