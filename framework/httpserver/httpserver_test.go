@@ -38,7 +38,9 @@ func ungzipBody(t *testing.T, data []byte) string {
 	if err != nil {
 		t.Fatalf("new gzip reader: %v", err)
 	}
-	defer reader.Close()
+	defer func() {
+		_ = reader.Close()
+	}()
 
 	decoded, err := io.ReadAll(reader)
 	if err != nil {

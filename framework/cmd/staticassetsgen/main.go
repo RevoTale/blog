@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -74,19 +73,11 @@ func copyTree(sourceRoot string, targetRoot string) error {
 			return err
 		}
 
-		sourceFile, err := os.Open(path)
+		content, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
-		defer sourceFile.Close()
-
-		targetFile, err := os.OpenFile(targetPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
-		if err != nil {
-			return err
-		}
-		defer targetFile.Close()
-
-		if _, err := io.Copy(targetFile, sourceFile); err != nil {
+		if err := os.WriteFile(targetPath, content, 0o644); err != nil {
 			return err
 		}
 

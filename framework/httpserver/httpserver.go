@@ -332,7 +332,9 @@ func withGzipCompression(next http.Handler) http.Handler {
 			ResponseWriter: w,
 			compress:       true,
 		}
-		defer gzipWriter.Close()
+		defer func() {
+			_ = gzipWriter.Close()
+		}()
 
 		next.ServeHTTP(gzipWriter, r)
 	})

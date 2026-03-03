@@ -90,14 +90,33 @@ func TestDiscoverRouteFilesCollectsNotFoundTemplates(t *testing.T) {
 	writeTestFile(
 		t,
 		filepath.Join(appRoot, "404.templ"),
-		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }\n",
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }
+`,
 	)
 	writeTestFile(
 		t,
 		filepath.Join(appRoot, "author", "[slug]", "404.templ"),
-		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }\n",
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }
+`,
 	)
-	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\"></div> }\n")
+	writeTestFile(
+		t,
+		filepath.Join(appRoot, "author", "[slug]", "page.templ"),
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.AuthorPageView) { <div id="notes-content"></div> }
+`,
+	)
 
 	routes, err := discoverRouteFiles(appRoot, genRoot)
 	if err != nil {
@@ -115,7 +134,16 @@ func TestDiscoverRouteFilesCollectsNotFoundTemplates(t *testing.T) {
 func TestParsePageViewType(t *testing.T) {
 	root := t.TempDir()
 	pagePath := filepath.Join(root, "page.templ")
-	writeTestFile(t, pagePath, "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotePageView) { <div/> }\n")
+	writeTestFile(
+		t,
+		pagePath,
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.NotePageView) { <div/> }
+`,
+	)
 
 	viewType, err := parsePageViewType(pagePath)
 	if err != nil {
@@ -149,22 +177,51 @@ func TestValidateLayoutTemplateSignature(t *testing.T) {
 	writeTestFile(
 		t,
 		rootValidPath,
-		"package appsrc\n\nimport (\n\"blog/framework/metagen\"\n\"blog/internal/web/appcore\"\n)\n\ntempl Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Component) { @child }\n",
+		`package appsrc
+
+import (
+  "blog/framework/metagen"
+  "blog/internal/web/appcore"
+)
+
+templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Component) { @child }
+`,
 	)
 	writeTestFile(
 		t,
 		rootInvalidPath,
-		"package appsrc\n\nimport (\n\"blog/framework/metagen\"\n\"blog/internal/web/appcore\"\n)\n\ntempl Layout(meta metagen.Metadata, view appcore.NotesPageView, child templ.Component) { @child }\n",
+		`package appsrc
+
+import (
+  "blog/framework/metagen"
+  "blog/internal/web/appcore"
+)
+
+templ Layout(meta metagen.Metadata, view appcore.NotesPageView, child templ.Component) { @child }
+`,
 	)
 	writeTestFile(
 		t,
 		childValidPath,
-		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Layout(view appcore.RootLayoutView, child templ.Component) { @child }\n",
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Layout(view appcore.RootLayoutView, child templ.Component) { @child }
+`,
 	)
 	writeTestFile(
 		t,
 		childInvalidPath,
-		"package appsrc\n\nimport (\n\"blog/framework/metagen\"\n\"blog/internal/web/appcore\"\n)\n\ntempl Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Component) { @child }\n",
+		`package appsrc
+
+import (
+  "blog/framework/metagen"
+  "blog/internal/web/appcore"
+)
+
+templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Component) { @child }
+`,
 	)
 
 	if err := validateLayoutTemplateSignature(templateDef{RouteID: "", SourcePath: rootValidPath}); err != nil {
@@ -173,10 +230,12 @@ func TestValidateLayoutTemplateSignature(t *testing.T) {
 	if err := validateLayoutTemplateSignature(templateDef{RouteID: "", SourcePath: rootInvalidPath}); err == nil {
 		t.Fatal("expected invalid root layout signature error")
 	}
-	if err := validateLayoutTemplateSignature(templateDef{RouteID: "author/[slug]", SourcePath: childValidPath}); err != nil {
+	childValidTemplate := templateDef{RouteID: "author/[slug]", SourcePath: childValidPath}
+	if err := validateLayoutTemplateSignature(childValidTemplate); err != nil {
 		t.Fatalf("expected valid child layout signature, got %v", err)
 	}
-	if err := validateLayoutTemplateSignature(templateDef{RouteID: "author/[slug]", SourcePath: childInvalidPath}); err == nil {
+	childInvalidTemplate := templateDef{RouteID: "author/[slug]", SourcePath: childInvalidPath}
+	if err := validateLayoutTemplateSignature(childInvalidTemplate); err == nil {
 		t.Fatal("expected invalid child layout signature error")
 	}
 }
@@ -188,12 +247,22 @@ func TestValidateNotFoundTemplateSignature(t *testing.T) {
 	writeTestFile(
 		t,
 		validPath,
-		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }\n",
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.RootLayoutView, path string) { <div>{ path }</div> }
+`,
 	)
 	writeTestFile(
 		t,
 		invalidPath,
-		"package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotesPageView, path string) { <div>{ path }</div> }\n",
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.NotesPageView, path string) { <div>{ path }</div> }
+`,
 	)
 
 	if err := validateNotFoundTemplateSignature(validPath); err != nil {
@@ -209,8 +278,18 @@ func TestBuildRouteMetasPageOnly(t *testing.T) {
 	appRoot := filepath.Join(root, "app")
 	genRoot := filepath.Join(root, "gen")
 
-	rootTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NotesPageView) { <div id=\"notes-content\"></div> }\n"
-	authorTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.AuthorPageView) { <div id=\"notes-content\"></div> }\n"
+	rootTemplate := `package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.NotesPageView) { <div id="notes-content"></div> }
+`
+	authorTemplate := `package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.AuthorPageView) { <div id="notes-content"></div> }
+`
 	writeTestFile(t, filepath.Join(appRoot, "page.templ"), rootTemplate)
 	writeTestFile(t, filepath.Join(appRoot, "author", "[slug]", "page.templ"), authorTemplate)
 
@@ -251,7 +330,12 @@ func TestBuildRouteMetasAllowsNonPageViewSuffix(t *testing.T) {
 	appRoot := filepath.Join(root, "app")
 	genRoot := filepath.Join(root, "gen")
 
-	pageTemplate := "package appsrc\n\nimport \"blog/internal/web/appcore\"\n\ntempl Page(view appcore.NoteView) { <div id=\"note-content\"></div> }\n"
+	pageTemplate := `package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Page(view appcore.NoteView) { <div id="note-content"></div> }
+`
 	writeTestFile(t, filepath.Join(appRoot, "note", "[slug]", "page.templ"), pageTemplate)
 
 	routes, err := discoverRouteFiles(appRoot, genRoot)

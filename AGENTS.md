@@ -21,6 +21,7 @@ pages from CMS GraphQL data.
 - MUST configure the `lll` linter in golangci-lint with line length set to 120.
 - MUST run golangci-lint against all Go packages through Taskfile tasks.
 - MUST require `task validate` to run `golangci-lint run` and pass for Go changes before merge.
+- MUST run `task validate` and get a passing result before an update is considered finished.
 - MUST require `task test` to pass when defined and include `go test ./...` (or explicit scoped equivalent).
 - MUST require `task fix` to run `gofmt` before merge.
 
