@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/RevoTale/blog/compare/v0.3.2...v0.3.3) (2026-03-03)
+
+
+### Bug Fixes
+
+* broken images due to dynamic preset size ([02b9247](https://github.com/RevoTale/blog/commit/02b9247bb6b01197041e0f0f50aeb2a26d25d945))
+
 ## [0.3.2](https://github.com/RevoTale/blog/compare/v0.3.1...v0.3.2) (2026-03-03)
 
 
