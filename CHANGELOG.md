@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/RevoTale/blog/compare/v0.3.1...v0.3.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* second-level headers has tag h1 in the markdown rendering. That hurts SEO ([9f2def4](https://github.com/RevoTale/blog/commit/9f2def4d84896e4d5c58f88f92df5c493a300ecd))
+
 ## [0.3.1](https://github.com/RevoTale/blog/compare/v0.3.0...v0.3.1) (2026-03-03)
 
 
