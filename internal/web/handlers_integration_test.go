@@ -15,6 +15,7 @@ import (
 	"blog/framework/httpserver"
 	frameworki18n "blog/framework/i18n"
 	"blog/framework/staticassets"
+	"blog/internal/imageloader"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
@@ -356,6 +357,10 @@ type testServer struct {
 }
 
 func newTestServer(t *testing.T) testServer {
+	return newTestServerWithImageLoader(t, false)
+}
+
+func newTestServerWithImageLoader(t *testing.T, enableImageLoader bool) testServer {
 	t.Helper()
 
 	bundle, err := staticassets.Build(staticassets.BuildConfig{
@@ -372,6 +377,7 @@ func newTestServer(t *testing.T) testServer {
 	})
 
 	appcore.SetStaticAssetBasePath(bundle.URLPrefix())
+	appcore.SetImageLoader(imageloader.New(enableImageLoader))
 	i18nConfig, err := frameworki18n.NormalizeConfig(webi18n.Config())
 	if err != nil {
 		t.Fatalf("normalize i18n config: %v", err)
@@ -386,7 +392,7 @@ func newTestServer(t *testing.T) testServer {
 	}
 	appcore.SetLocalizationConfig(i18nConfig)
 
-	svc := notes.NewService(fakeGraphQLClient{}, 12, testRootURL)
+	svc := notes.NewService(fakeGraphQLClient{}, 12, testRootURL, imageloader.New(enableImageLoader))
 	handler, err := httpserver.New(httpserver.Config[*appcore.Context]{
 		AppContext:      appcore.NewContext(svc, i18nConfig, i18nCatalog, testRootURL),
 		Handlers:        webgen.Handlers(webgen.NewRouteResolvers()),
@@ -909,6 +915,14 @@ func TestHandlerSEOMetadataAndHTMXPatchHeaders(t *testing.T) {
 	}
 
 	rootBody := requireBody(t, recRoot.Body)
+	expectedLogoURL := testSrv.bundle.URL("revtale-logo.svg")
+	if !strings.Contains(rootBody, `class="server-logo" src="`+expectedLogoURL+`"`) {
+		t.Fatalf("root page should keep original server logo src when image loader is disabled")
+	}
+	transformedLogoURL := imageloader.New(true).URL(expectedLogoURL, 28)
+	if strings.Contains(rootBody, transformedLogoURL) {
+		t.Fatalf("root page should not rewrite server logo src when image loader is disabled")
+	}
 	if !strings.Contains(rootBody, `rel="manifest" href="/site.webmanifest"`) {
 		t.Fatalf("root page should include manifest link tag")
 	}
@@ -1000,6 +1014,46 @@ func TestHandlerSEOMetadataAndHTMXPatchHeaders(t *testing.T) {
 	}
 	if strings.Contains(patchPayload.Head, `application/ld+json`) {
 		t.Fatalf("htmx metadata patch head should not include structured data scripts")
+	}
+}
+
+func TestHandlerImageLoaderEnabledTransformsTemplateAndSEOImages(t *testing.T) {
+	testSrv := newTestServerWithImageLoader(t, true)
+	mux := testSrv.handler
+
+	recRoot := performRequest(mux, http.MethodGet, "/")
+	if recRoot.Code != http.StatusOK {
+		t.Fatalf("root status: expected %d, got %d", http.StatusOK, recRoot.Code)
+	}
+	rootBody := requireBody(t, recRoot.Body)
+	rawLogoURL := testSrv.bundle.URL("revtale-logo.svg")
+	expectedLogoURL := imageloader.New(true).URL(rawLogoURL, 28)
+	if !strings.Contains(rootBody, `class="server-logo" src="`+expectedLogoURL+`"`) {
+		t.Fatalf("root page should rewrite server logo src when image loader is enabled")
+	}
+	expectedLogoSrcSet := `srcset="` + imageloader.New(true).FixedSrcSet(rawLogoURL, 28) + `"`
+	if !strings.Contains(rootBody, expectedLogoSrcSet) {
+		t.Fatalf("root page should include transformed fixed srcset for server logo")
+	}
+
+	recNote := performRequest(mux, http.MethodGet, "/uk/note/hello-world")
+	if recNote.Code != http.StatusOK {
+		t.Fatalf("note status: expected %d, got %d", http.StatusOK, recNote.Code)
+	}
+	noteBody := requireBody(t, recNote.Body)
+	expectedSEOURL := "https://revotale.com/blog/notes/cdn/image/relative/1080/images/meta-hello.webp"
+	if !strings.Contains(noteBody, `property="og:image" content="`+expectedSEOURL+`"`) {
+		t.Fatalf("note page should include transformed og:image URL when loader is enabled")
+	}
+	if !strings.Contains(noteBody, `name="twitter:image" content="`+expectedSEOURL+`"`) {
+		t.Fatalf("note page should include transformed twitter:image URL when loader is enabled")
+	}
+
+	noteDocs := parseJSONLDScripts(t, noteBody)
+	noteDoc := requireJSONLDDocByType(t, noteDocs, "BlogPosting")
+	noteImage := objectField(t, noteDoc, "image")
+	if got := stringField(t, noteImage, "url"); got != expectedSEOURL {
+		t.Fatalf("note JSON-LD image.url: expected %q, got %q", expectedSEOURL, got)
 	}
 }
 

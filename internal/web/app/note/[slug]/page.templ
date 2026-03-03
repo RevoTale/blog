@@ -1,6 +1,7 @@
 package appsrc
 
 import "blog/internal/web/appcore"
+import "blog/internal/web/components"
 import webi18n "blog/internal/web/i18n"
 import "blog/internal/web/seo"
 
@@ -25,7 +26,7 @@ templ Page(view appcore.NotePageView) {
 					for _, author := range view.Note.Authors {
 						<a href={ appcore.BuildAuthorURL(view.LocaleCode(), author.Slug, 1) } class="author-pill">
 							if author.Avatar != nil {
-								<img class="author-avatar" src={ author.Avatar.URL } alt={ author.Avatar.Alt } loading="lazy" width="24" height="24"/>
+								@components.ImageFixed("author-avatar", author.Avatar.URL, author.Avatar.Alt, "lazy", 24, 24)
 							} else {
 								<span class="author-avatar fallback">&#64;</span>
 							}
@@ -53,14 +54,7 @@ templ Page(view appcore.NotePageView) {
 				<p class="muted">{ appcore.Message(view.MessagesMap(), webi18n.KeyNoteFeaturedAttachment) }</p>
 				<a class="attachment-link" href={ view.Note.Attachment.URL } target="_blank" rel="noopener noreferrer">
 					if view.Note.Attachment.Width > 0 && view.Note.Attachment.Height > 0 {
-						<img
-							class="attachment-image"
-							src={ view.Note.Attachment.URL }
-							alt={ appcore.AttachmentAltText(view.Note.Attachment.Alt, view.Note.Title) }
-							loading="lazy"
-							width={ view.Note.Attachment.Width }
-							height={ view.Note.Attachment.Height }
-						/>
+						@components.ImageResponsive("attachment-image", view.Note.Attachment.URL, appcore.AttachmentAltText(view.Note.Attachment.Alt, view.Note.Title), "lazy", view.Note.Attachment.Width, view.Note.Attachment.Height)
 					} else {
 						<span class="attachment-file">{ appcore.Message(view.MessagesMap(), webi18n.KeyNoteAttachmentLabelPrefix) }: { appcore.AttachmentLabel(view.Note.Attachment.Filename) }</span>
 					}

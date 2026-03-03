@@ -218,7 +218,12 @@ func authorAvatarImageObject(rootURL string, avatar *notes.AuthorMedia) map[stri
 	if avatar == nil {
 		return nil
 	}
-	imageURL := absoluteMediaURLForRoot(rootURL, avatar.URL)
+	thumbURL, thumbWidth, thumbHeight := appcore.ImageThumb(
+		strings.TrimSpace(avatar.URL),
+		avatar.Width,
+		avatar.Height,
+	)
+	imageURL := absoluteMediaURLForRoot(rootURL, thumbURL)
 	if imageURL == "" {
 		return nil
 	}
@@ -227,11 +232,11 @@ func authorAvatarImageObject(rootURL string, avatar *notes.AuthorMedia) map[stri
 		"@type":    "ImageObject",
 		"url":      imageURL,
 	}
-	if avatar.Width > 0 {
-		image["width"] = avatar.Width
+	if thumbWidth > 0 {
+		image["width"] = thumbWidth
 	}
-	if avatar.Height > 0 {
-		image["height"] = avatar.Height
+	if thumbHeight > 0 {
+		image["height"] = thumbHeight
 	}
 	if alt := strings.TrimSpace(avatar.Alt); alt != "" {
 		image["description"] = alt
@@ -243,7 +248,12 @@ func attachmentToImageObject(rootURL string, attachment *notes.Attachment) map[s
 	if attachment == nil {
 		return nil
 	}
-	imageURL := absoluteMediaURLForRoot(rootURL, attachment.URL)
+	thumbURL, thumbWidth, thumbHeight := appcore.ImageThumb(
+		strings.TrimSpace(attachment.URL),
+		attachment.Width,
+		attachment.Height,
+	)
+	imageURL := absoluteMediaURLForRoot(rootURL, thumbURL)
 	if imageURL == "" {
 		return nil
 	}
@@ -253,11 +263,11 @@ func attachmentToImageObject(rootURL string, attachment *notes.Attachment) map[s
 		"@type":    "ImageObject",
 		"url":      imageURL,
 	}
-	if attachment.Width > 0 {
-		image["width"] = attachment.Width
+	if thumbWidth > 0 {
+		image["width"] = thumbWidth
 	}
-	if attachment.Height > 0 {
-		image["height"] = attachment.Height
+	if thumbHeight > 0 {
+		image["height"] = thumbHeight
 	}
 	if desc := strings.TrimSpace(attachment.Alt); desc != "" {
 		image["description"] = desc

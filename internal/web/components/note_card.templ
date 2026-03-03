@@ -10,7 +10,7 @@ templ NoteCard(locale string, messages map[webi18n.Key]string, note notes.NoteSu
 	<article class={ appcore.NoteCardClass(note.Attachment != nil) }>
 		<div class="message-avatar">
 			if appcore.HasFirstAuthorAvatar(note.Authors) {
-				<img class="author-avatar large" src={ appcore.FirstAuthorAvatarURL(note.Authors) } alt={ appcore.FirstAuthorAvatarAlt(note.Authors) } loading="lazy" width="40" height="40"/>
+				@ImageFixed("author-avatar large", appcore.FirstAuthorAvatarURL(note.Authors), appcore.FirstAuthorAvatarAlt(note.Authors), "lazy", 40, 40)
 			} else {
 				<span class="author-avatar large fallback">&#64;</span>
 			}
@@ -53,14 +53,7 @@ templ NoteCard(locale string, messages map[webi18n.Key]string, note notes.NoteSu
 			<div class="message-media attachment-block attachment-card">
 				<a class="attachment-link" href={ note.Attachment.URL } target="_blank" rel="noopener noreferrer">
 					if note.Attachment.Width > 0 && note.Attachment.Height > 0 {
-						<img
-							class="attachment-image"
-							src={ note.Attachment.URL }
-							alt={ appcore.AttachmentAltText(note.Attachment.Alt, note.Title) }
-							loading="lazy"
-							width={ note.Attachment.Width }
-							height={ note.Attachment.Height }
-						/>
+						@ImageResponsive("attachment-image", note.Attachment.URL, appcore.AttachmentAltText(note.Attachment.Alt, note.Title), "lazy", note.Attachment.Width, note.Attachment.Height)
 					} else {
 						<span class="attachment-file">{ appcore.Message(messages, webi18n.KeyNoteAttachmentLabelPrefix) }: { appcore.AttachmentLabel(note.Attachment.Filename) }</span>
 					}

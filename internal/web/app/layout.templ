@@ -32,7 +32,7 @@ templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Com
 			<div class="app-shell">
 				<aside class="server-rail" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaWorkspaceNavigation) }>
 					<a class="server-button is-active" href={ appcore.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaBlogHome) }>
-						<img class="server-logo" src={ appcore.StaticAssetURL("revtale-logo.svg") } alt="RevTale"/>
+						@components.ImageFixed("server-logo", appcore.StaticAssetURL("revtale-logo.svg"), "RevTale", "eager", 28, 28)
 					</a>
 					<span class="server-divider" aria-hidden="true"></span>
 					<a class="server-button" href={ appcore.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaNotesChannel) }>#</a>

@@ -18,6 +18,7 @@ type Config struct {
 
 	CacheLiveNavigation string
 	CachePublicFiles    string
+	EnableImageLoader   bool
 
 	GraphQLEndpoint  string
 	GraphQLAuthToken string
@@ -47,9 +48,10 @@ func Load() Config {
 		CachePublicFiles: strings.TrimSpace(
 			os.Getenv("BLOG_CACHE_PUBLIC_FILES"),
 		),
-		GraphQLEndpoint:  getEnv("BLOG_GRAPHQL_ENDPOINT", "http://localhost:3000/api/graphql"),
-		GraphQLAuthToken: os.Getenv("BLOG_GRAPHQL_AUTH_TOKEN"),
-		PageSize:         getEnvInt("BLOG_NOTES_PAGE_SIZE", 12),
+		EnableImageLoader: getEnvBool("BLOG_ENABLE_IMAGE_LOADER", false),
+		GraphQLEndpoint:   getEnv("BLOG_GRAPHQL_ENDPOINT", "http://localhost:3000/api/graphql"),
+		GraphQLAuthToken:  os.Getenv("BLOG_GRAPHQL_AUTH_TOKEN"),
+		PageSize:          getEnvInt("BLOG_NOTES_PAGE_SIZE", 12),
 	}
 }
 
@@ -70,6 +72,20 @@ func getEnvInt(key string, fallback int) int {
 
 	parsed, err := strconv.Atoi(value)
 	if err != nil || parsed < 1 {
+		return fallback
+	}
+
+	return parsed
+}
+
+func getEnvBool(key string, fallback bool) bool {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+
+	parsed, err := strconv.ParseBool(value)
+	if err != nil {
 		return fallback
 	}
 

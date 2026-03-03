@@ -577,15 +577,20 @@ func noteAttachmentImage(appCtx *appcore.Context, attachment *notes.Attachment) 
 	if attachment == nil {
 		return nil
 	}
-	imageURL := absoluteMediaURL(appCtx, attachment.URL)
+	thumbURL, thumbWidth, thumbHeight := appcore.ImageThumb(
+		strings.TrimSpace(attachment.URL),
+		attachment.Width,
+		attachment.Height,
+	)
+	imageURL := absoluteMediaURL(appCtx, thumbURL)
 	if imageURL == "" {
 		return nil
 	}
 	return &metagen.OpenGraphImage{
 		URL:    imageURL,
 		Alt:    strings.TrimSpace(attachment.Alt),
-		Width:  attachment.Width,
-		Height: attachment.Height,
+		Width:  thumbWidth,
+		Height: thumbHeight,
 	}
 }
 
@@ -593,15 +598,20 @@ func authorAvatarImage(appCtx *appcore.Context, author *notes.Author) *metagen.O
 	if author == nil || author.Avatar == nil {
 		return nil
 	}
-	imageURL := absoluteMediaURL(appCtx, author.Avatar.URL)
+	thumbURL, thumbWidth, thumbHeight := appcore.ImageThumb(
+		strings.TrimSpace(author.Avatar.URL),
+		author.Avatar.Width,
+		author.Avatar.Height,
+	)
+	imageURL := absoluteMediaURL(appCtx, thumbURL)
 	if imageURL == "" {
 		return nil
 	}
 	return &metagen.OpenGraphImage{
 		URL:    imageURL,
 		Alt:    strings.TrimSpace(author.Avatar.Alt),
-		Width:  author.Avatar.Width,
-		Height: author.Avatar.Height,
+		Width:  thumbWidth,
+		Height: thumbHeight,
 	}
 }
 

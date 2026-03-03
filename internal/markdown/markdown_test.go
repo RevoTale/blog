@@ -3,6 +3,8 @@ package markdown
 import (
 	"strings"
 	"testing"
+
+	"blog/internal/imageloader"
 )
 
 func TestToHTML_TransformsExternalLinkTokens(t *testing.T) {
@@ -142,5 +144,26 @@ func TestExcerpt_DoesNotCutPlaceholderToken(t *testing.T) {
 	got := Excerpt("alpha ![img](https://example.com/p.png) omega", 10)
 	if got != "alpha..." {
 		t.Fatalf("expected truncation before placeholder boundary, got %q", got)
+	}
+}
+
+func TestToHTML_TransformsImageSourcesWithLoader(t *testing.T) {
+	t.Parallel()
+
+	html := string(ToHTML(
+		"![hero image](/images/hero.webp)",
+		Options{
+			ImageLoader: imageloader.New(true),
+		},
+	))
+
+	if !strings.Contains(html, `src="/cdn/image/relative/1080/images/hero.webp"`) {
+		t.Fatalf("expected transformed image src, got %s", html)
+	}
+	if !strings.Contains(html, `srcset="/cdn/image/relative/384/images/hero.webp 384w`) {
+		t.Fatalf("expected responsive srcset in image markup, got %s", html)
+	}
+	if !strings.Contains(html, `sizes="(max-width: 660px) 100vw, 672px"`) {
+		t.Fatalf("expected markdown image sizes attribute, got %s", html)
 	}
 }

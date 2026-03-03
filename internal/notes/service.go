@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"blog/internal/gql"
+	"blog/internal/imageloader"
 	md "blog/internal/markdown"
 	genqlientgraphql "github.com/Khan/genqlient/graphql"
 )
@@ -39,9 +40,10 @@ type ListOptions struct {
 }
 
 type Service struct {
-	client   genqlientgraphql.Client
-	pageSize int
-	rootURL  string
+	client      genqlientgraphql.Client
+	pageSize    int
+	rootURL     string
+	imageLoader imageloader.Loader
 }
 
 type AuthorMedia struct {
@@ -128,15 +130,21 @@ type AuthorPageResult struct {
 	Filter     ListFilter
 }
 
-func NewService(client genqlientgraphql.Client, pageSize int, rootURL string) *Service {
+func NewService(
+	client genqlientgraphql.Client,
+	pageSize int,
+	rootURL string,
+	imageLoader imageloader.Loader,
+) *Service {
 	if pageSize < 1 {
 		pageSize = 12
 	}
 
 	return &Service{
-		client:   client,
-		pageSize: pageSize,
-		rootURL:  strings.TrimSpace(rootURL),
+		client:      client,
+		pageSize:    pageSize,
+		rootURL:     strings.TrimSpace(rootURL),
+		imageLoader: imageLoader,
 	}
 }
 
@@ -665,7 +673,7 @@ func (s *Service) GetNoteBySlug(ctx context.Context, locale string, slug string)
 	doc := response.Micro_posts.Docs[0]
 	mentions := noteMentions(doc.ExternalLinks, doc.LinkedMicroPosts)
 	translateLinks := mentionTranslateLinks(mentions)
-	markdownOptions := markdownOptionsForLocale(locale)
+	markdownOptions := markdownOptionsForLocale(locale, s.imageLoader)
 	markdownOptions.TranslateLinks = translateLinks
 	markdownOptions.RootURL = s.rootURL
 	note := NoteDetail{
@@ -801,7 +809,7 @@ var markdownLabelsByLocale = map[string]markdownLabels{
 	},
 }
 
-func markdownOptionsForLocale(locale string) md.Options {
+func markdownOptionsForLocale(locale string, imageLoader imageloader.Loader) md.Options {
 	normalized := strings.ToLower(strings.TrimSpace(locale))
 	labels, ok := markdownLabelsByLocale[normalized]
 	if !ok {
@@ -815,6 +823,8 @@ func markdownOptionsForLocale(locale string) md.Options {
 		ExcerptCodeBlockLabel: labels.codeBlockLabel,
 		ExcerptTableLabel:     labels.tableLabel,
 		ExcerptImageLabel:     labels.imageLabel,
+		ImageLoader:           imageLoader,
+		ImageSizes:            imageloader.MarkdownSizes(),
 	}
 }
 

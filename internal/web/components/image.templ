@@ -1,0 +1,37 @@
+package components
+
+import "blog/internal/web/appcore"
+
+templ ImageFixed(className string, src string, alt string, loading string, width int, height int) {
+	if appcore.ImageLoaderEnabled() {
+		<img
+			class={ className }
+			src={ appcore.ImageURL(src, width) }
+			srcset={ appcore.ImageFixedSrcSet(src, width) }
+			sizes={ appcore.ImageDisplaySize(width) }
+			alt={ alt }
+			loading={ loading }
+			width={ width }
+			height={ height }
+		/>
+	} else {
+		<img class={ className } src={ src } alt={ alt } loading={ loading } width={ width } height={ height }/>
+	}
+}
+
+templ ImageResponsive(className string, src string, alt string, loading string, width int, height int) {
+	if appcore.ImageLoaderEnabled() {
+		<img
+			class={ className }
+			src={ appcore.ImageURL(src, width) }
+			srcset={ appcore.ImageResponsiveSrcSet(src, width) }
+			sizes={ appcore.ImageResponsiveSizes() }
+			alt={ alt }
+			loading={ loading }
+			width={ width }
+			height={ height }
+		/>
+	} else {
+		<img class={ className } src={ src } alt={ alt } loading={ loading } width={ width } height={ height }/>
+	}
+}

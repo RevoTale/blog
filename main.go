@@ -14,6 +14,7 @@ import (
 	"blog/framework/staticassets"
 	"blog/internal/config"
 	"blog/internal/gql"
+	"blog/internal/imageloader"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
@@ -59,9 +60,16 @@ func run() error {
 
 	appcore.SetStaticAssetBasePath(manifest.URLPrefix)
 	appcore.SetLocalizationConfig(i18nConfig)
+	imageLoader := imageloader.New(cfg.EnableImageLoader)
+	appcore.SetImageLoader(imageLoader)
 
 	graphqlClient := gql.NewClient(cfg)
-	noteService := notes.NewService(graphqlClient, cfg.PageSize, rootURL)
+	noteService := notes.NewService(
+		graphqlClient,
+		cfg.PageSize,
+		rootURL,
+		imageLoader,
+	)
 	cachePolicies := httpserver.DefaultCachePolicies()
 	if strings.TrimSpace(cfg.CacheLiveNavigation) != "" {
 		cachePolicies.LiveNavigation = cfg.CacheLiveNavigation

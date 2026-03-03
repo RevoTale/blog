@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"blog/internal/imageloader"
 	"github.com/alecthomas/chroma/v2"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
@@ -45,6 +46,9 @@ type Options struct {
 	ExcerptCodeBlockLabel string
 	ExcerptTableLabel     string
 	ExcerptImageLabel     string
+
+	ImageLoader imageloader.Loader
+	ImageSizes  string
 }
 
 const lastGoodBreakRatio = 0.8
@@ -257,6 +261,9 @@ func renderNodeHook(writer io.Writer, node ast.Node, entering bool, opts Options
 	case *ast.Code:
 		renderInlineCode(writer, typedNode)
 		return ast.SkipChildren, true
+	case *ast.Image:
+		renderImage(writer, typedNode, opts)
+		return ast.SkipChildren, true
 	default:
 		return ast.GoToNext, false
 	}
@@ -317,6 +324,10 @@ func (opts Options) excerptImageLabel() string {
 	return nonEmpty(opts.ExcerptImageLabel, imageLabel)
 }
 
+func (opts Options) imageSizes() string {
+	return nonEmpty(opts.ImageSizes, imageloader.MarkdownSizes())
+}
+
 func nonEmpty(value string, fallback string) string {
 	trimmed := strings.TrimSpace(value)
 	if trimmed == "" {
@@ -337,6 +348,69 @@ func renderHighlightedCodeBlock(writer io.Writer, language string, code string) 
 	if err := formatter.Format(writer, styles.Fallback, iterator); err != nil {
 		renderPlainCodeBlock(writer, code)
 	}
+}
+
+func renderImage(writer io.Writer, image *ast.Image, opts Options) {
+	if image == nil {
+		return
+	}
+
+	rawSrc := strings.TrimSpace(string(image.Destination))
+	if rawSrc == "" {
+		return
+	}
+	src := opts.ImageLoader.URL(rawSrc, 0)
+	if src == "" {
+		return
+	}
+	altText := stdhtml.EscapeString(collectImageText(image))
+	titleText := stdhtml.EscapeString(strings.TrimSpace(string(image.Title)))
+	srcSet := opts.ImageLoader.ResponsiveSrcSet(rawSrc, 0)
+
+	_, _ = io.WriteString(writer, `<img src="`)
+	_, _ = io.WriteString(writer, stdhtml.EscapeString(src))
+	_, _ = io.WriteString(writer, `" alt="`)
+	_, _ = io.WriteString(writer, altText)
+	_, _ = io.WriteString(writer, `" loading="lazy"`)
+	if titleText != "" {
+		_, _ = io.WriteString(writer, ` title="`)
+		_, _ = io.WriteString(writer, titleText)
+		_, _ = io.WriteString(writer, `"`)
+	}
+	if srcSet != "" {
+		_, _ = io.WriteString(writer, ` srcset="`)
+		_, _ = io.WriteString(writer, stdhtml.EscapeString(srcSet))
+		_, _ = io.WriteString(writer, `" sizes="`)
+		_, _ = io.WriteString(writer, stdhtml.EscapeString(opts.imageSizes()))
+		_, _ = io.WriteString(writer, `"`)
+	}
+	_, _ = io.WriteString(writer, `/>`)
+}
+
+func collectImageText(image *ast.Image) string {
+	if image == nil {
+		return ""
+	}
+
+	var builder strings.Builder
+	ast.WalkFunc(image, func(node ast.Node, entering bool) ast.WalkStatus {
+		if !entering {
+			return ast.GoToNext
+		}
+		if node == image {
+			return ast.GoToNext
+		}
+
+		switch typed := node.(type) {
+		case *ast.Text:
+			builder.Write(typed.Literal)
+		case *ast.Code:
+			builder.Write(typed.Literal)
+		}
+		return ast.GoToNext
+	})
+
+	return strings.TrimSpace(builder.String())
 }
 
 func renderInlineCode(writer io.Writer, code *ast.Code) {
