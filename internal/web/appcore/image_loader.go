@@ -2,7 +2,6 @@ package appcore
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"sync/atomic"
 
@@ -39,13 +38,6 @@ func ImageResponsiveSrcSet(src string, maxWidth int) string {
 
 func ImageThumb(src string, originalWidth int, originalHeight int) (string, int, int) {
 	return currentImageLoader().Thumb(strings.TrimSpace(src), originalWidth, originalHeight)
-}
-
-func ImageDisplaySize(width int) string {
-	if width < 1 {
-		return "100vw"
-	}
-	return strconv.Itoa(width) + "px"
 }
 
 func ImageResponsiveSizes() string {
