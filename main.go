@@ -111,6 +111,7 @@ func run() error {
 		LogServerError: func(err error) {
 			log.Printf("blog server error: %v", err)
 		},
+		EnableResolverDebug: cfg.EnableResolverDebug,
 	})
 	if err != nil {
 		return fmt.Errorf("handler setup failed: %w", err)

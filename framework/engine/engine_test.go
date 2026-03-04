@@ -7,13 +7,15 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"blog/framework"
 	"blog/framework/metagen"
 	"github.com/a-h/templ"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type testAppContext struct{}
@@ -343,16 +345,9 @@ func TestMetaGenRunsConcurrentlyWithLoad(t *testing.T) {
 			}
 		},
 	})
-	if err != nil {
-		t.Fatalf("new engine: %v", err)
-	}
-
-	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
-		t.Fatal("expected route to match")
-	}
-	if serverErrCalled {
-		t.Fatal("metagen/load should run concurrently without server error")
-	}
+	require.NoError(t, err)
+	require.True(t, routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)))
+	assert.False(t, serverErrCalled, "metagen/load should run concurrently without server error")
 }
 
 func TestMetaGenErrorPrefersMetadataClassification(t *testing.T) {
@@ -362,6 +357,7 @@ func TestMetaGenErrorPrefersMetadataClassification(t *testing.T) {
 	loadCanceled := make(chan struct{})
 	renderCalled := false
 	notFoundCalled := false
+	notFoundSource := framework.NotFoundSource("")
 
 	routeEngine, err := New(Config[*testAppContext]{
 		AppContext: &testAppContext{},
@@ -395,28 +391,18 @@ func TestMetaGenErrorPrefersMetadataClassification(t *testing.T) {
 		},
 		HandleNotFound: func(_ http.ResponseWriter, _ *http.Request, ctx framework.NotFoundContext) {
 			notFoundCalled = true
-			if ctx.Source != framework.NotFoundSourceMetaGen {
-				t.Fatalf("expected not-found source %q, got %q", framework.NotFoundSourceMetaGen, ctx.Source)
-			}
+			notFoundSource = ctx.Source
 		},
 	})
-	if err != nil {
-		t.Fatalf("new engine: %v", err)
-	}
-
-	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
-		t.Fatal("expected route to match")
-	}
-	if renderCalled {
-		t.Fatal("render callback should not run when metagen fails")
-	}
-	if !notFoundCalled {
-		t.Fatal("expected not-found callback for metagen not found")
-	}
+	require.NoError(t, err)
+	require.True(t, routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)))
+	assert.False(t, renderCalled, "render callback should not run when metagen fails")
+	assert.True(t, notFoundCalled, "expected not-found callback for metagen not found")
+	assert.Equal(t, framework.NotFoundSourceMetaGen, notFoundSource)
 	select {
 	case <-loadCanceled:
 	case <-time.After(500 * time.Millisecond):
-		t.Fatal("expected load context cancellation after metagen failure")
+		require.FailNow(t, "expected load context cancellation after metagen failure")
 	}
 }
 
@@ -477,20 +463,68 @@ func TestLoadFailureAfterRootRenderUsesErrorPage(t *testing.T) {
 			loggedError = err.Error()
 		},
 	})
-	if err != nil {
-		t.Fatalf("new engine: %v", err)
-	}
+	require.NoError(t, err)
+	require.True(t, routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)))
+	assert.False(t, renderCalled, "page renderer should not be called when load fails after stream start")
+	assert.Contains(t, rendered, "<html><head>Notes</head><body>error:/notes</body></html>")
+	assert.Contains(t, loggedError, "after stream start")
+}
 
-	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
-		t.Fatal("expected route to match")
+func TestResolverTimingCallbackReceivesMetaGenAndLoad(t *testing.T) {
+	t.Parallel()
+
+	var mu sync.Mutex
+	events := make([]framework.ResolverTiming, 0, 2)
+
+	routeEngine, err := New(Config[*testAppContext]{
+		AppContext: &testAppContext{},
+		Handlers: []framework.RouteHandler[*testAppContext]{
+			framework.PageOnlyRouteHandler[*testAppContext, framework.EmptyParams, string]{
+				Page: framework.PageModule[*testAppContext, framework.EmptyParams, string]{
+					Pattern: "/notes",
+					ParseParams: func(path string) (framework.EmptyParams, bool) {
+						return framework.EmptyParams{}, path == "/notes"
+					},
+					MetaGenName: "route_resolvers.Resolver.MetaGenNotesPage",
+					MetaGen: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (metagen.Metadata, error) {
+						return metagen.Metadata{Title: "Notes"}, nil
+					},
+					LoadName: "route_resolvers.Resolver.ResolveNotesPage",
+					Load: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (string, error) {
+						return "body", nil
+					},
+					Render: func(view string) templ.Component {
+						return textComponent(view)
+					},
+				},
+			},
+		},
+		RenderPage: func(_ *http.Request, _ http.ResponseWriter, _ templ.Component, _ metagen.Metadata) error {
+			return nil
+		},
+		LogResolverTiming: func(event framework.ResolverTiming) {
+			mu.Lock()
+			defer mu.Unlock()
+			events = append(events, event)
+		},
+	})
+	require.NoError(t, err)
+	require.True(t, routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)))
+
+	mu.Lock()
+	defer mu.Unlock()
+	require.Len(t, events, 2)
+
+	byStage := make(map[framework.ResolverStage]framework.ResolverTiming, len(events))
+	for _, event := range events {
+		byStage[event.Stage] = event
+		assert.Equal(t, "/notes", event.RoutePattern)
+		assert.GreaterOrEqual(t, event.Duration, time.Duration(0))
 	}
-	if renderCalled {
-		t.Fatal("page renderer should not be called when load fails after stream start")
-	}
-	if !strings.Contains(rendered, "<html><head>Notes</head><body>error:/notes</body></html>") {
-		t.Fatalf("unexpected streamed error output: %q", rendered)
-	}
-	if !strings.Contains(loggedError, "after stream start") {
-		t.Fatalf("expected post-stream load error to be logged, got %q", loggedError)
-	}
+	metaEvent, ok := byStage[framework.ResolverStageMetaGen]
+	require.True(t, ok, "missing metagen timing event")
+	assert.Equal(t, "route_resolvers.Resolver.MetaGenNotesPage", metaEvent.Method)
+	loadEvent, ok := byStage[framework.ResolverStageLoad]
+	require.True(t, ok, "missing load timing event")
+	assert.Equal(t, "route_resolvers.Resolver.ResolveNotesPage", loadEvent.Method)
 }

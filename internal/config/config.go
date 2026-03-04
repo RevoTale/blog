@@ -19,6 +19,7 @@ type Config struct {
 	CacheLiveNavigation string
 	CachePublicFiles    string
 	EnableImageLoader   bool
+	EnableResolverDebug bool
 
 	GraphQLEndpoint  string
 	GraphQLAuthToken string
@@ -48,10 +49,11 @@ func Load() Config {
 		CachePublicFiles: strings.TrimSpace(
 			os.Getenv("BLOG_CACHE_PUBLIC_FILES"),
 		),
-		EnableImageLoader: getEnvBool("BLOG_ENABLE_IMAGE_LOADER", false),
-		GraphQLEndpoint:   getEnv("BLOG_GRAPHQL_ENDPOINT", "http://localhost:3000/api/graphql"),
-		GraphQLAuthToken:  os.Getenv("BLOG_GRAPHQL_AUTH_TOKEN"),
-		PageSize:          getEnvInt("BLOG_NOTES_PAGE_SIZE", 12),
+		EnableImageLoader:   getEnvBool("BLOG_ENABLE_IMAGE_LOADER", false),
+		EnableResolverDebug: getEnvBool("BLOG_ENABLE_RESOLVER_DEBUG", false),
+		GraphQLEndpoint:     getEnv("BLOG_GRAPHQL_ENDPOINT", "http://localhost:3000/api/graphql"),
+		GraphQLAuthToken:    os.Getenv("BLOG_GRAPHQL_AUTH_TOKEN"),
+		PageSize:            getEnvInt("BLOG_NOTES_PAGE_SIZE", 12),
 	}
 }
 

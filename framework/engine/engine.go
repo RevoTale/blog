@@ -20,6 +20,7 @@ type Config[C interface{}] struct {
 	HandleNotFound    func(w http.ResponseWriter, r *http.Request, notFoundContext framework.NotFoundContext)
 	HandleServerError func(w http.ResponseWriter, err error)
 	LogServerError    func(err error)
+	LogResolverTiming func(event framework.ResolverTiming)
 }
 
 type Engine[C interface{}] struct {
@@ -29,10 +30,11 @@ type Engine[C interface{}] struct {
 	isPartialRequest func(r *http.Request) bool
 	renderPage       func(r *http.Request, w http.ResponseWriter, component templ.Component, meta metagen.Metadata) error
 
-	isNotFound  func(err error) bool
-	notFound    func(w http.ResponseWriter, r *http.Request, notFoundContext framework.NotFoundContext)
-	serverError func(w http.ResponseWriter, err error)
-	logError    func(err error)
+	isNotFound        func(err error) bool
+	notFound          func(w http.ResponseWriter, r *http.Request, notFoundContext framework.NotFoundContext)
+	serverError       func(w http.ResponseWriter, err error)
+	logError          func(err error)
+	logResolverTiming func(event framework.ResolverTiming)
 }
 
 func New[C interface{}](cfg Config[C]) (*Engine[C], error) {
@@ -67,16 +69,21 @@ func New[C interface{}](cfg Config[C]) (*Engine[C], error) {
 	if logError == nil {
 		logError = func(error) {}
 	}
+	logResolverTiming := cfg.LogResolverTiming
+	if logResolverTiming == nil {
+		logResolverTiming = func(framework.ResolverTiming) {}
+	}
 
 	return &Engine[C]{
-		appContext:       cfg.AppContext,
-		handlers:         cfg.Handlers,
-		isPartialRequest: isPartialRequest,
-		renderPage:       cfg.RenderPage,
-		isNotFound:       isNotFound,
-		notFound:         notFound,
-		serverError:      serverError,
-		logError:         logError,
+		appContext:        cfg.AppContext,
+		handlers:          cfg.Handlers,
+		isPartialRequest:  isPartialRequest,
+		renderPage:        cfg.RenderPage,
+		isNotFound:        isNotFound,
+		notFound:          notFound,
+		serverError:       serverError,
+		logError:          logError,
+		logResolverTiming: logResolverTiming,
 	}, nil
 }
 
@@ -125,4 +132,8 @@ func (engine *Engine[C]) RespondServerError(w http.ResponseWriter, err error) {
 
 func (engine *Engine[C]) LogServerError(err error) {
 	engine.logError(err)
+}
+
+func (engine *Engine[C]) LogResolverTiming(event framework.ResolverTiming) {
+	engine.logResolverTiming(event)
 }

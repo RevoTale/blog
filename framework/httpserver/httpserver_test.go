@@ -16,6 +16,8 @@ import (
 	"blog/framework"
 	"blog/framework/metagen"
 	"github.com/a-h/templ"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type componentFunc func(ctx context.Context, w io.Writer) error
@@ -354,5 +356,95 @@ func TestHTTPServerNotFoundContextForLoadAndUnmatched(t *testing.T) {
 	}
 	if ctxs[1].RequestPath != "/missing" {
 		t.Fatalf("expected second request path /missing, got %q", ctxs[1].RequestPath)
+	}
+}
+
+func TestHTTPServerResolverDebugToggle(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name                string
+		enableResolverDebug bool
+		expectedEvents      int
+	}{
+		{
+			name:                "enabled",
+			enableResolverDebug: true,
+			expectedEvents:      2,
+		},
+		{
+			name:                "disabled",
+			enableResolverDebug: false,
+			expectedEvents:      0,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			events := make(chan framework.ResolverTiming, 4)
+
+			handler, err := New(Config[*struct{}]{
+				AppContext: &struct{}{},
+				Handlers: []framework.RouteHandler[*struct{}]{
+					framework.PageOnlyRouteHandler[*struct{}, framework.EmptyParams, string]{
+						Page: framework.PageModule[*struct{}, framework.EmptyParams, string]{
+							Pattern: "/notes",
+							ParseParams: func(path string) (framework.EmptyParams, bool) {
+								return framework.EmptyParams{}, path == "/notes"
+							},
+							MetaGenName: "route_resolvers.Resolver.MetaGenNotesPage",
+							MetaGen: func(context.Context, *struct{}, *http.Request, framework.EmptyParams) (metagen.Metadata, error) {
+								return metagen.Metadata{Title: "Notes"}, nil
+							},
+							LoadName: "route_resolvers.Resolver.ResolveNotesPage",
+							Load: func(context.Context, *struct{}, *http.Request, framework.EmptyParams) (string, error) {
+								return "page", nil
+							},
+							Render: func(view string) templ.Component { return textComponent(view) },
+						},
+					},
+				},
+				EnableResolverDebug: tc.enableResolverDebug,
+				LogResolverTiming: func(event framework.ResolverTiming) {
+					events <- event
+				},
+			})
+			require.NoError(t, err)
+
+			rec := httptest.NewRecorder()
+			handler.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/notes", nil))
+			require.Equal(t, http.StatusOK, rec.Code)
+
+			out := drainResolverTimingEvents(events)
+			require.Len(t, out, tc.expectedEvents)
+			if tc.enableResolverDebug {
+				byStage := make(map[framework.ResolverStage]framework.ResolverTiming, len(out))
+				for _, event := range out {
+					byStage[event.Stage] = event
+				}
+				metaEvent, ok := byStage[framework.ResolverStageMetaGen]
+				require.True(t, ok)
+				assert.Equal(t, "route_resolvers.Resolver.MetaGenNotesPage", metaEvent.Method)
+
+				loadEvent, ok := byStage[framework.ResolverStageLoad]
+				require.True(t, ok)
+				assert.Equal(t, "route_resolvers.Resolver.ResolveNotesPage", loadEvent.Method)
+			}
+		})
+	}
+}
+
+func drainResolverTimingEvents(events <-chan framework.ResolverTiming) []framework.ResolverTiming {
+	out := make([]framework.ResolverTiming, 0, cap(events))
+	for {
+		select {
+		case event := <-events:
+			out = append(out, event)
+		default:
+			return out
+		}
 	}
 }

@@ -55,20 +55,24 @@ type Config[C interface{}] struct {
 
 	CachePolicies CachePolicies
 
-	IsNotFoundError func(err error) bool
-	NotFoundPage    func(notFoundContext framework.NotFoundContext) templ.Component
-	LogServerError  func(err error)
+	IsNotFoundError     func(err error) bool
+	NotFoundPage        func(notFoundContext framework.NotFoundContext) templ.Component
+	LogServerError      func(err error)
+	LogResolverTiming   func(event framework.ResolverTiming)
+	EnableResolverDebug bool
 
 	HealthPath string
 	HealthBody string
 }
 
 type server[C interface{}] struct {
-	cachePolicies CachePolicies
-	notFoundPage  func(notFoundContext framework.NotFoundContext) templ.Component
-	logServerErr  func(err error)
-	healthPath    string
-	healthBody    string
+	cachePolicies       CachePolicies
+	notFoundPage        func(notFoundContext framework.NotFoundContext) templ.Component
+	logServerErr        func(err error)
+	logResolverTimingFn func(event framework.ResolverTiming)
+	enableResolverDebug bool
+	healthPath          string
+	healthBody          string
 
 	routeEngine *engine.Engine[C]
 }
@@ -82,11 +86,13 @@ func New[C interface{}](cfg Config[C]) (http.Handler, error) {
 	}
 
 	srv := &server[C]{
-		cachePolicies: cachePolicies,
-		notFoundPage:  cfg.NotFoundPage,
-		logServerErr:  cfg.LogServerError,
-		healthPath:    healthPath,
-		healthBody:    healthBody,
+		cachePolicies:       cachePolicies,
+		notFoundPage:        cfg.NotFoundPage,
+		logServerErr:        cfg.LogServerError,
+		logResolverTimingFn: cfg.LogResolverTiming,
+		enableResolverDebug: cfg.EnableResolverDebug,
+		healthPath:          healthPath,
+		healthBody:          healthBody,
 	}
 
 	routeEngine, err := engine.New(engine.Config[C]{
@@ -98,6 +104,7 @@ func New[C interface{}](cfg Config[C]) (http.Handler, error) {
 		HandleNotFound:    srv.handleNotFound,
 		HandleServerError: srv.handleServerError,
 		LogServerError:    srv.logServerError,
+		LogResolverTiming: srv.logResolverTiming,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create route engine: %w", err)
@@ -222,6 +229,29 @@ func (s *server[C]) logServerError(err error) {
 	}
 
 	log.Printf("framework server error: %v", err)
+}
+
+func (s *server[C]) logResolverTiming(event framework.ResolverTiming) {
+	if !s.enableResolverDebug {
+		return
+	}
+	if s.logResolverTimingFn != nil {
+		s.logResolverTimingFn(event)
+		return
+	}
+
+	outcome := "ok"
+	if event.Err != nil {
+		outcome = "error: " + event.Err.Error()
+	}
+	log.Printf(
+		"framework resolver debug: route=%q stage=%s method=%q duration=%s outcome=%s",
+		strings.TrimSpace(event.RoutePattern),
+		event.Stage,
+		strings.TrimSpace(event.Method),
+		event.Duration,
+		outcome,
+	)
 }
 
 func (s *server[C]) handleHealth(w http.ResponseWriter) {

@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
+	goruntime "runtime"
+	"strings"
 	"sync"
+	"time"
 
 	frameworki18n "blog/framework/i18n"
 	"blog/framework/metagen"
@@ -39,15 +43,18 @@ type PageRenderer[VM interface{}] func(view VM) templ.Component
 type LayoutRenderer[VM interface{}] func(meta metagen.Metadata, view VM, child templ.Component) templ.Component
 
 type PageModule[C interface{}, P interface{}, VM interface{}] struct {
-	Pattern      string
-	ParseParams  ParamsParser[P]
-	MetaGen      PageMetaGen[C, P]
-	MetaGenChain []PageMetaGen[C, P]
-	Load         PageLoader[C, P, VM]
-	Render       PageRenderer[VM]
-	Layouts      []LayoutRenderer[VM]
-	RootLayout   func(meta metagen.Metadata, locale string, child templ.Component) templ.Component
-	ErrorPage    func(locale string, path string) templ.Component
+	Pattern           string
+	ParseParams       ParamsParser[P]
+	MetaGen           PageMetaGen[C, P]
+	MetaGenName       string
+	MetaGenChain      []PageMetaGen[C, P]
+	MetaGenChainNames []string
+	Load              PageLoader[C, P, VM]
+	LoadName          string
+	Render            PageRenderer[VM]
+	Layouts           []LayoutRenderer[VM]
+	RootLayout        func(meta metagen.Metadata, locale string, child templ.Component) templ.Component
+	ErrorPage         func(locale string, path string) templ.Component
 }
 
 type RuntimeContext[C interface{}] interface {
@@ -58,6 +65,22 @@ type RuntimeContext[C interface{}] interface {
 	RespondNotFound(w http.ResponseWriter, r *http.Request, notFoundContext NotFoundContext)
 	RespondServerError(w http.ResponseWriter, err error)
 	LogServerError(err error)
+	LogResolverTiming(event ResolverTiming)
+}
+
+type ResolverStage string
+
+const (
+	ResolverStageMetaGen ResolverStage = "meta_gen"
+	ResolverStageLoad    ResolverStage = "load"
+)
+
+type ResolverTiming struct {
+	RoutePattern string
+	Stage        ResolverStage
+	Method       string
+	Duration     time.Duration
+	Err          error
 }
 
 type NotFoundSource string
@@ -130,13 +153,21 @@ func servePageModule[C interface{}, P interface{}, VM interface{}](
 
 	metaCh := make(chan metadataResult, 1)
 	go func() {
-		meta, err := resolveMetadata(ctx, appCtx, r, params, module)
+		meta, err := resolveMetadata(runtime, ctx, appCtx, r, params, module)
 		metaCh <- metadataResult{meta: meta, err: err}
 	}()
 
 	loadCh := make(chan pageLoadResult, 1)
 	go func() {
+		startedAt := time.Now()
 		view, err := module.Load(ctx, appCtx, r, params)
+		runtime.LogResolverTiming(ResolverTiming{
+			RoutePattern: module.Pattern,
+			Stage:        ResolverStageLoad,
+			Method:       loadMethodName(module),
+			Duration:     time.Since(startedAt),
+			Err:          err,
+		})
 		loadCh <- pageLoadResult{view: view, err: err}
 	}()
 
@@ -205,6 +236,7 @@ func servePageModule[C interface{}, P interface{}, VM interface{}](
 }
 
 func resolveMetadata[C interface{}, P interface{}, VM interface{}](
+	runtime RuntimeContext[C],
 	ctx context.Context,
 	appCtx C,
 	r *http.Request,
@@ -233,7 +265,15 @@ func resolveMetadata[C interface{}, P interface{}, VM interface{}](
 			if run == nil {
 				return
 			}
+			startedAt := time.Now()
 			meta, err := run(ctx, appCtx, r, params)
+			runtime.LogResolverTiming(ResolverTiming{
+				RoutePattern: module.Pattern,
+				Stage:        ResolverStageMetaGen,
+				Method:       metaGenMethodName(module, i, run),
+				Duration:     time.Since(startedAt),
+				Err:          err,
+			})
 			if err != nil {
 				errs[i] = err
 				cancel()
@@ -272,4 +312,48 @@ func handleModuleError[C interface{}](
 	}
 
 	runtime.RespondServerError(w, fmt.Errorf("%s route %q: %w", stage, routePattern, err))
+}
+
+func loadMethodName[C interface{}, P interface{}, VM interface{}](module PageModule[C, P, VM]) string {
+	if name := strings.TrimSpace(module.LoadName); name != "" {
+		return name
+	}
+	return resolverFuncName(module.Load)
+}
+
+func metaGenMethodName[C interface{}, P interface{}, VM interface{}](
+	module PageModule[C, P, VM],
+	index int,
+	run PageMetaGen[C, P],
+) string {
+	if index >= 0 && index < len(module.MetaGenChainNames) {
+		if name := strings.TrimSpace(module.MetaGenChainNames[index]); name != "" {
+			return name
+		}
+	}
+	if len(module.MetaGenChain) == 0 {
+		if name := strings.TrimSpace(module.MetaGenName); name != "" {
+			return name
+		}
+	}
+	return resolverFuncName(run)
+}
+
+func resolverFuncName(fn interface{}) string {
+	if fn == nil {
+		return "unknown"
+	}
+	value := reflect.ValueOf(fn)
+	if !value.IsValid() || value.Kind() != reflect.Func {
+		return "unknown"
+	}
+	ptr := value.Pointer()
+	if ptr == 0 {
+		return "unknown"
+	}
+	resolved := goruntime.FuncForPC(ptr)
+	if resolved == nil {
+		return "unknown"
+	}
+	return resolved.Name()
 }

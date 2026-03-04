@@ -1329,6 +1329,22 @@ func writePageModule(
 	)
 	writef(buffer, "\t\t\t\t\treturn resolvers.%s(ctx, appCtx, r, params)\n", metaGenPageMethod(meta))
 	buffer.WriteString("\t\t\t\t},\n")
+	chain := layoutChain(meta.RouteID, layouts)
+	writef(buffer, "\t\t\t\tMetaGenName: %q,\n", resolverMethodQualified(metaGenPageMethod(meta)))
+	metaChainMethodNames := make([]string, 0, len(chain)+2)
+	metaChainMethodNames = append(metaChainMethodNames, resolverMethodQualified(metaGenLayoutMethod(templateDef{RouteID: ""})))
+	for _, layout := range chain {
+		if layout.RouteID == "" {
+			continue
+		}
+		metaChainMethodNames = append(metaChainMethodNames, resolverMethodQualified(metaGenLayoutMethod(layout)))
+	}
+	metaChainMethodNames = append(metaChainMethodNames, resolverMethodQualified(metaGenPageMethod(meta)))
+	buffer.WriteString("\t\t\t\tMetaGenChainNames: []string{\n")
+	for _, methodName := range metaChainMethodNames {
+		writef(buffer, "\t\t\t\t\t%q,\n", methodName)
+	}
+	buffer.WriteString("\t\t\t\t},\n")
 	writef(buffer, "\t\t\t\tMetaGenChain: []framework.PageMetaGen[*appcore.Context, %s]{\n", meta.ParamsTypeName)
 	writef(
 		buffer,
@@ -1337,7 +1353,6 @@ func writePageModule(
 	)
 	buffer.WriteString("\t\t\t\t\t\treturn resolvers.MetaGenRootLayout(ctx, appCtx, r)\n")
 	buffer.WriteString("\t\t\t\t\t},\n")
-	chain := layoutChain(meta.RouteID, layouts)
 	for _, layout := range chain {
 		if layout.RouteID == "" {
 			continue
@@ -1393,6 +1408,7 @@ func writePageModule(
 	)
 	writef(buffer, "\t\t\t\t\treturn resolvers.%s(ctx, appCtx, r, params)\n", resolvePageMethod(meta))
 	buffer.WriteString("\t\t\t\t},\n")
+	writef(buffer, "\t\t\t\tLoadName: %q,\n", resolverMethodQualified(resolvePageMethod(meta)))
 	writef(buffer, "\t\t\t\tRender: %s.Page,\n", meta.Page.ModuleName)
 	writef(buffer, "\t\t\t\tRootLayout: %s.RootLayout,\n", root.ModuleName)
 	buffer.WriteString("\t\t\t\tErrorPage: func(locale string, path string) templ.Component {\n")
@@ -1519,6 +1535,10 @@ func metaGenLayoutMethod(layout templateDef) string {
 		return "MetaGenRootLayout"
 	}
 	return "MetaGen" + routeNameFromSegments(layout.Segments) + "Layout"
+}
+
+func resolverMethodQualified(method string) string {
+	return "route_resolvers.Resolver." + strings.TrimSpace(method)
 }
 
 func wrapperFuncName(routeName string, layoutName string) string {
