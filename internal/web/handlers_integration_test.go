@@ -1078,7 +1078,7 @@ func TestHandlerImageLoaderEnabledTransformsTemplateAndSEOImages(t *testing.T) {
 		t.Fatalf("note status: expected %d, got %d", http.StatusOK, recNote.Code)
 	}
 	noteBody := requireBody(t, recNote.Body)
-	expectedSEOURL := "https://revotale.com/blog/notes/cdn/image/relative/1080/images/meta-hello.webp"
+	expectedSEOURL := "https://revotale.com/blog/notes/cdn/image/blog/1080/images/meta-hello.webp"
 	if !strings.Contains(noteBody, `property="og:image" content="`+expectedSEOURL+`"`) {
 		t.Fatalf("note page should include transformed og:image URL when loader is enabled")
 	}

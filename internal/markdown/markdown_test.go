@@ -157,13 +157,13 @@ func TestToHTML_TransformsImageSourcesWithLoader(t *testing.T) {
 		},
 	))
 
-	if !strings.Contains(html, `src="/cdn/image/relative/1080/images/hero.webp"`) {
+	if !strings.Contains(html, `src="/cdn/image/blog/1080/images/hero.webp"`) {
 		t.Fatalf("expected transformed image src, got %s", html)
 	}
-	if !strings.Contains(html, `srcset="/cdn/image/relative/16/images/hero.webp 16w`) {
+	if !strings.Contains(html, `srcset="/cdn/image/blog/16/images/hero.webp 16w`) {
 		t.Fatalf("expected responsive srcset in image markup, got %s", html)
 	}
-	if !strings.Contains(html, `/cdn/image/relative/1080/images/hero.webp 1080w`) {
+	if !strings.Contains(html, `/cdn/image/blog/1080/images/hero.webp 1080w`) {
 		t.Fatalf("expected allowed 1080 width candidate in srcset, got %s", html)
 	}
 	if !strings.Contains(html, `sizes="(max-width: 660px) 100vw, 672px"`) {

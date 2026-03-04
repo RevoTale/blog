@@ -10,6 +10,7 @@ import (
 
 const thumbWidth = 1080
 const markdownSizesValue = "(max-width: 660px) 100vw, 672px"
+const blogPathPrefix = "/cdn/image/blog"
 
 var cdnS3PathPattern = regexp.MustCompile(`((?:^|/)cdn/image/s3/)(\d+)(/)`)
 
@@ -48,7 +49,7 @@ func (l Loader) URL(src string, width int) string {
 	}
 
 	relativePath := strings.TrimLeft(encodedSrc, "/")
-	return fmt.Sprintf("/cdn/image/relative/%d/%s", targetWidth, relativePath)
+	return fmt.Sprintf("%s/%d/%s", blogPathPrefix, targetWidth, relativePath)
 }
 
 func (l Loader) ResponsiveSrcSet(src string, maxWidth int) (string, error) {

@@ -1,11 +1,25 @@
 package imageloader
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func blogImageURL(width int, path string) string {
+	return fmt.Sprintf("%s/%d/%s", blogPathPrefix, width, path)
+}
+
+func blogSrcSet(path string, widths ...int) string {
+	parts := make([]string, 0, len(widths))
+	for _, width := range widths {
+		parts = append(parts, fmt.Sprintf("%s %dw", blogImageURL(width, path), width))
+	}
+	return strings.Join(parts, ", ")
+}
 
 func TestLoaderURL_DisabledReturnsOriginal(t *testing.T) {
 	t.Parallel()
@@ -29,7 +43,7 @@ func TestLoaderURL_BuildsRelativeEndpointAndEncodesSpaces(t *testing.T) {
 
 	loader := New(true)
 	got := loader.URL("/images/hello world.webp", 640)
-	want := "/cdn/image/relative/640/images/hello%20world.webp"
+	want := blogImageURL(640, "images/hello%20world.webp")
 	assert.Equal(t, want, got)
 }
 
@@ -37,8 +51,8 @@ func TestLoaderURL_NormalizesToNearestAllowedWidth(t *testing.T) {
 	t.Parallel()
 
 	loader := New(true)
-	assert.Equal(t, "/cdn/image/relative/48/images/pic.webp", loader.URL("/images/pic.webp", 40))
-	assert.Equal(t, "/cdn/image/relative/828/images/pic.webp", loader.URL("/images/pic.webp", 768))
+	assert.Equal(t, blogImageURL(48, "images/pic.webp"), loader.URL("/images/pic.webp", 40))
+	assert.Equal(t, blogImageURL(828, "images/pic.webp"), loader.URL("/images/pic.webp", 768))
 }
 
 func TestLoaderResponsiveSrcSet_UsesCMSDeviceWidths(t *testing.T) {
@@ -47,20 +61,7 @@ func TestLoaderResponsiveSrcSet_UsesCMSDeviceWidths(t *testing.T) {
 	loader := New(true)
 	got, err := loader.ResponsiveSrcSet("/images/pic.webp", 1080)
 	require.NoError(t, err)
-	want := "/cdn/image/relative/16/images/pic.webp 16w, " +
-		"/cdn/image/relative/32/images/pic.webp 32w, " +
-		"/cdn/image/relative/48/images/pic.webp 48w, " +
-		"/cdn/image/relative/64/images/pic.webp 64w, " +
-		"/cdn/image/relative/96/images/pic.webp 96w, " +
-		"/cdn/image/relative/128/images/pic.webp 128w, " +
-		"/cdn/image/relative/256/images/pic.webp 256w, " +
-		"/cdn/image/relative/384/images/pic.webp 384w, " +
-		"/cdn/image/relative/450/images/pic.webp 450w, " +
-		"/cdn/image/relative/530/images/pic.webp 530w, " +
-		"/cdn/image/relative/640/images/pic.webp 640w, " +
-		"/cdn/image/relative/750/images/pic.webp 750w, " +
-		"/cdn/image/relative/828/images/pic.webp 828w, " +
-		"/cdn/image/relative/1080/images/pic.webp 1080w"
+	want := blogSrcSet("images/pic.webp", 16, 32, 48, 64, 96, 128, 256, 384, 450, 530, 640, 750, 828, 1080)
 	assert.Equal(t, want, got)
 }
 
@@ -70,9 +71,7 @@ func TestLoaderResponsiveSrcSet_SmallWidthUsesAllowedSizes(t *testing.T) {
 	loader := New(true)
 	got, err := loader.ResponsiveSrcSet("/images/pic.webp", 40)
 	require.NoError(t, err)
-	want := "/cdn/image/relative/16/images/pic.webp 16w, " +
-		"/cdn/image/relative/32/images/pic.webp 32w, " +
-		"/cdn/image/relative/48/images/pic.webp 48w"
+	want := blogSrcSet("images/pic.webp", 16, 32, 48)
 	assert.Equal(t, want, got)
 }
 
@@ -82,19 +81,7 @@ func TestLoaderResponsiveSrcSet_RoundsUpToAllowedTargetWidth(t *testing.T) {
 	loader := New(true)
 	got, err := loader.ResponsiveSrcSet("/images/pic.webp", 768)
 	require.NoError(t, err)
-	want := "/cdn/image/relative/16/images/pic.webp 16w, " +
-		"/cdn/image/relative/32/images/pic.webp 32w, " +
-		"/cdn/image/relative/48/images/pic.webp 48w, " +
-		"/cdn/image/relative/64/images/pic.webp 64w, " +
-		"/cdn/image/relative/96/images/pic.webp 96w, " +
-		"/cdn/image/relative/128/images/pic.webp 128w, " +
-		"/cdn/image/relative/256/images/pic.webp 256w, " +
-		"/cdn/image/relative/384/images/pic.webp 384w, " +
-		"/cdn/image/relative/450/images/pic.webp 450w, " +
-		"/cdn/image/relative/530/images/pic.webp 530w, " +
-		"/cdn/image/relative/640/images/pic.webp 640w, " +
-		"/cdn/image/relative/750/images/pic.webp 750w, " +
-		"/cdn/image/relative/828/images/pic.webp 828w"
+	want := blogSrcSet("images/pic.webp", 16, 32, 48, 64, 96, 128, 256, 384, 450, 530, 640, 750, 828)
 	assert.Equal(t, want, got)
 }
 
@@ -104,7 +91,7 @@ func TestLoaderThumb_Uses1080AndScalesHeight(t *testing.T) {
 	loader := New(true)
 	url, width, height := loader.Thumb("/images/hello.webp", 1200, 630)
 
-	assert.Equal(t, "/cdn/image/relative/1080/images/hello.webp", url)
+	assert.Equal(t, blogImageURL(1080, "images/hello.webp"), url)
 	assert.Equal(t, 1080, width)
 	assert.Equal(t, 567, height)
 }
