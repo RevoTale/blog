@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.0](https://github.com/RevoTale/blog/compare/v0.3.3...v0.4.0) (2026-03-04)
+
+
+### Features
+
+* devcontainer ([b32bf30](https://github.com/RevoTale/blog/commit/b32bf300ded389cf5f83ca9c972f11e2c9533c90))
+* fix the proxying the iamages to our infrastructure ([04475c5](https://github.com/RevoTale/blog/commit/04475c54736b28f1615f50e4f30ddbc2e2e5e009))
+* install deadcode validator and remove dead code ([7b22eb5](https://github.com/RevoTale/blog/commit/7b22eb5be09cd03d747cd368b048b2a2bfab5841))
+* logging of the data resolvers timing. ([af6d30a](https://github.com/RevoTale/blog/commit/af6d30a660149f3426f2750115f1948d88447a5b))
+* setup dev environment separately from https://github.com/RevoTale/backend ([62c34e4](https://github.com/RevoTale/blog/commit/62c34e4cbb48c8ceb134a660ae9ed4329ea0c4a3))
+
+
+### Bug Fixes
+
+* devcontainer image ([5b9e60a](https://github.com/RevoTale/blog/commit/5b9e60a4ea09aa84680c3b35e128b739d3baad65))
+* image sizes wrong ([aa7e35c](https://github.com/RevoTale/blog/commit/aa7e35c1c82f5fe8610b7b376b2e4346e6daace3))
+* wrong image sized used that did not match the server image thumbnails ([2aaa6de](https://github.com/RevoTale/blog/commit/2aaa6de0b02660de34af880d484473c057223207))
+
 ## [0.3.3](https://github.com/RevoTale/blog/compare/v0.3.2...v0.3.3) (2026-03-03)
 
 
