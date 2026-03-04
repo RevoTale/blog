@@ -1,6 +1,8 @@
 {
 	"name": "Go",
-	"image": "mcr.microsoft.com/devcontainers/go:1.26",
+	"build": {
+		"dockerfile": "Dockerfile" // Path to your Dockerfile
+	},
 	"portsAttributes": {
 		"8080": {
 			"label": "Default app",

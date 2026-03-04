@@ -1,6 +1,6 @@
 module blog
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/Khan/genqlient v0.8.1
@@ -17,6 +17,6 @@ require (
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/vektah/gqlparser/v2 v2.5.19 // indirect
-	golang.org/x/sys v0.34.0 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.32 // indirect
+	golang.org/x/sys v0.41.0 // indirect
 )
