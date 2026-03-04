@@ -278,7 +278,6 @@ p + p {
 }
 
 .server-button.is-active {
-  background: var(--accent-blurple);
   border-radius: 16px;
 }
 
