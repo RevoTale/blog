@@ -33,6 +33,8 @@ type TalesParams struct {
 }
 
 type RouteResolver interface {
+	MetaGenRootLayout(ctx context.Context, appCtx *appcore.Context, r *http.Request) (metagen.Metadata, error)
+	MetaGenAuthorParamSlugLayout(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error)
 	MetaGenRootPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (metagen.Metadata, error)
 	MetaGenAuthorParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error)
 	MetaGenChannelsPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (metagen.Metadata, error)

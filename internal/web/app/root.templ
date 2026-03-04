@@ -1,0 +1,32 @@
+package appsrc
+
+import (
+	"blog/framework/metagen"
+	"blog/internal/web/appcore"
+)
+
+templ RootLayout(meta metagen.Metadata, locale string, child templ.Component) {
+	<!doctype html>
+	<html lang={ locale }>
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			@metagen.Head(meta)
+			<meta name="color-scheme" content="light dark"/>
+			<link rel="manifest" href="/site.webmanifest"/>
+			<link rel="icon" href="/favicon.ico" sizes="any"/>
+			<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+			<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+			<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"/>
+			<meta name="msapplication-TileColor" content="#00aba9"/>
+			<meta name="theme-color" content="#ffffff"/>
+			<link rel="stylesheet" href={ appcore.StaticAssetURL("tui.css") }/>
+			<script src={ appcore.StaticAssetURL("vendor/htmx.min.js") }></script>
+			<script src={ appcore.StaticAssetURL("app.js") }></script>
+		</head>
+		@templ.Flush()
+		<body>
+			@child
+		</body>
+	</html>
+}

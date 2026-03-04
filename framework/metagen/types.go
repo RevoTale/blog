@@ -10,6 +10,9 @@ type Metadata struct {
 	Authors     []Author
 	Publisher   string
 	Pinterest   *Pinterest
+	// DangerRawHead contains trusted raw HTML snippets rendered into <head>.
+	// Never populate this field from third-party or user-controlled input.
+	DangerRawHead []string
 }
 
 type Alternates struct {

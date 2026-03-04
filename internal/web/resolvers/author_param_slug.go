@@ -10,6 +10,15 @@ import (
 	"blog/internal/web/seo"
 )
 
+func (Resolver) MetaGenAuthorParamSlugLayout(
+	context.Context,
+	*appcore.Context,
+	*http.Request,
+	AuthorParamSlugParams,
+) (metagen.Metadata, error) {
+	return metagen.Metadata{}, nil
+}
+
 func (Resolver) MetaGenAuthorParamSlugPage(
 	ctx context.Context,
 	appCtx *appcore.Context,

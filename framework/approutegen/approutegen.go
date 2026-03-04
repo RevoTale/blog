@@ -16,6 +16,9 @@ import (
 
 var dynamicSegmentNamePattern = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]*$`)
 var pageViewTypePattern = regexp.MustCompile(`templ\s+Page\s*\(\s*view\s+([A-Za-z0-9_.]+)\s*\)`)
+var rootTemplateSignaturePattern = regexp.MustCompile(
+	`templ\s+RootLayout\s*\(\s*meta\s+metagen\.Metadata\s*,\s*locale\s+string\s*,\s*child\s+templ\.Component\s*\)`,
+)
 var rootLayoutSignaturePattern = regexp.MustCompile(
 	`templ\s+Layout\s*\(\s*meta\s+metagen\.Metadata\s*,\s*view\s+([A-Za-z0-9_.]+)\s*,\s*child\s+templ\.Component\s*\)`,
 )
@@ -25,6 +28,12 @@ var childLayoutSignaturePattern = regexp.MustCompile(
 var notFoundSignaturePattern = regexp.MustCompile(
 	`templ\s+Page\s*\(\s*view\s+([A-Za-z0-9_.]+)\s*,\s*path\s+string\s*\)`,
 )
+var errorSignaturePattern = regexp.MustCompile(
+	`templ\s+Error\s*\(\s*view\s+([A-Za-z0-9_.]+)\s*,\s*path\s+string\s*\)`,
+)
+var htmlTagPattern = regexp.MustCompile(`(?i)<\s*html(?:\s|>)`)
+var headTagPattern = regexp.MustCompile(`(?i)<\s*head(?:\s|>)`)
+var bodyTagPattern = regexp.MustCompile(`(?i)<\s*body(?:\s|>)`)
 
 type templateKind string
 
@@ -32,6 +41,8 @@ const (
 	pageTemplate     templateKind = "page"
 	layoutTemplate   templateKind = "layout"
 	notFoundTemplate templateKind = "not_found"
+	errorTemplate    templateKind = "error"
+	rootTemplate     templateKind = "root"
 )
 
 const (
@@ -96,11 +107,20 @@ type routeMeta struct {
 	PageViewType   string
 }
 
+type routeContractDef struct {
+	RouteID        string
+	RouteName      string
+	ParamsTypeName string
+	Params         []routeParamDef
+}
+
 type routeFiles struct {
 	Templates []templateDef
 	Pages     []templateDef
 	Layouts   map[string]templateDef
 	NotFounds map[string]templateDef
+	Errors    map[string]templateDef
+	Root      templateDef
 }
 
 func Run() error {
@@ -116,8 +136,17 @@ func Run() error {
 	if len(routes.Pages) == 0 {
 		return errors.New("no page.templ files found in internal/web/app")
 	}
+	if routes.Root.SourcePath == "" {
+		return errors.New("root template is required: internal/web/app/root.templ")
+	}
 	if _, ok := routes.NotFounds[""]; !ok {
 		return errors.New("root 404 template is required: internal/web/app/404.templ")
+	}
+	if _, ok := routes.Errors[""]; !ok {
+		return errors.New("root error template is required: internal/web/app/error.templ")
+	}
+	if err := validateRootTemplateSignature(routes.Root.SourcePath); err != nil {
+		return err
 	}
 	for _, layout := range routes.Layouts {
 		if err := validateLayoutTemplateSignature(layout); err != nil {
@@ -126,6 +155,19 @@ func Run() error {
 	}
 	for _, notFound := range routes.NotFounds {
 		if err := validateNotFoundTemplateSignature(notFound.SourcePath); err != nil {
+			return err
+		}
+	}
+	for _, errorPage := range routes.Errors {
+		if err := validateErrorTemplateSignature(errorPage.SourcePath); err != nil {
+			return err
+		}
+	}
+	for _, tpl := range routes.Templates {
+		if tpl.Kind == rootTemplate {
+			continue
+		}
+		if err := validateNoDocumentTags(tpl.SourcePath); err != nil {
 			return err
 		}
 	}
@@ -148,7 +190,7 @@ func Run() error {
 		}
 	}
 
-	resolversSource, err := generateResolverNamespaceSource(metas)
+	resolversSource, err := generateResolverNamespaceSource(metas, routes.Layouts)
 	if err != nil {
 		return err
 	}
@@ -160,7 +202,7 @@ func Run() error {
 		return fmt.Errorf("write %s: %w", generatedResolverFileName, err)
 	}
 
-	registrySource, err := generateRegistrySource(paths, metas, routes.Layouts, routes.NotFounds)
+	registrySource, err := generateRegistrySource(paths, metas, routes.Root, routes.Layouts, routes.NotFounds, routes.Errors)
 	if err != nil {
 		return err
 	}
@@ -216,6 +258,8 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 	pages := make([]templateDef, 0, 8)
 	layouts := make(map[string]templateDef)
 	notFounds := make(map[string]templateDef)
+	errorsByRoute := make(map[string]templateDef)
+	var rootLayoutTemplate templateDef
 
 	walkErr := filepath.WalkDir(appRoot, func(filePath string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -248,13 +292,23 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 			kind = layoutTemplate
 		case "404.templ":
 			kind = notFoundTemplate
+		case "error.templ":
+			kind = errorTemplate
+		case "root.templ":
+			kind = rootTemplate
 		default:
-			return fmt.Errorf("unsupported route template %q; only page.templ/layout.templ/404.templ are allowed", relPath)
+			return fmt.Errorf(
+				"unsupported route template %q; only page.templ/layout.templ/404.templ/error.templ/root.templ are allowed",
+				relPath,
+			)
 		}
 
 		routeDir := path.Dir(relPath)
 		if routeDir == "." {
 			routeDir = ""
+		}
+		if kind == rootTemplate && routeDir != "" {
+			return fmt.Errorf("root.templ must be defined at internal/web/app/root.templ, got %q", relPath)
 		}
 
 		segments, parseErr := parseRouteSegments(routeDir)
@@ -284,6 +338,12 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 		if kind == notFoundTemplate {
 			notFounds[routeID] = tpl
 		}
+		if kind == errorTemplate {
+			errorsByRoute[routeID] = tpl
+		}
+		if kind == rootTemplate {
+			rootLayoutTemplate = tpl
+		}
 
 		return nil
 	})
@@ -308,6 +368,8 @@ func discoverRouteFiles(appRoot string, outputRoot string) (routeFiles, error) {
 		Pages:     pages,
 		Layouts:   layouts,
 		NotFounds: notFounds,
+		Errors:    errorsByRoute,
+		Root:      rootLayoutTemplate,
 	}, nil
 }
 
@@ -387,6 +449,12 @@ func moduleNameFor(kind templateKind, segments []routeSegment) string {
 func templateOutputFileName(kind templateKind) string {
 	if kind == notFoundTemplate {
 		return "404.templ"
+	}
+	if kind == errorTemplate {
+		return "error.templ"
+	}
+	if kind == rootTemplate {
+		return "root.templ"
 	}
 	return string(kind) + ".templ"
 }
@@ -486,6 +554,22 @@ func validateLayoutTemplateSignature(layout templateDef) error {
 	return nil
 }
 
+func validateRootTemplateSignature(rootTemplatePath string) error {
+	source, err := os.ReadFile(rootTemplatePath)
+	if err != nil {
+		return fmt.Errorf("read %q: %w", filepath.ToSlash(rootTemplatePath), err)
+	}
+
+	if len(rootTemplateSignaturePattern.FindStringSubmatch(string(source))) < 1 {
+		return fmt.Errorf(
+			"%q must declare templ RootLayout(meta metagen.Metadata, locale string, child templ.Component)",
+			filepath.ToSlash(rootTemplatePath),
+		)
+	}
+
+	return nil
+}
+
 func validateNotFoundTemplateSignature(notFoundTemplatePath string) error {
 	source, err := os.ReadFile(notFoundTemplatePath)
 	if err != nil {
@@ -509,6 +593,58 @@ func validateNotFoundTemplateSignature(notFoundTemplatePath string) error {
 		)
 	}
 
+	return nil
+}
+
+func validateErrorTemplateSignature(errorTemplatePath string) error {
+	source, err := os.ReadFile(errorTemplatePath)
+	if err != nil {
+		return fmt.Errorf("read %q: %w", filepath.ToSlash(errorTemplatePath), err)
+	}
+
+	matches := errorSignaturePattern.FindStringSubmatch(string(source))
+	if len(matches) < 2 {
+		return fmt.Errorf(
+			"%q must declare templ Error(view appcore.RootLayoutView, path string)",
+			filepath.ToSlash(errorTemplatePath),
+		)
+	}
+
+	viewType := strings.TrimSpace(matches[1])
+	if viewType != "appcore.RootLayoutView" {
+		return fmt.Errorf(
+			"%q error view type %q must be appcore.RootLayoutView",
+			filepath.ToSlash(errorTemplatePath),
+			viewType,
+		)
+	}
+
+	return nil
+}
+
+func validateNoDocumentTags(templatePath string) error {
+	source, err := os.ReadFile(templatePath)
+	if err != nil {
+		return fmt.Errorf("read %q: %w", filepath.ToSlash(templatePath), err)
+	}
+	content := string(source)
+	checks := []struct {
+		label   string
+		pattern *regexp.Regexp
+	}{
+		{label: "<html>", pattern: htmlTagPattern},
+		{label: "<head>", pattern: headTagPattern},
+		{label: "<body>", pattern: bodyTagPattern},
+	}
+	for _, check := range checks {
+		if check.pattern.MatchString(content) {
+			return fmt.Errorf(
+				"%q contains %q; only root.templ may define document-level tags",
+				filepath.ToSlash(templatePath),
+				check.label,
+			)
+		}
+	}
 	return nil
 }
 
@@ -624,7 +760,98 @@ func writeParamsStruct(buffer *bytes.Buffer, meta routeMeta) {
 	buffer.WriteString("}\n\n")
 }
 
-func generateResolverNamespaceSource(metas []routeMeta) ([]byte, error) {
+func writeContractParamsStruct(buffer *bytes.Buffer, contract routeContractDef) {
+	writef(buffer, "type %s struct {\n", contract.ParamsTypeName)
+	if len(contract.Params) == 0 {
+		buffer.WriteString("}\n\n")
+		return
+	}
+	for _, param := range contract.Params {
+		writef(buffer, "\t%s string\n", param.FieldName)
+	}
+	buffer.WriteString("}\n\n")
+}
+
+func buildRouteContracts(
+	metas []routeMeta,
+	layouts map[string]templateDef,
+) ([]routeContractDef, error) {
+	contractsByRoute := make(map[string]routeContractDef, len(metas)+len(layouts)+1)
+
+	for _, meta := range metas {
+		contractsByRoute[meta.RouteID] = routeContractDef{
+			RouteID:        meta.RouteID,
+			RouteName:      meta.RouteName,
+			ParamsTypeName: meta.ParamsTypeName,
+			Params:         meta.Params,
+		}
+	}
+
+	for routeID, layout := range layouts {
+		if _, ok := contractsByRoute[routeID]; ok {
+			continue
+		}
+		params, err := routeParamsFromSegments(routeID, layout.Segments)
+		if err != nil {
+			return nil, err
+		}
+		routeName := routeNameFromSegments(layout.Segments)
+		contractsByRoute[routeID] = routeContractDef{
+			RouteID:        routeID,
+			RouteName:      routeName,
+			ParamsTypeName: routeName + "Params",
+			Params:         params,
+		}
+	}
+
+	if _, ok := contractsByRoute[""]; !ok {
+		contractsByRoute[""] = routeContractDef{
+			RouteID:        "",
+			RouteName:      "Root",
+			ParamsTypeName: "RootParams",
+		}
+	}
+
+	routeIDs := make([]string, 0, len(contractsByRoute))
+	for routeID := range contractsByRoute {
+		routeIDs = append(routeIDs, routeID)
+	}
+	sort.Strings(routeIDs)
+
+	contracts := make([]routeContractDef, 0, len(routeIDs))
+	for _, routeID := range routeIDs {
+		contracts = append(contracts, contractsByRoute[routeID])
+	}
+	return contracts, nil
+}
+
+func contractsByRouteID(contracts []routeContractDef) map[string]routeContractDef {
+	byRoute := make(map[string]routeContractDef, len(contracts))
+	for _, contract := range contracts {
+		byRoute[contract.RouteID] = contract
+	}
+	return byRoute
+}
+
+func generateResolverNamespaceSource(
+	metas []routeMeta,
+	layouts map[string]templateDef,
+) ([]byte, error) {
+	contracts, err := buildRouteContracts(metas, layouts)
+	if err != nil {
+		return nil, fmt.Errorf("build route contracts: %w", err)
+	}
+	contractsByID := contractsByRouteID(contracts)
+
+	layoutRouteIDs := make([]string, 0, len(layouts))
+	for routeID := range layouts {
+		if routeID == "" {
+			continue
+		}
+		layoutRouteIDs = append(layoutRouteIDs, routeID)
+	}
+	sort.Strings(layoutRouteIDs)
+
 	buffer := &bytes.Buffer{}
 	buffer.WriteString(generatedGoHeader + "\n")
 	buffer.WriteString("package resolvers\n\n")
@@ -635,11 +862,27 @@ func generateResolverNamespaceSource(metas []routeMeta) ([]byte, error) {
 	buffer.WriteString("\t\"net/http\"\n")
 	buffer.WriteString(")\n\n")
 
-	for _, meta := range metas {
-		writeParamsStruct(buffer, meta)
+	for _, contract := range contracts {
+		writeContractParamsStruct(buffer, contract)
 	}
 
 	buffer.WriteString("type RouteResolver interface {\n")
+	buffer.WriteString(
+		"\tMetaGenRootLayout(ctx context.Context, appCtx *appcore.Context, r *http.Request) (metagen.Metadata, error)\n",
+	)
+	for _, routeID := range layoutRouteIDs {
+		layout := layouts[routeID]
+		contract, ok := contractsByID[routeID]
+		if !ok {
+			return nil, fmt.Errorf("missing route contract for layout route %q", routeID)
+		}
+		writef(
+			buffer,
+			"\t%s(ctx context.Context, appCtx *appcore.Context, r *http.Request, params %s) (metagen.Metadata, error)\n",
+			metaGenLayoutMethod(layout),
+			contract.ParamsTypeName,
+		)
+	}
 	for _, meta := range metas {
 		writef(
 			buffer,
@@ -671,12 +914,25 @@ func generateResolverNamespaceSource(metas []routeMeta) ([]byte, error) {
 func generateRegistrySource(
 	paths generationPaths,
 	metas []routeMeta,
+	root templateDef,
 	layouts map[string]templateDef,
 	notFounds map[string]templateDef,
+	errorsByRoute map[string]templateDef,
 ) ([]byte, error) {
+	if root.SourcePath == "" && root.ModuleName == "" {
+		return nil, errors.New("missing root template metadata")
+	}
 	if _, ok := notFounds[""]; !ok {
 		return nil, errors.New("missing root 404 template metadata")
 	}
+	if _, ok := errorsByRoute[""]; !ok {
+		return nil, errors.New("missing root error template metadata")
+	}
+	contracts, err := buildRouteContracts(metas, layouts)
+	if err != nil {
+		return nil, fmt.Errorf("build route contracts: %w", err)
+	}
+	contractsByID := contractsByRouteID(contracts)
 
 	importLines := []string{
 		"\"context\"",
@@ -690,7 +946,13 @@ func generateRegistrySource(
 		"\"github.com/a-h/templ\"",
 	}
 
-	moduleImports := make([]string, 0, len(metas)+len(layouts)+len(notFounds))
+	moduleImports := make([]string, 0, len(metas)+len(layouts)+len(notFounds)+len(errorsByRoute)+1)
+	moduleImports = append(moduleImports, fmt.Sprintf(
+		"%s \"blog/%s/%s\"",
+		root.ModuleName,
+		paths.GenImportRoot,
+		root.ModuleName,
+	))
 	for _, meta := range metas {
 		moduleImports = append(moduleImports, fmt.Sprintf(
 			"%s \"blog/%s/%s\"",
@@ -729,6 +991,20 @@ func generateRegistrySource(
 			notFound.ModuleName,
 		))
 	}
+	errorKeys := make([]string, 0, len(errorsByRoute))
+	for routeID := range errorsByRoute {
+		errorKeys = append(errorKeys, routeID)
+	}
+	sort.Strings(errorKeys)
+	for _, routeID := range errorKeys {
+		errorPage := errorsByRoute[routeID]
+		moduleImports = append(moduleImports, fmt.Sprintf(
+			"%s \"blog/%s/%s\"",
+			errorPage.ModuleName,
+			paths.GenImportRoot,
+			errorPage.ModuleName,
+		))
+	}
 
 	moduleImports = dedupeSorted(moduleImports)
 	importLines = append(importLines, moduleImports...)
@@ -763,13 +1039,15 @@ func generateRegistrySource(
 			meta.PageViewType,
 		)
 
-		writePageModule(buffer, meta, layouts)
+		if err := writePageModule(buffer, meta, root, layouts, errorsByRoute, contractsByID); err != nil {
+			return nil, err
+		}
 		buffer.WriteString("\t\t},\n")
 	}
 	buffer.WriteString("\t}\n")
 	buffer.WriteString("}\n\n")
 
-	writeNotFoundPageFunc(buffer, layouts, notFounds)
+	writeNotFoundPageFunc(buffer, root, layouts, notFounds)
 
 	for _, meta := range metas {
 		writeParseParamsFunc(buffer, meta)
@@ -809,6 +1087,7 @@ func generateRegistrySource(
 
 func writeNotFoundPageFunc(
 	buffer *bytes.Buffer,
+	root templateDef,
 	layouts map[string]templateDef,
 	notFounds map[string]templateDef,
 ) {
@@ -860,7 +1139,7 @@ func writeNotFoundPageFunc(
 				writef(buffer, "\t\tcomponent = %s.Layout(view, component)\n", chain[idx].ModuleName)
 			}
 		}
-		buffer.WriteString("\t\treturn component\n")
+		writef(buffer, "\t\treturn %s.RootLayout(meta, notFound.Locale, component)\n", root.ModuleName)
 	}
 
 	rootNotFound := notFounds[""]
@@ -874,7 +1153,7 @@ func writeNotFoundPageFunc(
 			writef(buffer, "\t\tcomponent = %s.Layout(view, component)\n", rootChain[idx].ModuleName)
 		}
 	}
-	buffer.WriteString("\t\treturn component\n")
+	writef(buffer, "\t\treturn %s.RootLayout(meta, notFound.Locale, component)\n", root.ModuleName)
 	buffer.WriteString("\t}\n")
 	buffer.WriteString("}\n\n")
 
@@ -986,7 +1265,54 @@ type layoutWrapperDef struct {
 	Root         bool
 }
 
-func writePageModule(buffer *bytes.Buffer, meta routeMeta, layouts map[string]templateDef) {
+type paramAssignment struct {
+	TargetField string
+	SourceField string
+}
+
+func mapPageParamsByName(params []routeParamDef) map[string]routeParamDef {
+	byName := make(map[string]routeParamDef, len(params))
+	for _, param := range params {
+		byName[param.Name] = param
+	}
+	return byName
+}
+
+func layoutParamAssignments(
+	pageParamsByName map[string]routeParamDef,
+	layoutParams []routeParamDef,
+) ([]paramAssignment, error) {
+	assignments := make([]paramAssignment, 0, len(layoutParams))
+	for _, layoutParam := range layoutParams {
+		pageParam, ok := pageParamsByName[layoutParam.Name]
+		if !ok {
+			return nil, fmt.Errorf("missing param %q on page route", layoutParam.Name)
+		}
+		assignments = append(assignments, paramAssignment{
+			TargetField: layoutParam.FieldName,
+			SourceField: pageParam.FieldName,
+		})
+	}
+	return assignments, nil
+}
+
+func writePageModule(
+	buffer *bytes.Buffer,
+	meta routeMeta,
+	root templateDef,
+	layouts map[string]templateDef,
+	errorsByRoute map[string]templateDef,
+	contractsByID map[string]routeContractDef,
+) error {
+	if _, ok := contractsByID[meta.RouteID]; !ok {
+		return fmt.Errorf("missing route contract for route %q", meta.RouteID)
+	}
+	errorRouteID := nearestTemplateRouteID(meta.RouteID, errorsByRoute)
+	errorPage, ok := errorsByRoute[errorRouteID]
+	if !ok {
+		return fmt.Errorf("missing nearest error template for route %q", meta.RouteID)
+	}
+
 	writef(
 		buffer,
 		"\t\t\tPage: framework.PageModule[*appcore.Context, %s, %s]{\n",
@@ -1003,6 +1329,61 @@ func writePageModule(buffer *bytes.Buffer, meta routeMeta, layouts map[string]te
 	)
 	writef(buffer, "\t\t\t\t\treturn resolvers.%s(ctx, appCtx, r, params)\n", metaGenPageMethod(meta))
 	buffer.WriteString("\t\t\t\t},\n")
+	writef(buffer, "\t\t\t\tMetaGenChain: []framework.PageMetaGen[*appcore.Context, %s]{\n", meta.ParamsTypeName)
+	writef(
+		buffer,
+		"\t\t\t\t\tfunc(ctx context.Context, appCtx *appcore.Context, r *http.Request, _ %s) (metagen.Metadata, error) {\n",
+		meta.ParamsTypeName,
+	)
+	buffer.WriteString("\t\t\t\t\t\treturn resolvers.MetaGenRootLayout(ctx, appCtx, r)\n")
+	buffer.WriteString("\t\t\t\t\t},\n")
+	chain := layoutChain(meta.RouteID, layouts)
+	for _, layout := range chain {
+		if layout.RouteID == "" {
+			continue
+		}
+		contract, ok := contractsByID[layout.RouteID]
+		if !ok {
+			return fmt.Errorf("missing route contract for layout route %q", layout.RouteID)
+		}
+		pageParams := mapPageParamsByName(meta.Params)
+		assignments, err := layoutParamAssignments(pageParams, contract.Params)
+		if err != nil {
+			return fmt.Errorf("route %q layout %q metadata params: %w", meta.RouteID, layout.RouteID, err)
+		}
+		writef(
+			buffer,
+			"\t\t\t\t\tfunc(ctx context.Context, appCtx *appcore.Context, r *http.Request, params %s) (metagen.Metadata, error) {\n",
+			meta.ParamsTypeName,
+		)
+		if len(contract.Params) > 0 {
+			writef(buffer, "\t\t\t\t\t\tlayoutParams := route_resolvers.%s{}\n", contract.ParamsTypeName)
+			for _, assignment := range assignments {
+				writef(buffer, "\t\t\t\t\t\tlayoutParams.%s = params.%s\n", assignment.TargetField, assignment.SourceField)
+			}
+			writef(
+				buffer,
+				"\t\t\t\t\t\treturn resolvers.%s(ctx, appCtx, r, layoutParams)\n",
+				metaGenLayoutMethod(layout),
+			)
+		} else {
+			writef(
+				buffer,
+				"\t\t\t\t\t\treturn resolvers.%s(ctx, appCtx, r, route_resolvers.%s{})\n",
+				metaGenLayoutMethod(layout),
+				contract.ParamsTypeName,
+			)
+		}
+		buffer.WriteString("\t\t\t\t\t},\n")
+	}
+	writef(
+		buffer,
+		"\t\t\t\t\tfunc(ctx context.Context, appCtx *appcore.Context, r *http.Request, params %s) (metagen.Metadata, error) {\n",
+		meta.ParamsTypeName,
+	)
+	writef(buffer, "\t\t\t\t\t\treturn resolvers.%s(ctx, appCtx, r, params)\n", metaGenPageMethod(meta))
+	buffer.WriteString("\t\t\t\t\t},\n")
+	buffer.WriteString("\t\t\t\t},\n")
 	writef(
 		buffer,
 		"\t\t\t\tLoad: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, "+
@@ -1013,8 +1394,32 @@ func writePageModule(buffer *bytes.Buffer, meta routeMeta, layouts map[string]te
 	writef(buffer, "\t\t\t\t\treturn resolvers.%s(ctx, appCtx, r, params)\n", resolvePageMethod(meta))
 	buffer.WriteString("\t\t\t\t},\n")
 	writef(buffer, "\t\t\t\tRender: %s.Page,\n", meta.Page.ModuleName)
+	writef(buffer, "\t\t\t\tRootLayout: %s.RootLayout,\n", root.ModuleName)
+	buffer.WriteString("\t\t\t\tErrorPage: func(locale string, path string) templ.Component {\n")
+	buffer.WriteString("\t\t\t\t\tpathValue := strings.TrimSpace(path)\n")
+	buffer.WriteString("\t\t\t\t\tif pathValue == \"\" {\n")
+	buffer.WriteString("\t\t\t\t\t\tpathValue = \"/\"\n")
+	buffer.WriteString("\t\t\t\t\t}\n")
+	buffer.WriteString("\t\t\t\t\tview := appcore.NewNotFoundLayoutView(locale)\n")
+	buffer.WriteString("\t\t\t\t\tmeta := metagen.Metadata{\n")
+	buffer.WriteString("\t\t\t\t\t\tTitle: view.LayoutPageTitle(),\n")
+	buffer.WriteString("\t\t\t\t\t\tRobots: &metagen.Robots{\n")
+	buffer.WriteString("\t\t\t\t\t\t\tIndex: metagen.Bool(false),\n")
+	buffer.WriteString("\t\t\t\t\t\t\tFollow: metagen.Bool(false),\n")
+	buffer.WriteString("\t\t\t\t\t\t},\n")
+	buffer.WriteString("\t\t\t\t\t}\n")
+	writef(buffer, "\t\t\t\t\tcomponent := %s.Error(view, pathValue)\n", errorPage.ModuleName)
+	errorLayoutChain := layoutChain(errorRouteID, layouts)
+	for idx := len(errorLayoutChain) - 1; idx >= 0; idx-- {
+		if errorLayoutChain[idx].RouteID == "" {
+			writef(buffer, "\t\t\t\t\tcomponent = %s.Layout(meta, view, component)\n", errorLayoutChain[idx].ModuleName)
+		} else {
+			writef(buffer, "\t\t\t\t\tcomponent = %s.Layout(view, component)\n", errorLayoutChain[idx].ModuleName)
+		}
+	}
+	buffer.WriteString("\t\t\t\t\treturn component\n")
+	buffer.WriteString("\t\t\t\t},\n")
 
-	chain := layoutChain(meta.RouteID, layouts)
 	if len(chain) == 0 {
 		writef(buffer, "\t\t\t\tLayouts: []framework.LayoutRenderer[%s]{},\n", meta.PageViewType)
 	} else {
@@ -1026,6 +1431,7 @@ func writePageModule(buffer *bytes.Buffer, meta routeMeta, layouts map[string]te
 		buffer.WriteString("\t\t\t\t},\n")
 	}
 	buffer.WriteString("\t\t\t},\n")
+	return nil
 }
 
 func collectLayoutWrappers(metas []routeMeta, layouts map[string]templateDef) (map[string]layoutWrapperDef, error) {
@@ -1108,6 +1514,13 @@ func metaGenPageMethod(meta routeMeta) string {
 	return "MetaGen" + meta.RouteName + "Page"
 }
 
+func metaGenLayoutMethod(layout templateDef) string {
+	if layout.RouteID == "" {
+		return "MetaGenRootLayout"
+	}
+	return "MetaGen" + routeNameFromSegments(layout.Segments) + "Layout"
+}
+
 func wrapperFuncName(routeName string, layoutName string) string {
 	return "wrap" + routeName + "With" + layoutName + "Layout"
 }
@@ -1134,6 +1547,30 @@ func layoutChain(routeID string, layouts map[string]templateDef) []templateDef {
 	}
 
 	return chain
+}
+
+func nearestTemplateRouteID(routeID string, templates map[string]templateDef) string {
+	for _, candidate := range routeAncestryIDs(routeID) {
+		if _, ok := templates[candidate]; ok {
+			return candidate
+		}
+	}
+	return ""
+}
+
+func routeAncestryIDs(routeID string) []string {
+	routeID = strings.TrimSpace(routeID)
+	routeID = strings.Trim(routeID, "/")
+	if routeID == "" {
+		return []string{""}
+	}
+	parts := strings.Split(routeID, "/")
+	out := make([]string, 0, len(parts)+1)
+	for idx := len(parts); idx >= 1; idx-- {
+		out = append(out, strings.Join(parts[:idx], "/"))
+	}
+	out = append(out, "")
+	return out
 }
 
 func safeIdentifier(value string) string {

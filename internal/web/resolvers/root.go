@@ -10,6 +10,16 @@ import (
 	"blog/internal/web/seo"
 )
 
+func (Resolver) MetaGenRootLayout(
+	context.Context,
+	*appcore.Context,
+	*http.Request,
+) (metagen.Metadata, error) {
+	return metagen.Metadata{
+		DangerRawHead: []string{appcore.ChromaStyleTag()},
+	}, nil
+}
+
 func (Resolver) MetaGenRootPage(
 	ctx context.Context,
 	appCtx *appcore.Context,

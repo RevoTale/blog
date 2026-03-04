@@ -97,6 +97,7 @@ func New[C interface{}](cfg Config[C]) (http.Handler, error) {
 		IsNotFoundError:   cfg.IsNotFoundError,
 		HandleNotFound:    srv.handleNotFound,
 		HandleServerError: srv.handleServerError,
+		LogServerError:    srv.logServerError,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create route engine: %w", err)
@@ -211,6 +212,10 @@ func (s *server[C]) handleNotFound(
 func (s *server[C]) handleServerError(w http.ResponseWriter, err error) {
 	setCachePolicy(w, s.cachePolicies.Error)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	s.logServerError(err)
+}
+
+func (s *server[C]) logServerError(err error) {
 	if s.logServerErr != nil {
 		s.logServerErr(err)
 		return

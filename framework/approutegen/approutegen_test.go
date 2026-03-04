@@ -273,6 +273,103 @@ templ Page(view appcore.NotesPageView, path string) { <div>{ path }</div> }
 	}
 }
 
+func TestValidateRootTemplateSignature(t *testing.T) {
+	root := t.TempDir()
+	validPath := filepath.Join(root, "root_valid.templ")
+	invalidPath := filepath.Join(root, "root_invalid.templ")
+	writeTestFile(
+		t,
+		validPath,
+		`package appsrc
+
+import "blog/framework/metagen"
+
+templ RootLayout(meta metagen.Metadata, locale string, child templ.Component) { @child }
+`,
+	)
+	writeTestFile(
+		t,
+		invalidPath,
+		`package appsrc
+
+templ RootLayout(locale string, child templ.Component) { @child }
+`,
+	)
+
+	if err := validateRootTemplateSignature(validPath); err != nil {
+		t.Fatalf("expected valid root signature, got %v", err)
+	}
+	if err := validateRootTemplateSignature(invalidPath); err == nil {
+		t.Fatal("expected invalid root signature error")
+	}
+}
+
+func TestValidateErrorTemplateSignature(t *testing.T) {
+	root := t.TempDir()
+	validPath := filepath.Join(root, "error_valid.templ")
+	invalidPath := filepath.Join(root, "error_invalid.templ")
+	writeTestFile(
+		t,
+		validPath,
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Error(view appcore.RootLayoutView, path string) { <div>{ path }</div> }
+`,
+	)
+	writeTestFile(
+		t,
+		invalidPath,
+		`package appsrc
+
+import "blog/internal/web/appcore"
+
+templ Error(view appcore.NotePageView, path string) { <div>{ path }</div> }
+`,
+	)
+
+	if err := validateErrorTemplateSignature(validPath); err != nil {
+		t.Fatalf("expected valid error signature, got %v", err)
+	}
+	if err := validateErrorTemplateSignature(invalidPath); err == nil {
+		t.Fatal("expected invalid error signature")
+	}
+}
+
+func TestValidateNoDocumentTagsAllowsHeader(t *testing.T) {
+	root := t.TempDir()
+	validPath := filepath.Join(root, "layout_valid.templ")
+	invalidPath := filepath.Join(root, "layout_invalid.templ")
+	writeTestFile(
+		t,
+		validPath,
+		`package appsrc
+
+templ Layout() {
+	<header>ok</header>
+}
+`,
+	)
+	writeTestFile(
+		t,
+		invalidPath,
+		`package appsrc
+
+templ Layout() {
+	<head><title>bad</title></head>
+}
+`,
+	)
+
+	if err := validateNoDocumentTags(validPath); err != nil {
+		t.Fatalf("header tag should be allowed, got %v", err)
+	}
+	if err := validateNoDocumentTags(invalidPath); err == nil {
+		t.Fatal("expected head tag rejection")
+	}
+}
+
 func TestBuildRouteMetasPageOnly(t *testing.T) {
 	root := t.TempDir()
 	appRoot := filepath.Join(root, "app")
@@ -372,11 +469,11 @@ func TestResolverNamespaceGenerationDeterministic(t *testing.T) {
 		},
 	}
 
-	first, err := generateResolverNamespaceSource(metas)
+	first, err := generateResolverNamespaceSource(metas, map[string]templateDef{})
 	if err != nil {
 		t.Fatalf("first generation failed: %v", err)
 	}
-	second, err := generateResolverNamespaceSource(metas)
+	second, err := generateResolverNamespaceSource(metas, map[string]templateDef{})
 	if err != nil {
 		t.Fatalf("second generation failed: %v", err)
 	}
@@ -410,12 +507,24 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 	registry, err := generateRegistrySource(
 		generationPaths{GenImportRoot: "internal/web/gen"},
 		metas,
+		templateDef{
+			Kind:       rootTemplate,
+			RouteID:    "",
+			ModuleName: "r_root_root",
+		},
 		map[string]templateDef{},
 		map[string]templateDef{
 			"": {
 				Kind:       notFoundTemplate,
 				RouteID:    "",
 				ModuleName: "r_not_found_root",
+			},
+		},
+		map[string]templateDef{
+			"": {
+				Kind:       errorTemplate,
+				RouteID:    "",
+				ModuleName: "r_error_root",
 			},
 		},
 	)
@@ -451,6 +560,15 @@ func TestRegistryGenerationUsesSingleResolverNamespace(t *testing.T) {
 	if !strings.Contains(text, "func NotFoundPage(notFound framework.NotFoundContext) templ.Component") {
 		t.Fatalf("expected generated NotFoundPage helper in registry:\n%s", text)
 	}
+	if !strings.Contains(text, "RootLayout: r_root_root.RootLayout") {
+		t.Fatalf("expected RootLayout wiring in page module:\n%s", text)
+	}
+	if !strings.Contains(text, "MetaGenChain: []framework.PageMetaGen") {
+		t.Fatalf("expected generated metadata chain in page module:\n%s", text)
+	}
+	if !strings.Contains(text, "ErrorPage: func(locale string, path string) templ.Component") {
+		t.Fatalf("expected generated ErrorPage fallback in page module:\n%s", text)
+	}
 }
 
 func TestRegistryGenerationRequiresRootNotFoundTemplate(t *testing.T) {
@@ -467,14 +585,117 @@ func TestRegistryGenerationRequiresRootNotFoundTemplate(t *testing.T) {
 	_, err := generateRegistrySource(
 		generationPaths{GenImportRoot: "internal/web/gen"},
 		metas,
+		templateDef{
+			Kind:       rootTemplate,
+			RouteID:    "",
+			ModuleName: "r_root_root",
+		},
 		map[string]templateDef{},
 		map[string]templateDef{},
+		map[string]templateDef{
+			"": {
+				Kind:       errorTemplate,
+				RouteID:    "",
+				ModuleName: "r_error_root",
+			},
+		},
 	)
 	if err == nil {
 		t.Fatal("expected missing root 404 metadata error")
 	}
 	if !strings.Contains(err.Error(), "missing root 404") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestRegistryGenerationRequiresRootErrorTemplate(t *testing.T) {
+	metas := []routeMeta{
+		{
+			RouteID:        "",
+			RouteName:      "Root",
+			ParamsTypeName: "RootParams",
+			PageViewType:   "appcore.NotesPageView",
+			Page:           templateDef{ModuleName: "r_page_root"},
+		},
+	}
+
+	_, err := generateRegistrySource(
+		generationPaths{GenImportRoot: "internal/web/gen"},
+		metas,
+		templateDef{
+			Kind:       rootTemplate,
+			RouteID:    "",
+			ModuleName: "r_root_root",
+		},
+		map[string]templateDef{},
+		map[string]templateDef{
+			"": {
+				Kind:       notFoundTemplate,
+				RouteID:    "",
+				ModuleName: "r_not_found_root",
+			},
+		},
+		map[string]templateDef{},
+	)
+	if err == nil {
+		t.Fatal("expected missing root error metadata error")
+	}
+	if !strings.Contains(err.Error(), "missing root error") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestRegistryGenerationWiresNearestErrorTemplate(t *testing.T) {
+	metas := []routeMeta{
+		{
+			RouteID:        "author/[slug]/note/[noteSlug]",
+			RouteName:      "AuthorParamSlugNoteParamNoteslug",
+			ParamsTypeName: "AuthorParamSlugNoteParamNoteslugParams",
+			Params: []routeParamDef{
+				{Name: "slug", FieldName: "Slug"},
+				{Name: "noteSlug", FieldName: "Noteslug"},
+			},
+			PageViewType: "appcore.NotePageView",
+			Page:         templateDef{ModuleName: "r_page_author_param_slug_note_param_noteslug"},
+		},
+	}
+
+	registry, err := generateRegistrySource(
+		generationPaths{GenImportRoot: "internal/web/gen"},
+		metas,
+		templateDef{
+			Kind:       rootTemplate,
+			RouteID:    "",
+			ModuleName: "r_root_root",
+		},
+		map[string]templateDef{},
+		map[string]templateDef{
+			"": {
+				Kind:       notFoundTemplate,
+				RouteID:    "",
+				ModuleName: "r_not_found_root",
+			},
+		},
+		map[string]templateDef{
+			"": {
+				Kind:       errorTemplate,
+				RouteID:    "",
+				ModuleName: "r_error_root",
+			},
+			"author/[slug]": {
+				Kind:       errorTemplate,
+				RouteID:    "author/[slug]",
+				ModuleName: "r_error_author_param_slug",
+			},
+		},
+	)
+	if err != nil {
+		t.Fatalf("generate registry: %v", err)
+	}
+
+	text := string(registry)
+	if !strings.Contains(text, "component := r_error_author_param_slug.Error(view, pathValue)") {
+		t.Fatalf("expected nearest author error template wiring, got:\n%s", text)
 	}
 }
 

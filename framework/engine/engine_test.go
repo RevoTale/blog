@@ -7,7 +7,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
 	"blog/framework"
 	"blog/framework/metagen"
@@ -284,10 +286,13 @@ func TestLayoutOrder(t *testing.T) {
 	}
 }
 
-func TestMetaGenRunsBeforeLoad(t *testing.T) {
+func TestMetaGenRunsConcurrentlyWithLoad(t *testing.T) {
 	t.Parallel()
 
-	steps := make([]string, 0, 2)
+	loadStarted := make(chan struct{})
+	metaStarted := make(chan struct{})
+	errConcurrent := errors.New("meta did not observe concurrent load start")
+	serverErrCalled := false
 
 	routeEngine, err := New(Config[*testAppContext]{
 		AppContext: &testAppContext{},
@@ -299,11 +304,21 @@ func TestMetaGenRunsBeforeLoad(t *testing.T) {
 						return framework.EmptyParams{}, path == "/notes"
 					},
 					MetaGen: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (metagen.Metadata, error) {
-						steps = append(steps, "meta")
-						return metagen.Metadata{Title: "Notes"}, nil
+						close(metaStarted)
+						select {
+						case <-loadStarted:
+							return metagen.Metadata{Title: "Notes"}, nil
+						case <-time.After(500 * time.Millisecond):
+							return metagen.Metadata{}, errConcurrent
+						}
 					},
 					Load: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (string, error) {
-						steps = append(steps, "load")
+						close(loadStarted)
+						select {
+						case <-metaStarted:
+						case <-time.After(500 * time.Millisecond):
+							return "", errors.New("load did not observe metagen start")
+						}
 						return "body", nil
 					},
 					Render: func(view string) templ.Component {
@@ -312,8 +327,20 @@ func TestMetaGenRunsBeforeLoad(t *testing.T) {
 				},
 			},
 		},
-		RenderPage: func(_ *http.Request, _ http.ResponseWriter, _ templ.Component, _ metagen.Metadata) error {
+		RenderPage: func(_ *http.Request, _ http.ResponseWriter, component templ.Component, _ metagen.Metadata) error {
+			var b bytes.Buffer
+			if err := component.Render(context.Background(), &b); err != nil {
+				return err
+			}
+			if b.String() != "body" {
+				return errors.New("unexpected body render")
+			}
 			return nil
+		},
+		HandleServerError: func(_ http.ResponseWriter, err error) {
+			if errors.Is(err, errConcurrent) {
+				serverErrCalled = true
+			}
 		},
 	})
 	if err != nil {
@@ -323,16 +350,16 @@ func TestMetaGenRunsBeforeLoad(t *testing.T) {
 	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
 		t.Fatal("expected route to match")
 	}
-	if len(steps) != 2 || steps[0] != "meta" || steps[1] != "load" {
-		t.Fatalf("expected metagen before load, got steps=%v", steps)
+	if serverErrCalled {
+		t.Fatal("metagen/load should run concurrently without server error")
 	}
 }
 
-func TestMetaGenErrorSkipsLoadAndRender(t *testing.T) {
+func TestMetaGenErrorPrefersMetadataClassification(t *testing.T) {
 	t.Parallel()
 
 	errNotFound := errors.New("not found")
-	loadCalled := false
+	loadCanceled := make(chan struct{})
 	renderCalled := false
 	notFoundCalled := false
 
@@ -348,9 +375,10 @@ func TestMetaGenErrorSkipsLoadAndRender(t *testing.T) {
 					MetaGen: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (metagen.Metadata, error) {
 						return metagen.Metadata{}, errNotFound
 					},
-					Load: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (string, error) {
-						loadCalled = true
-						return "body", nil
+					Load: func(ctx context.Context, _ *testAppContext, _ *http.Request, _ framework.EmptyParams) (string, error) {
+						defer close(loadCanceled)
+						<-ctx.Done()
+						return "", ctx.Err()
 					},
 					Render: func(view string) templ.Component {
 						return textComponent(view)
@@ -379,13 +407,90 @@ func TestMetaGenErrorSkipsLoadAndRender(t *testing.T) {
 	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
 		t.Fatal("expected route to match")
 	}
-	if loadCalled {
-		t.Fatal("load should not run when metagen fails")
-	}
 	if renderCalled {
 		t.Fatal("render callback should not run when metagen fails")
 	}
 	if !notFoundCalled {
 		t.Fatal("expected not-found callback for metagen not found")
+	}
+	select {
+	case <-loadCanceled:
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("expected load context cancellation after metagen failure")
+	}
+}
+
+func TestLoadFailureAfterRootRenderUsesErrorPage(t *testing.T) {
+	t.Parallel()
+
+	errBoom := errors.New("boom")
+	renderCalled := false
+	loggedError := ""
+	var rendered string
+
+	routeEngine, err := New(Config[*testAppContext]{
+		AppContext: &testAppContext{},
+		Handlers: []framework.RouteHandler[*testAppContext]{
+			framework.PageOnlyRouteHandler[*testAppContext, framework.EmptyParams, string]{
+				Page: framework.PageModule[*testAppContext, framework.EmptyParams, string]{
+					Pattern: "/notes",
+					ParseParams: func(path string) (framework.EmptyParams, bool) {
+						return framework.EmptyParams{}, path == "/notes"
+					},
+					MetaGen: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (metagen.Metadata, error) {
+						return metagen.Metadata{Title: "Notes"}, nil
+					},
+					Load: func(context.Context, *testAppContext, *http.Request, framework.EmptyParams) (string, error) {
+						return "", errBoom
+					},
+					Render: func(view string) templ.Component {
+						renderCalled = true
+						return textComponent(view)
+					},
+					RootLayout: func(meta metagen.Metadata, _ string, child templ.Component) templ.Component {
+						return componentFunc(func(ctx context.Context, w io.Writer) error {
+							if _, err := io.WriteString(w, "<html><head>"+meta.Title+"</head><body>"); err != nil {
+								return err
+							}
+							if err := child.Render(ctx, w); err != nil {
+								return err
+							}
+							_, err := io.WriteString(w, "</body></html>")
+							return err
+						})
+					},
+					ErrorPage: func(_ string, path string) templ.Component {
+						return textComponent("error:" + path)
+					},
+				},
+			},
+		},
+		RenderPage: func(_ *http.Request, _ http.ResponseWriter, component templ.Component, _ metagen.Metadata) error {
+			var b bytes.Buffer
+			if err := component.Render(context.Background(), &b); err != nil {
+				return err
+			}
+			rendered = b.String()
+			return nil
+		},
+		LogServerError: func(err error) {
+			loggedError = err.Error()
+		},
+	})
+	if err != nil {
+		t.Fatalf("new engine: %v", err)
+	}
+
+	if !routeEngine.ServeRoute(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/notes", nil)) {
+		t.Fatal("expected route to match")
+	}
+	if renderCalled {
+		t.Fatal("page renderer should not be called when load fails after stream start")
+	}
+	if !strings.Contains(rendered, "<html><head>Notes</head><body>error:/notes</body></html>") {
+		t.Fatalf("unexpected streamed error output: %q", rendered)
+	}
+	if !strings.Contains(loggedError, "after stream start") {
+		t.Fatalf("expected post-stream load error to be logged, got %q", loggedError)
 	}
 }

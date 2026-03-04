@@ -20,7 +20,6 @@ import (
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
 	webi18n "blog/internal/web/i18n"
-zZZ
 	"github.com/Khan/genqlient/graphql"
 )
 
@@ -767,8 +766,16 @@ func TestI18nRoutingAndLocalizedURLs(t *testing.T) {
 		t.Fatalf("/uk status: expected %d, got %d", http.StatusOK, recUK.Code)
 	}
 	ukBody := requireBody(t, recUK.Body)
+	if !strings.Contains(strings.ToLower(ukBody), "<!doctype html>") {
+		t.Fatalf("/uk should render root document doctype")
+	}
 	if !strings.Contains(ukBody, `<html lang="uk">`) {
 		t.Fatalf("/uk should render localized html lang")
+	}
+	headIndex := strings.Index(ukBody, "<head>")
+	mainIndex := strings.Index(ukBody, "<main")
+	if headIndex < 0 || mainIndex < 0 || headIndex > mainIndex {
+		t.Fatalf("/uk should render head before body content")
 	}
 	if !strings.Contains(ukBody, `href="/uk/channels"`) {
 		t.Fatalf("/uk should render localized channels URL")
@@ -906,7 +913,7 @@ func TestHandlerSEOMetadataAndHTMXPatchHeaders(t *testing.T) {
 	firstAuthor := objectFromAny(t, authors[0], "author[0]")
 	if got := stringField(t, firstAuthor, "url"); got != "https://revotale.com/blog/notes/uk/author/l-you" {
 		t.Fatalf("note JSON-LD author.url: expected localized author URL, got %q", got)
-	}	xq
+	}
 	datePublished := stringField(t, noteDoc, "datePublished")
 	if _, err := time.Parse(time.RFC3339, datePublished); err != nil {
 		t.Fatalf("note JSON-LD datePublished should be RFC3339/ISO timestamp, got %q", datePublished)

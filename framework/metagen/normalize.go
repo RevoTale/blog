@@ -7,11 +7,12 @@ import (
 
 func Normalize(meta Metadata) Metadata {
 	normalized := Metadata{
-		Title:       strings.TrimSpace(meta.Title),
-		Description: strings.TrimSpace(meta.Description),
-		Alternates:  normalizeAlternates(meta.Alternates),
-		Authors:     normalizeAuthors(meta.Authors),
-		Publisher:   strings.TrimSpace(meta.Publisher),
+		Title:         strings.TrimSpace(meta.Title),
+		Description:   strings.TrimSpace(meta.Description),
+		Alternates:    normalizeAlternates(meta.Alternates),
+		Authors:       normalizeAuthors(meta.Authors),
+		Publisher:     strings.TrimSpace(meta.Publisher),
+		DangerRawHead: normalizeRawHead(meta.DangerRawHead),
 	}
 
 	if robots := normalizeRobots(meta.Robots); robots != nil {
@@ -282,4 +283,24 @@ func normalizeBoolPointer(value *bool) *bool {
 	}
 	copy := *value
 	return &copy
+}
+
+func normalizeRawHead(values []string) []string {
+	if len(values) == 0 {
+		return nil
+	}
+
+	normalized := make([]string, 0, len(values))
+	for _, value := range values {
+		trimmed := strings.TrimSpace(value)
+		if trimmed == "" {
+			continue
+		}
+		normalized = append(normalized, trimmed)
+	}
+
+	if len(normalized) == 0 {
+		return nil
+	}
+	return normalized
 }

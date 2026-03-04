@@ -19,6 +19,7 @@ type Config[C interface{}] struct {
 	IsNotFoundError   func(err error) bool
 	HandleNotFound    func(w http.ResponseWriter, r *http.Request, notFoundContext framework.NotFoundContext)
 	HandleServerError func(w http.ResponseWriter, err error)
+	LogServerError    func(err error)
 }
 
 type Engine[C interface{}] struct {
@@ -31,6 +32,7 @@ type Engine[C interface{}] struct {
 	isNotFound  func(err error) bool
 	notFound    func(w http.ResponseWriter, r *http.Request, notFoundContext framework.NotFoundContext)
 	serverError func(w http.ResponseWriter, err error)
+	logError    func(err error)
 }
 
 func New[C interface{}](cfg Config[C]) (*Engine[C], error) {
@@ -61,6 +63,10 @@ func New[C interface{}](cfg Config[C]) (*Engine[C], error) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
 	}
+	logError := cfg.LogServerError
+	if logError == nil {
+		logError = func(error) {}
+	}
 
 	return &Engine[C]{
 		appContext:       cfg.AppContext,
@@ -70,6 +76,7 @@ func New[C interface{}](cfg Config[C]) (*Engine[C], error) {
 		isNotFound:       isNotFound,
 		notFound:         notFound,
 		serverError:      serverError,
+		logError:         logError,
 	}, nil
 }
 
@@ -114,4 +121,8 @@ func (engine *Engine[C]) RespondNotFound(
 
 func (engine *Engine[C]) RespondServerError(w http.ResponseWriter, err error) {
 	engine.serverError(w, err)
+}
+
+func (engine *Engine[C]) LogServerError(err error) {
+	engine.logError(err)
 }

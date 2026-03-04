@@ -138,6 +138,50 @@ func TestHeadRendersManagedSEOAndDeterministicOrder(t *testing.T) {
 	}
 }
 
+func TestHeadRendersDangerRawHeadVerbatim(t *testing.T) {
+	t.Parallel()
+
+	head := renderHeadToString(t, Metadata{
+		Title:         "Raw Head",
+		DangerRawHead: []string{`<style id="test-style">.x{color:red}</style>`},
+	})
+
+	if !strings.Contains(head, `<style id="test-style">.x{color:red}</style>`) {
+		t.Fatalf("expected DangerRawHead to be emitted verbatim, got %q", head)
+	}
+}
+
+func TestMergeAllAppendsDangerRawHeadAndOverridesFields(t *testing.T) {
+	t.Parallel()
+
+	parent := Metadata{
+		Title:         "Parent",
+		Description:   "Parent Description",
+		DangerRawHead: []string{"<style>.a{}</style>"},
+	}
+	child := Metadata{
+		Title:         "Child",
+		DangerRawHead: []string{"<script>window.x=1</script>"},
+	}
+
+	merged := MergeAll(parent, child)
+	if merged.Title != "Child" {
+		t.Fatalf("expected child title override, got %q", merged.Title)
+	}
+	if merged.Description != "Parent Description" {
+		t.Fatalf("expected parent description inheritance, got %q", merged.Description)
+	}
+	if len(merged.DangerRawHead) != 2 {
+		t.Fatalf("expected merged raw head length 2, got %d", len(merged.DangerRawHead))
+	}
+	if merged.DangerRawHead[0] != "<style>.a{}</style>" {
+		t.Fatalf("expected parent raw head first, got %q", merged.DangerRawHead[0])
+	}
+	if merged.DangerRawHead[1] != "<script>window.x=1</script>" {
+		t.Fatalf("expected child raw head second, got %q", merged.DangerRawHead[1])
+	}
+}
+
 func TestBuildAlternatesPrefixAsNeeded(t *testing.T) {
 	t.Parallel()
 

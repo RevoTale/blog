@@ -3,7 +3,9 @@ package framework
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"sync"
 
 	frameworki18n "blog/framework/i18n"
 	"blog/framework/metagen"
@@ -37,12 +39,15 @@ type PageRenderer[VM interface{}] func(view VM) templ.Component
 type LayoutRenderer[VM interface{}] func(meta metagen.Metadata, view VM, child templ.Component) templ.Component
 
 type PageModule[C interface{}, P interface{}, VM interface{}] struct {
-	Pattern     string
-	ParseParams ParamsParser[P]
-	MetaGen     PageMetaGen[C, P]
-	Load        PageLoader[C, P, VM]
-	Render      PageRenderer[VM]
-	Layouts     []LayoutRenderer[VM]
+	Pattern      string
+	ParseParams  ParamsParser[P]
+	MetaGen      PageMetaGen[C, P]
+	MetaGenChain []PageMetaGen[C, P]
+	Load         PageLoader[C, P, VM]
+	Render       PageRenderer[VM]
+	Layouts      []LayoutRenderer[VM]
+	RootLayout   func(meta metagen.Metadata, locale string, child templ.Component) templ.Component
+	ErrorPage    func(locale string, path string) templ.Component
 }
 
 type RuntimeContext[C interface{}] interface {
@@ -52,6 +57,7 @@ type RuntimeContext[C interface{}] interface {
 	IsNotFound(err error) bool
 	RespondNotFound(w http.ResponseWriter, r *http.Request, notFoundContext NotFoundContext)
 	RespondServerError(w http.ResponseWriter, err error)
+	LogServerError(err error)
 }
 
 type NotFoundSource string
@@ -109,31 +115,141 @@ func servePageModule[C interface{}, P interface{}, VM interface{}](
 		return false
 	}
 
-	meta := metagen.Metadata{}
-	if module.MetaGen != nil {
-		var err error
-		meta, err = module.MetaGen(r.Context(), runtime.AppContext(), r, params)
-		if err != nil {
-			handleModuleError(runtime, w, r, err, module.Pattern, NotFoundSourceMetaGen, "meta")
+	type metadataResult struct {
+		meta metagen.Metadata
+		err  error
+	}
+	type pageLoadResult struct {
+		view VM
+		err  error
+	}
+
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+	appCtx := runtime.AppContext()
+
+	metaCh := make(chan metadataResult, 1)
+	go func() {
+		meta, err := resolveMetadata(ctx, appCtx, r, params, module)
+		metaCh <- metadataResult{meta: meta, err: err}
+	}()
+
+	loadCh := make(chan pageLoadResult, 1)
+	go func() {
+		view, err := module.Load(ctx, appCtx, r, params)
+		loadCh <- pageLoadResult{view: view, err: err}
+	}()
+
+	metaResult := <-metaCh
+	if metaResult.err != nil {
+		handleModuleError(runtime, w, r, metaResult.err, module.Pattern, NotFoundSourceMetaGen, "meta")
+		return true
+	}
+	meta := metagen.Normalize(metaResult.meta)
+
+	var loadOnce sync.Once
+	var loadResult pageLoadResult
+	awaitLoad := func() pageLoadResult {
+		loadOnce.Do(func() {
+			loadResult = <-loadCh
+		})
+		return loadResult
+	}
+
+	partial := runtime.IsPartialRequest(r)
+	if partial || module.RootLayout == nil {
+		result := awaitLoad()
+		if result.err != nil {
+			handleModuleError(runtime, w, r, result.err, module.Pattern, NotFoundSourcePageLoad, "load")
 			return true
 		}
-	}
-	meta = metagen.Normalize(meta)
 
-	view, err := module.Load(r.Context(), runtime.AppContext(), r, params)
-	if err != nil {
-		handleModuleError(runtime, w, r, err, module.Pattern, NotFoundSourcePageLoad, "load")
+		component := module.Render(result.view)
+		if !partial {
+			component = applyLayouts(module.Layouts, meta, result.view, component)
+		}
+		if err := runtime.RenderPage(r, w, component, meta); err != nil {
+			runtime.RespondServerError(w, fmt.Errorf("render route %q: %w", module.Pattern, err))
+		}
 		return true
 	}
 
-	component := module.Render(view)
-	if !runtime.IsPartialRequest(r) {
-		component = applyLayouts(module.Layouts, meta, view, component)
+	locale := frameworki18n.LocaleFromContext(r.Context())
+	streamedBody := templ.ComponentFunc(func(renderCtx context.Context, writer io.Writer) error {
+		result := awaitLoad()
+		if result.err != nil {
+			runtime.LogServerError(fmt.Errorf("load route %q after stream start: %w", module.Pattern, result.err))
+			if module.ErrorPage == nil {
+				return nil
+			}
+			errorComponent := module.ErrorPage(locale, r.URL.Path)
+			if errorComponent == nil {
+				return nil
+			}
+			return errorComponent.Render(renderCtx, writer)
+		}
+
+		component := module.Render(result.view)
+		component = applyLayouts(module.Layouts, meta, result.view, component)
+		return component.Render(renderCtx, writer)
+	})
+
+	component := module.RootLayout(meta, locale, streamedBody)
+	if component == nil {
+		component = streamedBody
 	}
 	if err := runtime.RenderPage(r, w, component, meta); err != nil {
 		runtime.RespondServerError(w, fmt.Errorf("render route %q: %w", module.Pattern, err))
 	}
 	return true
+}
+
+func resolveMetadata[C interface{}, P interface{}, VM interface{}](
+	ctx context.Context,
+	appCtx C,
+	r *http.Request,
+	params P,
+	module PageModule[C, P, VM],
+) (metagen.Metadata, error) {
+	chain := module.MetaGenChain
+	if len(chain) == 0 && module.MetaGen != nil {
+		chain = append(chain, module.MetaGen)
+	}
+	if len(chain) == 0 {
+		return metagen.Metadata{}, nil
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	results := make([]metagen.Metadata, len(chain))
+	errs := make([]error, len(chain))
+
+	var wg sync.WaitGroup
+	for idx, fn := range chain {
+		wg.Add(1)
+		go func(i int, run PageMetaGen[C, P]) {
+			defer wg.Done()
+			if run == nil {
+				return
+			}
+			meta, err := run(ctx, appCtx, r, params)
+			if err != nil {
+				errs[i] = err
+				cancel()
+				return
+			}
+			results[i] = meta
+		}(idx, fn)
+	}
+	wg.Wait()
+
+	for _, err := range errs {
+		if err != nil {
+			return metagen.Metadata{}, err
+		}
+	}
+	return metagen.MergeAll(results...), nil
 }
 
 func handleModuleError[C interface{}](

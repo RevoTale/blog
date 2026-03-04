@@ -6,6 +6,7 @@ import (
 	"blog/framework/metagen"
 	"blog/framework/router"
 	"blog/internal/web/appcore"
+	r_error_root "blog/internal/web/gen/r_error_root"
 	r_layout_author_param_slug "blog/internal/web/gen/r_layout_author_param_slug"
 	r_layout_root "blog/internal/web/gen/r_layout_root"
 	r_not_found_root "blog/internal/web/gen/r_not_found_root"
@@ -16,6 +17,7 @@ import (
 	r_page_root "blog/internal/web/gen/r_page_root"
 	r_page_tag_param_slug "blog/internal/web/gen/r_page_tag_param_slug"
 	r_page_tales "blog/internal/web/gen/r_page_tales"
+	r_root_root "blog/internal/web/gen/r_root_root"
 	route_resolvers "blog/internal/web/resolvers"
 	"context"
 	"github.com/a-h/templ"
@@ -46,10 +48,36 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				MetaGen: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenRootPage(ctx, appCtx, r, params)
 				},
+				MetaGenChain: []framework.PageMetaGen[*appcore.Context, RootParams]{
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, _ RootParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(ctx, appCtx, r)
+					},
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootPage(ctx, appCtx, r, params)
+					},
+				},
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveRootPage(ctx, appCtx, r, params)
 				},
-				Render: r_page_root.Page,
+				Render:     r_page_root.Page,
+				RootLayout: r_root_root.RootLayout,
+				ErrorPage: func(locale string, path string) templ.Component {
+					pathValue := strings.TrimSpace(path)
+					if pathValue == "" {
+						pathValue = "/"
+					}
+					view := appcore.NewNotFoundLayoutView(locale)
+					meta := metagen.Metadata{
+						Title: view.LayoutPageTitle(),
+						Robots: &metagen.Robots{
+							Index:  metagen.Bool(false),
+							Follow: metagen.Bool(false),
+						},
+					}
+					component := r_error_root.Error(view, pathValue)
+					component = r_layout_root.Layout(meta, view, component)
+					return component
+				},
 				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapRootWithRootLayout,
 				},
@@ -62,10 +90,41 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				MetaGen: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenAuthorParamSlugPage(ctx, appCtx, r, params)
 				},
+				MetaGenChain: []framework.PageMetaGen[*appcore.Context, AuthorParamSlugParams]{
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, _ AuthorParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(ctx, appCtx, r)
+					},
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error) {
+						layoutParams := route_resolvers.AuthorParamSlugParams{}
+						layoutParams.Slug = params.Slug
+						return resolvers.MetaGenAuthorParamSlugLayout(ctx, appCtx, r, layoutParams)
+					},
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenAuthorParamSlugPage(ctx, appCtx, r, params)
+					},
+				},
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (appcore.AuthorPageView, error) {
 					return resolvers.ResolveAuthorParamSlugPage(ctx, appCtx, r, params)
 				},
-				Render: r_page_author_param_slug.Page,
+				Render:     r_page_author_param_slug.Page,
+				RootLayout: r_root_root.RootLayout,
+				ErrorPage: func(locale string, path string) templ.Component {
+					pathValue := strings.TrimSpace(path)
+					if pathValue == "" {
+						pathValue = "/"
+					}
+					view := appcore.NewNotFoundLayoutView(locale)
+					meta := metagen.Metadata{
+						Title: view.LayoutPageTitle(),
+						Robots: &metagen.Robots{
+							Index:  metagen.Bool(false),
+							Follow: metagen.Bool(false),
+						},
+					}
+					component := r_error_root.Error(view, pathValue)
+					component = r_layout_root.Layout(meta, view, component)
+					return component
+				},
 				Layouts: []framework.LayoutRenderer[appcore.AuthorPageView]{
 					wrapAuthorParamSlugWithRootLayout,
 					wrapAuthorParamSlugWithAuthorParamSlugLayout,
@@ -79,10 +138,36 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				MetaGen: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenChannelsPage(ctx, appCtx, r, params)
 				},
+				MetaGenChain: []framework.PageMetaGen[*appcore.Context, ChannelsParams]{
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, _ ChannelsParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(ctx, appCtx, r)
+					},
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenChannelsPage(ctx, appCtx, r, params)
+					},
+				},
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveChannelsPage(ctx, appCtx, r, params)
 				},
-				Render: r_page_channels.Page,
+				Render:     r_page_channels.Page,
+				RootLayout: r_root_root.RootLayout,
+				ErrorPage: func(locale string, path string) templ.Component {
+					pathValue := strings.TrimSpace(path)
+					if pathValue == "" {
+						pathValue = "/"
+					}
+					view := appcore.NewNotFoundLayoutView(locale)
+					meta := metagen.Metadata{
+						Title: view.LayoutPageTitle(),
+						Robots: &metagen.Robots{
+							Index:  metagen.Bool(false),
+							Follow: metagen.Bool(false),
+						},
+					}
+					component := r_error_root.Error(view, pathValue)
+					component = r_layout_root.Layout(meta, view, component)
+					return component
+				},
 				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapChannelsWithRootLayout,
 				},
@@ -95,10 +180,36 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				MetaGen: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenMicroTalesPage(ctx, appCtx, r, params)
 				},
+				MetaGenChain: []framework.PageMetaGen[*appcore.Context, MicroTalesParams]{
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, _ MicroTalesParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(ctx, appCtx, r)
+					},
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenMicroTalesPage(ctx, appCtx, r, params)
+					},
+				},
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveMicroTalesPage(ctx, appCtx, r, params)
 				},
-				Render: r_page_micro_tales.Page,
+				Render:     r_page_micro_tales.Page,
+				RootLayout: r_root_root.RootLayout,
+				ErrorPage: func(locale string, path string) templ.Component {
+					pathValue := strings.TrimSpace(path)
+					if pathValue == "" {
+						pathValue = "/"
+					}
+					view := appcore.NewNotFoundLayoutView(locale)
+					meta := metagen.Metadata{
+						Title: view.LayoutPageTitle(),
+						Robots: &metagen.Robots{
+							Index:  metagen.Bool(false),
+							Follow: metagen.Bool(false),
+						},
+					}
+					component := r_error_root.Error(view, pathValue)
+					component = r_layout_root.Layout(meta, view, component)
+					return component
+				},
 				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapMicroTalesWithRootLayout,
 				},
@@ -111,10 +222,36 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				MetaGen: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenNoteParamSlugPage(ctx, appCtx, r, params)
 				},
+				MetaGenChain: []framework.PageMetaGen[*appcore.Context, NoteParamSlugParams]{
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, _ NoteParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(ctx, appCtx, r)
+					},
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenNoteParamSlugPage(ctx, appCtx, r, params)
+					},
+				},
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (appcore.NotePageView, error) {
 					return resolvers.ResolveNoteParamSlugPage(ctx, appCtx, r, params)
 				},
-				Render: r_page_note_param_slug.Page,
+				Render:     r_page_note_param_slug.Page,
+				RootLayout: r_root_root.RootLayout,
+				ErrorPage: func(locale string, path string) templ.Component {
+					pathValue := strings.TrimSpace(path)
+					if pathValue == "" {
+						pathValue = "/"
+					}
+					view := appcore.NewNotFoundLayoutView(locale)
+					meta := metagen.Metadata{
+						Title: view.LayoutPageTitle(),
+						Robots: &metagen.Robots{
+							Index:  metagen.Bool(false),
+							Follow: metagen.Bool(false),
+						},
+					}
+					component := r_error_root.Error(view, pathValue)
+					component = r_layout_root.Layout(meta, view, component)
+					return component
+				},
 				Layouts: []framework.LayoutRenderer[appcore.NotePageView]{
 					wrapNoteParamSlugWithRootLayout,
 				},
@@ -127,10 +264,36 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				MetaGen: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenTagParamSlugPage(ctx, appCtx, r, params)
 				},
+				MetaGenChain: []framework.PageMetaGen[*appcore.Context, TagParamSlugParams]{
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, _ TagParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(ctx, appCtx, r)
+					},
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenTagParamSlugPage(ctx, appCtx, r, params)
+					},
+				},
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveTagParamSlugPage(ctx, appCtx, r, params)
 				},
-				Render: r_page_tag_param_slug.Page,
+				Render:     r_page_tag_param_slug.Page,
+				RootLayout: r_root_root.RootLayout,
+				ErrorPage: func(locale string, path string) templ.Component {
+					pathValue := strings.TrimSpace(path)
+					if pathValue == "" {
+						pathValue = "/"
+					}
+					view := appcore.NewNotFoundLayoutView(locale)
+					meta := metagen.Metadata{
+						Title: view.LayoutPageTitle(),
+						Robots: &metagen.Robots{
+							Index:  metagen.Bool(false),
+							Follow: metagen.Bool(false),
+						},
+					}
+					component := r_error_root.Error(view, pathValue)
+					component = r_layout_root.Layout(meta, view, component)
+					return component
+				},
 				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapTagParamSlugWithRootLayout,
 				},
@@ -143,10 +306,36 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*appcore.Contex
 				MetaGen: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenTalesPage(ctx, appCtx, r, params)
 				},
+				MetaGenChain: []framework.PageMetaGen[*appcore.Context, TalesParams]{
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, _ TalesParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(ctx, appCtx, r)
+					},
+					func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenTalesPage(ctx, appCtx, r, params)
+					},
+				},
 				Load: func(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (appcore.NotesPageView, error) {
 					return resolvers.ResolveTalesPage(ctx, appCtx, r, params)
 				},
-				Render: r_page_tales.Page,
+				Render:     r_page_tales.Page,
+				RootLayout: r_root_root.RootLayout,
+				ErrorPage: func(locale string, path string) templ.Component {
+					pathValue := strings.TrimSpace(path)
+					if pathValue == "" {
+						pathValue = "/"
+					}
+					view := appcore.NewNotFoundLayoutView(locale)
+					meta := metagen.Metadata{
+						Title: view.LayoutPageTitle(),
+						Robots: &metagen.Robots{
+							Index:  metagen.Bool(false),
+							Follow: metagen.Bool(false),
+						},
+					}
+					component := r_error_root.Error(view, pathValue)
+					component = r_layout_root.Layout(meta, view, component)
+					return component
+				},
 				Layouts: []framework.LayoutRenderer[appcore.NotesPageView]{
 					wrapTalesWithRootLayout,
 				},
@@ -173,7 +362,7 @@ func NotFoundPage(notFound framework.NotFoundContext) templ.Component {
 	default:
 		component := r_not_found_root.Page(view, pathValue)
 		component = r_layout_root.Layout(meta, view, component)
-		return component
+		return r_root_root.RootLayout(meta, notFound.Locale, component)
 	}
 }
 

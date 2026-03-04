@@ -53,8 +53,19 @@ func renderManagedHead(meta Metadata, includeTitle bool) (string, string, error)
 	writeOpenGraph(&builder, meta.OpenGraph)
 	writeTwitter(&builder, meta.Twitter)
 	writePinterest(&builder, meta.Pinterest)
+	writeRawHead(&builder, meta.DangerRawHead)
 
 	return meta.Title, builder.String(), nil
+}
+
+func writeRawHead(builder *strings.Builder, raw []string) {
+	for _, value := range raw {
+		trimmed := strings.TrimSpace(value)
+		if trimmed == "" {
+			continue
+		}
+		writeTag(builder, trimmed)
+	}
 }
 
 func writeAlternates(builder *strings.Builder, alternates Alternates) {
