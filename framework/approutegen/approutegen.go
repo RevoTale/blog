@@ -202,7 +202,14 @@ func Run() error {
 		return fmt.Errorf("write %s: %w", generatedResolverFileName, err)
 	}
 
-	registrySource, err := generateRegistrySource(paths, metas, routes.Root, routes.Layouts, routes.NotFounds, routes.Errors)
+	registrySource, err := generateRegistrySource(
+		paths,
+		metas,
+		routes.Root,
+		routes.Layouts,
+		routes.NotFounds,
+		routes.Errors,
+	)
 	if err != nil {
 		return err
 	}
@@ -746,18 +753,6 @@ func rewritePackageDeclaration(source []byte, packageName string) ([]byte, error
 	}
 
 	return nil, errors.New("template missing package declaration")
-}
-
-func writeParamsStruct(buffer *bytes.Buffer, meta routeMeta) {
-	writef(buffer, "type %s struct {\n", meta.ParamsTypeName)
-	if len(meta.Params) == 0 {
-		buffer.WriteString("}\n\n")
-		return
-	}
-	for _, param := range meta.Params {
-		writef(buffer, "\t%s string\n", param.FieldName)
-	}
-	buffer.WriteString("}\n\n")
 }
 
 func writeContractParamsStruct(buffer *bytes.Buffer, contract routeContractDef) {
@@ -1332,7 +1327,10 @@ func writePageModule(
 	chain := layoutChain(meta.RouteID, layouts)
 	writef(buffer, "\t\t\t\tMetaGenName: %q,\n", resolverMethodQualified(metaGenPageMethod(meta)))
 	metaChainMethodNames := make([]string, 0, len(chain)+2)
-	metaChainMethodNames = append(metaChainMethodNames, resolverMethodQualified(metaGenLayoutMethod(templateDef{RouteID: ""})))
+	metaChainMethodNames = append(
+		metaChainMethodNames,
+		resolverMethodQualified(metaGenLayoutMethod(templateDef{RouteID: ""})),
+	)
 	for _, layout := range chain {
 		if layout.RouteID == "" {
 			continue
@@ -1368,7 +1366,8 @@ func writePageModule(
 		}
 		writef(
 			buffer,
-			"\t\t\t\t\tfunc(ctx context.Context, appCtx *appcore.Context, r *http.Request, params %s) (metagen.Metadata, error) {\n",
+			"\t\t\t\t\tfunc(ctx context.Context, appCtx *appcore.Context, r *http.Request, "+
+				"params %s) (metagen.Metadata, error) {\n",
 			meta.ParamsTypeName,
 		)
 		if len(contract.Params) > 0 {
@@ -1393,7 +1392,8 @@ func writePageModule(
 	}
 	writef(
 		buffer,
-		"\t\t\t\t\tfunc(ctx context.Context, appCtx *appcore.Context, r *http.Request, params %s) (metagen.Metadata, error) {\n",
+		"\t\t\t\t\tfunc(ctx context.Context, appCtx *appcore.Context, r *http.Request, "+
+			"params %s) (metagen.Metadata, error) {\n",
 		meta.ParamsTypeName,
 	)
 	writef(buffer, "\t\t\t\t\t\treturn resolvers.%s(ctx, appCtx, r, params)\n", metaGenPageMethod(meta))

@@ -37,6 +37,22 @@ tasks:
     cmds:
       - golangci-lint run ./...
 
+  go:deadcode:
+    desc: Run deadcode analysis for all packages (including tests)
+    preconditions:
+      - sh: test -x "$(go env GOPATH)/bin/deadcode"
+        msg: "deadcode is not installed. Install with: go install golang.org/x/tools/cmd/deadcode@latest"
+    cmds:
+      - |
+        deadcode_bin="$(go env GOPATH)/bin/deadcode"
+        output="$(HOME=/tmp XDG_CACHE_HOME=/tmp "$deadcode_bin" -test ./...)"
+        if [ -n "$output" ]; then
+          echo "$output"
+          echo
+          echo "deadcode validation failed: remove unreachable functions or justify exclusions."
+          exit 1
+        fi
+
   go:test:
     desc: Run Go tests for all packages
     cmds:
@@ -66,6 +82,7 @@ tasks:
     desc: Run project validation checks
     cmds:
       - task: go:lint
+      - task: go:deadcode
 
   test:
     desc: Run test suite

@@ -30,7 +30,7 @@ func ImageResponsiveSrcSet(src string, maxWidth int) string {
 	srcset, err := currentImageLoader().ResponsiveSrcSet(strings.TrimSpace(src), maxWidth)
 
 	if nil != err {
-		return fmt.Sprintf("server_error:%s",err.Error())
+		return fmt.Sprintf("server_error:%s", err.Error())
 	}
 
 	return srcset
@@ -42,10 +42,6 @@ func ImageThumb(src string, originalWidth int, originalHeight int) (string, int,
 
 func ImageResponsiveSizes() string {
 	return "100vw"
-}
-
-func MarkdownImageSizes() string {
-	return imageloader.MarkdownSizes()
 }
 
 func currentImageLoader() imageloader.Loader {

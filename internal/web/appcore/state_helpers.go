@@ -1,19 +1,11 @@
 package appcore
 
 import (
-	"strconv"
 	"strings"
 
 	"blog/internal/markdown"
 	"blog/internal/notes"
 )
-
-func TagClass(active bool) string {
-	if active {
-		return "tag active"
-	}
-	return "tag"
-}
 
 func ChannelLinkClass(active bool) string {
 	if active {
@@ -99,17 +91,6 @@ func TagChannelLabel(tag notes.Tag) string {
 	return "#" + label
 }
 
-func TypeChannelLabel(noteType notes.NoteType) string {
-	switch notes.ParseNoteType(string(noteType)) {
-	case notes.NoteTypeLong:
-		return "Tales"
-	case notes.NoteTypeShort:
-		return "Micro-tales"
-	default:
-		return "ANY"
-	}
-}
-
 func SidebarAllActive(view RootLayoutView) bool {
 	if view == nil {
 		return true
@@ -126,10 +107,6 @@ func NoteCardClass(hasAttachment bool) string {
 		return "panel note-card has-attachment"
 	}
 	return "panel note-card"
-}
-
-func PagerStatusText(p PaginationView) string {
-	return "page " + strconv.Itoa(p.Page) + " / " + strconv.Itoa(p.TotalPages)
 }
 
 func AttachmentAltText(alt string, fallbackTitle string) string {

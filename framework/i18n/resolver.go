@@ -25,13 +25,6 @@ func NewResolver(cfg Config) (*Resolver, error) {
 	return &Resolver{config: normalized}, nil
 }
 
-func (resolver *Resolver) Config() Config {
-	if resolver == nil {
-		return Config{}
-	}
-	return resolver.config
-}
-
 func (resolver *Resolver) Resolve(requestPath string) RouteDecision {
 	normalizedPath := NormalizePath(requestPath)
 	decision := RouteDecision{

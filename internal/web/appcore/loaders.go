@@ -247,10 +247,6 @@ func listFilterFromQuery(r *http.Request, defaults notes.ListFilter) notes.ListF
 	return filter
 }
 
-func BuildNotesURL(locale string, page int, tag string, searchQuery string) string {
-	return BuildNotesFilterURL(locale, page, "", tag, notes.NoteTypeAll, searchQuery)
-}
-
 func BuildRSSFeedURL(
 	locale string,
 	page int,

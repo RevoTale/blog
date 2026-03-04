@@ -23,6 +23,8 @@ jobs:
         with:
           version: v2.6
           install-only: true
+      - name: Install deadcode
+        run: go install golang.org/x/tools/cmd/deadcode@latest
       - name: Codegen check
         run: task gen:check
       - name: Test
