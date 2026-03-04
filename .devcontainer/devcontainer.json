@@ -1,0 +1,10 @@
+{
+	"name": "Go",
+	"image": "mcr.microsoft.com/devcontainers/go:1.26",
+	"portsAttributes": {
+		"8080": {
+			"label": "Default app",
+			"onAutoForward": "notify"
+		}
+	}
+}
