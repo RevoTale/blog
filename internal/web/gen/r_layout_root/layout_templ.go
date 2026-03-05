@@ -81,7 +81,7 @@ func Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Comp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.ImageResponsive("server-logo", appcore.StaticAssetURL("revtale-logo.svg"), "RevTale", "eager", "28px", 28, 28).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.ImageResponsive("server-logo", appcore.StaticAssetURL("revtale-logo.svg"), "RevTale", "lazy", "28px", 28, 28).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
