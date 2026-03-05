@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/RevoTale/blog/compare/v0.5.0...v0.6.0) (2026-03-05)
+
+
+### Features
+
+* image lazy loading ([616c433](https://github.com/RevoTale/blog/commit/616c4334b7e5f2c06973dbf50395a184ecde9e19))
+
 ## [0.5.0](https://github.com/RevoTale/blog/compare/v0.4.0...v0.5.0) (2026-03-05)
 
 
