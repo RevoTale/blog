@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.0](https://github.com/RevoTale/blog/compare/v0.5.0...v0.6.0) (2026-03-09)
+
+
+### Features
+
+* configure privacy-first lovely eye analytics ([e36c5ac](https://github.com/RevoTale/blog/commit/e36c5ac95aa1dbe326564c6ad5fadd79f2a1400c))
+* debug lovely eye config ([71d3a12](https://github.com/RevoTale/blog/commit/71d3a128bf190006f3745869a3981ac6a76fcdb1))
+* image lazy loading ([616c433](https://github.com/RevoTale/blog/commit/616c4334b7e5f2c06973dbf50395a184ecde9e19))
+
 ## [0.5.0](https://github.com/RevoTale/blog/compare/v0.4.0...v0.5.0) (2026-03-05)
 
 
