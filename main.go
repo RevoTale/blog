@@ -63,6 +63,12 @@ func run() error {
 	imageLoader := imageloader.New(cfg.EnableImageLoader)
 	appcore.SetImageLoader(imageLoader)
 	appcore.SetLovelyEye(cfg.LovelyEyeScriptURL, cfg.LovelyEyeSiteID)
+	log.Printf(
+		"lovely eye startup: enabled=%t script_url=%q site_id=%q",
+		appcore.LovelyEyeEnabled(),
+		appcore.LovelyEyeScriptURL(),
+		appcore.LovelyEyeSiteID(),
+	)
 
 	graphqlClient := gql.NewClient(cfg)
 	noteService := notes.NewService(
