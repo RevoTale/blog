@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/RevoTale/blog/compare/v0.6.0...v0.6.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* wrong short notes content disaplyed ([b8c922c](https://github.com/RevoTale/blog/commit/b8c922c723c051a46984d932aebe3862c2db3f3a))
+
 ## [0.6.0](https://github.com/RevoTale/blog/compare/v0.5.0...v0.6.0) (2026-03-09)
 
 
