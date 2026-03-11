@@ -34,9 +34,9 @@ templ NoteCard(locale string, messages map[webi18n.Key]string, note notes.NoteSu
 				</h2>
 			}
 
-			if note.Description != "" {
+			if note.Excerpt != "" {
 				<a class="message-content message-content-link" href={ appcore.LocalizeAppPath(locale, "/note/" + note.Slug) }>{ note.Description }</a>
-			} else if note.Excerpt != "" {
+			} else if note.Description != "" {
 				<a class="message-content message-content-link" href={ appcore.LocalizeAppPath(locale, "/note/" + note.Slug) }>{ note.Excerpt }</a>
 			}
 
