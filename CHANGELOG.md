@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/RevoTale/blog/compare/v0.6.2...v0.6.3) (2026-03-12)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/evanw/esbuild to v0.27.4 ([8548d86](https://github.com/RevoTale/blog/commit/8548d86ed345080a3ccea1febbfc7bb33a1c2f17))
+
 ## [0.6.2](https://github.com/RevoTale/blog/compare/v0.6.1...v0.6.2) (2026-03-12)
 
 
