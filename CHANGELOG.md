@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2](https://github.com/RevoTale/blog/compare/v0.6.1...v0.6.2) (2026-03-12)
+
+
+### Bug Fixes
+
+* canonicalize note listing filter urls, place redirect to the canonical when suitable and add noindex for unknown params ([c8b70e0](https://github.com/RevoTale/blog/commit/c8b70e0d12b547bca6e71688acf7eaa524838f84))
+* **deps:** update all non-major dependencies ([87db0ef](https://github.com/RevoTale/blog/commit/87db0ef8db8985638448c6cb354886f0116273cd))
+
 ## [0.6.1](https://github.com/RevoTale/blog/compare/v0.6.0...v0.6.1) (2026-03-11)
 
 
