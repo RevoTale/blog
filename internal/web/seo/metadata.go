@@ -280,20 +280,8 @@ func MetaGenNotePage(
 	if contentTitle == "" {
 		contentTitle = strings.TrimSpace(view.Note.Title)
 	}
-	if contentTitle == "" {
-		contentTitle = strings.TrimSpace(view.PageTitle)
-	}
 	title := titleWithSite(contentTitle, site.Name)
 	description := strings.TrimSpace(view.Note.Description)
-	if description == "" {
-		description = localizeSEO(
-			appCtx,
-			view.LocaleCode(),
-			webi18n.KeySeoNoteDescription,
-			"Read this note from the blog archive.",
-			map[string]any{"Title": strings.TrimSpace(view.Note.Title)},
-		)
-	}
 
 	alternates, alternatesErr := buildAlternates(appCtx, r, view.LocaleCode(), nil)
 	if alternatesErr != nil {

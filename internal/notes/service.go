@@ -741,9 +741,6 @@ func (s *Service) GetNoteBySlug(ctx context.Context, locale string, slug string)
 		note.Description = strOr(doc.Meta.Description, "")
 		note.MetaTitle = strOr(doc.Meta.Title, "")
 		note.MetaImage = mapNoteMetaAttachment(doc.Meta.Image)
-		if strings.TrimSpace(note.Title) == "" {
-			note.Title = strOr(doc.Meta.Title, "")
-		}
 	}
 
 	return &note, nil

@@ -210,9 +210,6 @@ func LoadNotePage(
 		}
 		messages := localizedMessages(appCtx, locale)
 		pageTitle := strings.TrimSpace(note.Title)
-		if pageTitle == "" {
-			pageTitle = Message(messages, webi18n.KeyNoteTitleFallback)
-		}
 
 		return NotePageView{
 			Locale:                locale,
