@@ -1,12 +1,14 @@
 {
-	"name": "Go",
-	"build": {
-		"dockerfile": "Dockerfile" // Path to your Dockerfile
-	},
-	"portsAttributes": {
-		"8080": {
-			"label": "Default app",
-			"onAutoForward": "notify"
-		}
-	}
+  "name": "RevoTale Blog",
+  "image": "mcr.microsoft.com/devcontainers/go",
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=${localEnv:HOME}/.codex,target=/home/vscode/.codex,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.cursor,target=/home/vscode/.cursor,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.continue,target=/home/vscode/.continue,type=bind,consistency=cached"
+  ],
+  "features": {
+      "ghcr.io/devcontainers-extra/features/go-task:1": {}
+  }
 }
