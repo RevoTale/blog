@@ -15,7 +15,9 @@ RUN GOCACHE=/tmp/go-cache GOMODCACHE=/go/pkg/mod \
       -manifest internal/web/static-build/manifest.json \
       -url-prefix /.revotale/
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/blog .
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -trimpath \
+    -ldflags='-s -w' -o /out/blog .
 
 FROM gcr.io/distroless/static-debian12 AS runtime
 
