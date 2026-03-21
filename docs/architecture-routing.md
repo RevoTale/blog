@@ -50,7 +50,8 @@ This keeps route signatures generator-owned while data logic stays handwritten.
 
 ## Runtime Behavior
 
-- Canonical routes are served by framework runtime (`framework/engine` + `framework/httpserver`).
+- Canonical routes are served by the `no-js` framework runtime
+  (`github.com/RevoTale/no-js/framework/engine` + `github.com/RevoTale/no-js/framework/httpserver`).
 - HTMX partial updates use canonical URLs with `HX-Request: true`.
 - Full-page rendering and partial rendering share the same page resolver method.
 
@@ -60,4 +61,3 @@ This keeps route signatures generator-owned while data logic stays handwritten.
 2. Edit resolver implementation files in `internal/web/resolvers/*.go`.
 3. Run generation: `task gen`.
 4. Validate: `go test ./...` and `task gen:check` (in clean CI state).
-

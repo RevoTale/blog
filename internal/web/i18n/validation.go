@@ -4,7 +4,7 @@ import (
 	"io/fs"
 	"strings"
 
-	frameworki18n "blog/framework/i18n"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
 func ValidateMessageKeyParity(fsys fs.FS, files []string) error {

@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"blog/framework"
-	"blog/framework/metagen"
 	"blog/internal/web/appcore"
 	"blog/internal/web/seo"
+	"github.com/RevoTale/no-js/framework"
+	"github.com/RevoTale/no-js/framework/metagen"
 )
 
 func (Resolver) MetaGenTalesPage(

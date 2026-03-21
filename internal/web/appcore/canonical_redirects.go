@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	frameworki18n "blog/framework/i18n"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
 func WithCanonicalNotesRedirects(next http.Handler) http.Handler {

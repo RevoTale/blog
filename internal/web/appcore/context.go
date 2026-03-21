@@ -5,9 +5,9 @@ import (
 	"slices"
 	"strings"
 
-	frameworki18n "blog/framework/i18n"
 	"blog/internal/notes"
 	webi18n "blog/internal/web/i18n"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
 var errNotesServiceUnavailable = errors.New("notes service unavailable")

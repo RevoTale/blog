@@ -9,7 +9,7 @@ COPY . .
 
 # Build hashed + minified static assets during image build.
 RUN GOCACHE=/tmp/go-cache GOMODCACHE=/go/pkg/mod \
-    go run ./framework/cmd/staticassetsgen \
+    go run github.com/RevoTale/no-js/framework/cmd/staticassetsgen \
       -source internal/web/static \
       -out internal/web/static-build \
       -manifest internal/web/static-build/manifest.json \

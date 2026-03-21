@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	frameworki18n "blog/framework/i18n"
 	"blog/internal/notes"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
 const seoTestRootURL = "https://revotale.com/blog/notes"

@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/Khan/genqlient v0.8.1
+	github.com/RevoTale/no-js v0.0.0
 	github.com/a-h/templ v0.3.1001
 	github.com/alecthomas/chroma/v2 v2.23.1
 	github.com/evanw/esbuild v0.27.4
@@ -24,3 +25,5 @@ require (
 	golang.org/x/sys v0.41.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/RevoTale/no-js => ../no-js

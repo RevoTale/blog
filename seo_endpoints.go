@@ -15,9 +15,9 @@ import (
 	texttemplate "text/template"
 	"time"
 
-	frameworki18n "blog/framework/i18n"
-	"blog/framework/metagen"
 	"blog/internal/notes"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
+	"github.com/RevoTale/no-js/framework/metagen"
 )
 
 const rssEndpointPath = "/feed.xml"

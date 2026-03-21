@@ -1,6 +1,6 @@
 package i18n
 
-import frameworki18n "blog/framework/i18n"
+import frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 
 const DefaultLocale = "en"
 

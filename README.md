@@ -22,7 +22,7 @@ The `cms` app now redirects legacy `/blog/*` routes to this dedicated blog runti
 
 ## Stack
 
-- Go HTTP server + custom lightweight framework layer ( Im trying framework APIs similar to NextJs experience)
+- Go HTTP server + [`github.com/RevoTale/no-js`](https://github.com/RevoTale/no-js) framework
 - [`templ`](https://templ.guide/) for SSR components/layouts
 - [`htmx`](https://htmx.org/) for partial/live navigation updates
 - [`go-i18n`](https://github.com/nicksnyder/go-i18n) for localization

@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"blog/framework/metagen"
+	"github.com/RevoTale/no-js/framework/metagen"
 )
 
 type LocaleLinkItem struct {

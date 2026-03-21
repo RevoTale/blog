@@ -5,8 +5,8 @@ import (
 	"strings"
 	"sync/atomic"
 
-	frameworki18n "blog/framework/i18n"
 	webi18n "blog/internal/web/i18n"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
 var routingConfigValue atomic.Value

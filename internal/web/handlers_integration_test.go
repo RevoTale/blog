@@ -12,15 +12,15 @@ import (
 	"testing"
 	"time"
 
-	"blog/framework/httpserver"
-	frameworki18n "blog/framework/i18n"
-	"blog/framework/staticassets"
 	"blog/internal/imageloader"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
 	webi18n "blog/internal/web/i18n"
 	"github.com/Khan/genqlient/graphql"
+	"github.com/RevoTale/no-js/framework/httpserver"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
+	"github.com/RevoTale/no-js/framework/staticassets"
 )
 
 const testRootURL = "https://revotale.com/blog/notes"

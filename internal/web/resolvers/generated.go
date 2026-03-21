@@ -2,9 +2,9 @@
 package resolvers
 
 import (
-	"blog/framework/metagen"
 	"blog/internal/web/appcore"
 	"context"
+	"github.com/RevoTale/no-js/framework/metagen"
 	"net/http"
 )
 

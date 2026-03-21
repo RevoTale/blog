@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	frameworki18n "blog/framework/i18n"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
 //go:embed messages/*.json

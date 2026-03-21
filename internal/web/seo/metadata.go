@@ -8,12 +8,12 @@ import (
 	"path"
 	"strings"
 
-	"blog/framework"
-	frameworki18n "blog/framework/i18n"
-	"blog/framework/metagen"
 	"blog/internal/notes"
 	"blog/internal/web/appcore"
 	webi18n "blog/internal/web/i18n"
+	"github.com/RevoTale/no-js/framework"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
+	"github.com/RevoTale/no-js/framework/metagen"
 )
 
 func MetaGenRootPage(

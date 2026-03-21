@@ -2,9 +2,6 @@
 package gen
 
 import (
-	"blog/framework"
-	"blog/framework/metagen"
-	"blog/framework/router"
 	"blog/internal/web/appcore"
 	r_error_root "blog/internal/web/gen/r_error_root"
 	r_layout_author_param_slug "blog/internal/web/gen/r_layout_author_param_slug"
@@ -20,6 +17,9 @@ import (
 	r_root_root "blog/internal/web/gen/r_root_root"
 	route_resolvers "blog/internal/web/resolvers"
 	"context"
+	"github.com/RevoTale/no-js/framework"
+	"github.com/RevoTale/no-js/framework/metagen"
+	"github.com/RevoTale/no-js/framework/router"
 	"github.com/a-h/templ"
 	"net/http"
 	"strings"
