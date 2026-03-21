@@ -10,7 +10,7 @@
     "imgproxy",
     "proxy"
   ],
-  "workspaceFolder": "/workspaces/backend/blog",
+  "workspaceFolder": "/workspaces/blog",
   "mounts": [
     "source=${localEnv:HOME}/.codex,target=/home/vscode/.codex,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",

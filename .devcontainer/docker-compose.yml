@@ -17,8 +17,8 @@ services:
     networks:
       - blog_net
     volumes:
-      - ../../:/workspaces/backend
-    working_dir: /workspaces/backend/blog
+      - ..:/workspaces/blog
+    working_dir: /workspaces/blog
 
   cms_postgres:
     image: postgres:18.3
