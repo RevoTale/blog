@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/RevoTale/blog/compare/v0.7.0...v0.7.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* failing arm arch ([5428288](https://github.com/RevoTale/blog/commit/5428288b620129ee6d6f294ca8ae32cd0f804805))
+
 ## [0.7.0](https://github.com/RevoTale/blog/compare/v0.6.3...v0.7.0) (2026-03-13)
 
 
