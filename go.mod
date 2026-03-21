@@ -26,4 +26,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/RevoTale/no-js => ../no-js
+replace github.com/RevoTale/no-js => ./no-js
