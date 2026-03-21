@@ -1,14 +1,25 @@
 {
   "name": "RevoTale Blog",
-  "image": "mcr.microsoft.com/devcontainers/go",
-  "remoteUser": "vscode",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "runServices": [
+    "cms_postgres",
+    "rustfs",
+    "setup-rustfs",
+    "cms",
+    "imgproxy",
+    "proxy"
+  ],
+  "workspaceFolder": "/workspaces/backend/blog",
   "mounts": [
     "source=${localEnv:HOME}/.codex,target=/home/vscode/.codex,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.cursor,target=/home/vscode/.cursor,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.continue,target=/home/vscode/.continue,type=bind,consistency=cached"
   ],
+  "shutdownAction": "stopCompose",
   "features": {
-      "ghcr.io/devcontainers-extra/features/go-task:1": {}
-  }
+    "ghcr.io/devcontainers-extra/features/go-task:1": {}
+  },
+  "remoteUser": "vscode"
 }
