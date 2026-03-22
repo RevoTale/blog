@@ -1,4 +1,4 @@
-package main
+package seo
 
 import (
 	"bytes"
@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"blog/internal/notes"
+	"blog/internal/req"
+
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	"github.com/RevoTale/no-js/framework/metagen"
 )
@@ -66,7 +68,7 @@ type notesLister interface {
 	) (notes.NotesListResult, error)
 }
 
-type feedAndSitemapConfig struct {
+type FeedAndSitemapConfig struct {
 	RootURL string
 
 	I18nConfig frameworki18n.Config
@@ -79,7 +81,7 @@ type feedAndSitemapConfig struct {
 	TagsSitemapLimit    int
 }
 
-func withFeedAndSitemapEndpoints(next http.Handler, cfg feedAndSitemapConfig) http.Handler {
+func WithFeedAndSitemapEndpoints(next http.Handler, cfg FeedAndSitemapConfig) http.Handler {
 	normalizedI18n, err := frameworki18n.NormalizeConfig(cfg.I18nConfig)
 	if err != nil {
 		normalizedI18n = frameworki18n.Config{
@@ -875,7 +877,7 @@ func compactNonEmptyStrings(values []string) []string {
 }
 
 func ensureReadMethod(w http.ResponseWriter, method string) bool {
-	if isReadMethod(method) {
+	if req.IsReadMethod(method) {
 		return true
 	}
 	w.WriteHeader(http.StatusMethodNotAllowed)
@@ -900,7 +902,7 @@ func writeXMLResponse(
 	cachePolicy string,
 	contentType string,
 ) {
-	setCacheControl(w, cachePolicy)
+	req.SetCacheControl(w, cachePolicy)
 	w.Header().Set("Content-Type", strings.TrimSpace(contentType))
 	_, _ = io.WriteString(w, payload)
 }

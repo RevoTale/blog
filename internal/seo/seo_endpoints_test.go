@@ -1,4 +1,4 @@
-package main
+package seo
 
 import (
 	"context"
@@ -262,7 +262,7 @@ func TestWithFeedAndSitemapEndpointsMethodAndDelegation(t *testing.T) {
 }
 
 func testSEOEndpointsHandler(next http.Handler, lister notesLister) http.Handler {
-	return withFeedAndSitemapEndpoints(next, feedAndSitemapConfig{
+	return WithFeedAndSitemapEndpoints(next, FeedAndSitemapConfig{
 		RootURL: seoTestRootURL,
 		I18nConfig: frameworki18n.Config{
 			Locales:       []string{"en", "uk"},

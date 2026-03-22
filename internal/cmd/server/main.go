@@ -13,9 +13,12 @@ import (
 	"blog/internal/gql"
 	"blog/internal/imageloader"
 	"blog/internal/notes"
+	"blog/internal/req"
+	"blog/internal/seo"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
 	webi18n "blog/internal/web/i18n"
+
 	"github.com/RevoTale/no-js/framework/httpserver"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	"github.com/RevoTale/no-js/framework/staticassets"
@@ -141,7 +144,7 @@ func run() error {
 		},
 	})(handler)
 	handler = publicMiddleware(handler)
-	handler = withFeedAndSitemapEndpoints(handler, feedAndSitemapConfig{
+	handler = seo.WithFeedAndSitemapEndpoints(handler, seo.FeedAndSitemapConfig{
 		RootURL:    rootURL,
 		I18nConfig: i18nConfig,
 		Notes:      noteService,
@@ -191,11 +194,11 @@ func withRobotsEndpoint(
 			next.ServeHTTP(w, r)
 			return
 		}
-		if !isReadMethod(r.Method) {
+		if !req.IsReadMethod(r.Method) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		setCacheControl(w, cachePolicy)
+		req.SetCacheControl(w, cachePolicy)
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		_, _ = w.Write([]byte(buildRobotsTXT(rootURL)))
 	})
@@ -213,14 +216,5 @@ func buildRobotsTXT(rootURL string) string {
 	return strings.Join(out, "\n") + "\n"
 }
 
-func isReadMethod(method string) bool {
-	return method == http.MethodGet || method == http.MethodHead
-}
 
-func setCacheControl(w http.ResponseWriter, value string) {
-	trimmed := strings.TrimSpace(value)
-	if trimmed == "" {
-		return
-	}
-	w.Header().Set("Cache-Control", trimmed)
-}
+
