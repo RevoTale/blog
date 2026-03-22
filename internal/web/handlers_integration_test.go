@@ -18,9 +18,9 @@ import (
 	webgen "blog/internal/web/gen"
 	webi18n "blog/internal/web/i18n"
 	"github.com/Khan/genqlient/graphql"
+	"github.com/RevoTale/no-js/bundler/staticassets"
 	"github.com/RevoTale/no-js/framework/httpserver"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
-	"github.com/RevoTale/no-js/framework/staticassets"
 )
 
 const testRootURL = "https://revotale.com/blog/notes"
