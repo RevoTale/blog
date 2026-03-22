@@ -1,4 +1,4 @@
-package main
+package robots
 
 import (
 	"net/http"
@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 )
-
 func TestBuildRobotsTXTIncludesSitemap(t *testing.T) {
 	t.Parallel()
 
@@ -21,7 +20,6 @@ func TestBuildRobotsTXTIncludesSitemap(t *testing.T) {
 		t.Fatalf("robots.txt should include sitemap reference")
 	}
 }
-
 func TestWithRobotsEndpoint(t *testing.T) {
 	t.Parallel()
 
@@ -31,7 +29,7 @@ func TestWithRobotsEndpoint(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	handler := withRobotsEndpoint(next, "https://revotale.com/blog/notes", "public, max-age=60")
+	handler := WithRobotsEndpoint(next, "https://revotale.com/blog/notes", "public, max-age=60")
 
 	recRobots := httptest.NewRecorder()
 	handler.ServeHTTP(recRobots, httptest.NewRequest(http.MethodGet, "/robots.txt", nil))

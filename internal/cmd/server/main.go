@@ -13,7 +13,7 @@ import (
 	"blog/internal/gql"
 	"blog/internal/imageloader"
 	"blog/internal/notes"
-	"blog/internal/req"
+	"blog/internal/robots"
 	"blog/internal/seo"
 	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
@@ -149,7 +149,7 @@ func run() error {
 		I18nConfig: i18nConfig,
 		Notes:      noteService,
 	})
-	handler = withRobotsEndpoint(handler, rootURL, cachePolicies.HTML)
+	handler = robots.WithRobotsEndpoint(handler, rootURL, cachePolicies.HTML)
 
 	log.Printf("blog server listening on %s", cfg.ListenAddr)
 	if err := http.ListenAndServe(cfg.ListenAddr, handler); err != nil {
@@ -175,45 +175,6 @@ func validateRootURL(value string) (string, error) {
 	parsed.RawQuery = ""
 	parsed.Fragment = ""
 	return parsed.String(), nil
-}
-
-func withRobotsEndpoint(
-	next http.Handler,
-	rootURL string,
-	cachePolicy string,
-) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if next == nil {
-			return
-		}
-		if r == nil || r.URL == nil {
-			next.ServeHTTP(w, r)
-			return
-		}
-		if r.URL.Path != "/robots.txt" {
-			next.ServeHTTP(w, r)
-			return
-		}
-		if !req.IsReadMethod(r.Method) {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		req.SetCacheControl(w, cachePolicy)
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		_, _ = w.Write([]byte(buildRobotsTXT(rootURL)))
-	})
-}
-
-func buildRobotsTXT(rootURL string) string {
-	out := []string{
-		"User-agent: *",
-		"Allow: /",
-	}
-	trimmedRoot := strings.TrimSuffix(strings.TrimSpace(rootURL), "/")
-	if trimmedRoot != "" {
-		out = append(out, "Sitemap: "+trimmedRoot+"/sitemap-index")
-	}
-	return strings.Join(out, "\n") + "\n"
 }
 
 
