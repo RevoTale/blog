@@ -13,6 +13,7 @@ tasks:
       - go generate ./internal/gql
       - go generate ./internal/web
       - go run ./internal/cmd/techstackgen -in go.mod -out internal/techstack/generated.go
+      - go run ./internal/cmd/fetchschema
 
   go:gen:code-diff:
     desc: Verify generated outputs are committed

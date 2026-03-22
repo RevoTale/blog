@@ -21,6 +21,7 @@ require (
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/suessflorian/gqlfetch v0.7.0
 	github.com/vektah/gqlparser/v2 v2.5.32 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

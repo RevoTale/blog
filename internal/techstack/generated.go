@@ -18,6 +18,7 @@ var packages = []Package{
 	{Name: "github.com/stretchr/testify", URL: "https://pkg.go.dev/github.com/stretchr/testify"},
 	{Name: "golang.org/x/mod", URL: "https://pkg.go.dev/golang.org/x/mod"},
 	{Name: "golang.org/x/text", URL: "https://pkg.go.dev/golang.org/x/text"},
+	{Name: "github.com/suessflorian/gqlfetch", URL: "https://pkg.go.dev/github.com/suessflorian/gqlfetch"},
 }
 
 func Packages() []Package {

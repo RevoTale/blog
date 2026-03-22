@@ -1,5 +1,5 @@
 schema:
-  - ../../../cms/src/gql/schema.graphql
+  - ../../schema.graphql
 operations:
   - queries.graphql
 generated: generated.go

@@ -1,2 +1,4 @@
 internal/web/static-build/
 .DS_Store
+# I do not want to expose my entire schema. Fresh fetch each time from aved cms docker image
+schema.graphql
