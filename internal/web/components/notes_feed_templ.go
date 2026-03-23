@@ -8,12 +8,12 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"blog/internal/web/appcore"
 	webi18n "blog/internal/web/i18n"
+	"blog/internal/web/runtime"
 	"strconv"
 )
 
-func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component {
+func NotesFeed(view runtime.NotesPageView, emptyMessage string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -52,7 +52,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 			return templ_7745c5c3_Err
 		}
 		if view.ContextSubtitle != "" {
-			if view.ContextSubtitle == appcore.Message(view.MessagesMap(), webi18n.KeyContextFeed) {
+			if view.ContextSubtitle == runtime.Message(view.MessagesMap(), webi18n.KeyContextFeed) {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<p class=\"muted\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -71,7 +71,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerPage))
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerPage))
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 14, Col: 108}
 				}
@@ -140,7 +140,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyNotesAriaFeed))
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyNotesAriaFeed))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 24, Col: 105}
 		}
@@ -183,7 +183,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerPage))
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerPage))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 37, Col: 78}
 		}
@@ -240,7 +240,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildHTMXNavigationURL(view.Pagination.FirstURL))
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.BuildHTMXNavigationURL(view.Pagination.FirstURL))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 43, Col: 70}
 			}
@@ -266,7 +266,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var16 string
-			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerFirst))
+			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerFirst))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 48, Col: 65}
 			}
@@ -284,7 +284,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerFirst))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerFirst))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 50, Col: 110}
 			}
@@ -316,7 +316,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var19 string
-			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildHTMXNavigationURL(view.Pagination.PrevURL))
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.BuildHTMXNavigationURL(view.Pagination.PrevURL))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 56, Col: 69}
 			}
@@ -342,7 +342,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var21 string
-			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerPrev))
+			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerPrev))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 61, Col: 64}
 			}
@@ -360,7 +360,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var22 string
-			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerPrev))
+			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerPrev))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 63, Col: 109}
 			}
@@ -392,7 +392,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var24 string
-			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildHTMXNavigationURL(view.Pagination.NextURL))
+			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.BuildHTMXNavigationURL(view.Pagination.NextURL))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 69, Col: 69}
 			}
@@ -418,7 +418,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var26 string
-			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerNext))
+			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerNext))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 74, Col: 64}
 			}
@@ -436,7 +436,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var27 string
-			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerNext))
+			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerNext))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 76, Col: 109}
 			}
@@ -468,7 +468,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var29 string
-			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.BuildHTMXNavigationURL(view.Pagination.LastURL))
+			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.BuildHTMXNavigationURL(view.Pagination.LastURL))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 82, Col: 69}
 			}
@@ -494,7 +494,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var31 string
-			templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerLast))
+			templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerLast))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 87, Col: 64}
 			}
@@ -512,7 +512,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var32 string
-			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyPagerLast))
+			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyPagerLast))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 89, Col: 109}
 			}
@@ -530,7 +530,7 @@ func NotesFeed(view appcore.NotesPageView, emptyMessage string) templ.Component 
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var33 string
-		templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyComposerReadOnly))
+		templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyComposerReadOnly))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/notes_feed.templ`, Line: 95, Col: 71}
 		}

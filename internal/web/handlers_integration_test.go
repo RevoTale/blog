@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -14,9 +15,11 @@ import (
 
 	"blog/internal/imageloader"
 	"blog/internal/notes"
-	"blog/internal/web/appcore"
+	"blog/internal/robots"
+	"blog/internal/seo"
 	webgen "blog/internal/web/gen"
 	webi18n "blog/internal/web/i18n"
+	"blog/internal/web/runtime"
 	"github.com/Khan/genqlient/graphql"
 	"github.com/RevoTale/no-js/bundler/staticassets"
 	"github.com/RevoTale/no-js/framework/httpserver"
@@ -358,6 +361,14 @@ type testServer struct {
 	bundle  *staticassets.Bundle
 }
 
+type testServerBootstrap struct {
+	cfg           webgen.ServerConfig
+	bundle        *staticassets.Bundle
+	notes         *notes.Service
+	i18nConfig    frameworki18n.Config
+	cachePolicies httpserver.CachePolicies
+}
+
 type testServerOptions struct {
 	enableImageLoader  bool
 	lovelyEyeScriptURL string
@@ -386,6 +397,29 @@ func newTestServerWithLovelyEye(t *testing.T, scriptURL string, siteID string) t
 func newTestServerWithOptions(t *testing.T, options testServerOptions) testServer {
 	t.Helper()
 
+	bootstrap := newTestServerBootstrap(t, options)
+
+	handler, err := webgen.NewHandler(bootstrap.cfg)
+	if err != nil {
+		t.Fatalf("new handler: %v", err)
+	}
+	handler = runtime.WithCanonicalNotesRedirects(handler)
+	handler = seo.WithFeedAndSitemapEndpoints(handler, seo.FeedAndSitemapConfig{
+		RootURL:    testRootURL,
+		I18nConfig: bootstrap.i18nConfig,
+		Notes:      bootstrap.notes,
+	})
+	handler = robots.WithRobotsEndpoint(handler, testRootURL, bootstrap.cachePolicies.HTML)
+
+	return testServer{
+		handler: handler,
+		bundle:  bootstrap.bundle,
+	}
+}
+
+func newTestServerBootstrap(t *testing.T, options testServerOptions) testServerBootstrap {
+	t.Helper()
+
 	bundle, err := staticassets.Build(staticassets.BuildConfig{
 		SourceDir: "../../internal/web/static",
 		URLPrefix: "/.revotale/",
@@ -399,9 +433,11 @@ func newTestServerWithOptions(t *testing.T, options testServerOptions) testServe
 		}
 	})
 
-	appcore.SetStaticAssetBasePath(bundle.URLPrefix())
-	appcore.SetImageLoader(imageloader.New(options.enableImageLoader))
-	appcore.SetLovelyEye(options.lovelyEyeScriptURL, options.lovelyEyeSiteID)
+	manifestPath := filepath.Join(bundle.Dir(), "manifest.json")
+	if err := staticassets.WriteManifest(manifestPath, bundle.Manifest()); err != nil {
+		t.Fatalf("write static manifest: %v", err)
+	}
+
 	i18nConfig, err := frameworki18n.NormalizeConfig(webi18n.Config())
 	if err != nil {
 		t.Fatalf("normalize i18n config: %v", err)
@@ -410,59 +446,37 @@ func newTestServerWithOptions(t *testing.T, options testServerOptions) testServe
 	if err != nil {
 		t.Fatalf("load i18n catalog: %v", err)
 	}
-	i18nResolver, err := frameworki18n.NewResolver(i18nConfig)
-	if err != nil {
-		t.Fatalf("new i18n resolver: %v", err)
-	}
-	appcore.SetLocalizationConfig(i18nConfig)
+	imageLoader := imageloader.New(options.enableImageLoader)
+	noteService := notes.NewService(fakeGraphQLClient{}, 12, testRootURL, imageLoader)
+	cachePolicies := httpserver.DefaultCachePolicies()
 
-	svc := notes.NewService(fakeGraphQLClient{}, 12, testRootURL, imageloader.New(options.enableImageLoader))
-	handler, err := httpserver.New(httpserver.Config[*appcore.Context]{
-		AppContext: appcore.NewContext(
-			svc,
-			i18nConfig,
-			i18nCatalog,
-			testRootURL,
-			options.lovelyEyeScriptURL,
-			options.lovelyEyeSiteID,
-		),
-		Handlers:        webgen.Handlers(webgen.NewRouteResolvers()),
-		IsNotFoundError: appcore.IsNotFoundError,
-		NotFoundPage:    webgen.NotFoundPage,
-		Static: httpserver.StaticMount{
-			URLPrefix: bundle.URLPrefix(),
-			Dir:       bundle.Dir(),
+	return testServerBootstrap{
+		cfg: webgen.ServerConfig{
+			AppContext: runtime.NewContext(
+				noteService,
+				i18nConfig,
+				i18nCatalog,
+				testRootURL,
+				options.lovelyEyeScriptURL,
+				options.lovelyEyeSiteID,
+			),
+			Runtime: runtime.BootstrapConfig{
+				LocalizationConfig:  i18nConfig,
+				StaticAssetBasePath: bundle.URLPrefix(),
+				ImageLoader:         imageLoader,
+				LovelyEyeScriptURL:  options.lovelyEyeScriptURL,
+				LovelyEyeSiteID:     options.lovelyEyeSiteID,
+			},
+			StaticManifestPath: manifestPath,
+			PublicDir:          "../../internal/web/public",
+			CachePolicies:      cachePolicies,
+			LogServerError: func(error) {
+			},
 		},
-		CachePolicies: httpserver.DefaultCachePolicies(),
-		LogServerError: func(error) {
-		},
-	})
-	if err != nil {
-		t.Fatalf("new handler: %v", err)
-	}
-	handler = appcore.WithCanonicalNotesRedirects(handler)
-	handler = frameworki18n.Middleware(frameworki18n.MiddlewareConfig{
-		Resolver: i18nResolver,
-		BypassPrefixes: []string{
-			bundle.URLPrefix(),
-		},
-		BypassExact: []string{
-			"/healthz",
-		},
-	})(handler)
-	publicMiddleware, err := httpserver.WithPublicFiles(
-		httpserver.PublicFilesConfig{
-			Dir: "../../internal/web/public",
-		},
-	)
-	if err != nil {
-		t.Fatalf("new public middleware: %v", err)
-	}
-	handler = publicMiddleware(handler)
-
-	return testServer{
-		handler: handler,
-		bundle:  bundle,
+		bundle:        bundle,
+		notes:         noteService,
+		i18nConfig:    i18nConfig,
+		cachePolicies: cachePolicies,
 	}
 }
 
@@ -1408,5 +1422,77 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	missingRouteBody := requireBody(t, recMissingRoute.Body)
 	if !strings.Contains(missingRouteBody, "/missing-route") {
 		t.Fatalf("missing route page should include requested path")
+	}
+}
+
+func TestGeneratedBootstrapSupportsAppOwnedEndpoints(t *testing.T) {
+	t.Parallel()
+	testSrv := newTestServer(t)
+	mux := testSrv.handler
+
+	recFeed := performRequest(mux, http.MethodGet, "/feed.xml?locale=en")
+	if recFeed.Code != http.StatusOK {
+		t.Fatalf("feed status: expected %d, got %d", http.StatusOK, recFeed.Code)
+	}
+	if got := recFeed.Header().Get("Content-Type"); !strings.Contains(got, "application/rss+xml") {
+		t.Fatalf("feed content-type: expected rss xml, got %q", got)
+	}
+	feedBody := requireBody(t, recFeed.Body)
+	if !strings.Contains(feedBody, "<rss") || !strings.Contains(feedBody, "Hello World") {
+		t.Fatalf("feed endpoint should render rss payload")
+	}
+
+	recSitemap := performRequest(mux, http.MethodGet, "/sitemap-index")
+	if recSitemap.Code != http.StatusOK {
+		t.Fatalf("sitemap-index status: expected %d, got %d", http.StatusOK, recSitemap.Code)
+	}
+	if got := recSitemap.Header().Get("Content-Type"); !strings.Contains(got, "application/xml") {
+		t.Fatalf("sitemap-index content-type: expected xml, got %q", got)
+	}
+	sitemapBody := requireBody(t, recSitemap.Body)
+	if !strings.Contains(sitemapBody, "<sitemapindex") || !strings.Contains(sitemapBody, "/sitemap.xml") {
+		t.Fatalf("sitemap-index endpoint should render sitemap index payload")
+	}
+
+	recRobots := performRequest(mux, http.MethodGet, "/robots.txt")
+	if recRobots.Code != http.StatusOK {
+		t.Fatalf("robots status: expected %d, got %d", http.StatusOK, recRobots.Code)
+	}
+	if got := recRobots.Header().Get("Content-Type"); !strings.Contains(got, "text/plain") {
+		t.Fatalf("robots content-type: expected text/plain, got %q", got)
+	}
+	robotsBody := requireBody(t, recRobots.Body)
+	if !strings.Contains(robotsBody, "User-agent: *") {
+		t.Fatalf("robots endpoint should include user-agent rule")
+	}
+	if !strings.Contains(robotsBody, "Sitemap: https://revotale.com/blog/notes/sitemap-index") {
+		t.Fatalf("robots endpoint should include sitemap index reference")
+	}
+}
+
+func TestGeneratedMountRoutesAllowsManualRoutes(t *testing.T) {
+	t.Parallel()
+
+	bootstrap := newTestServerBootstrap(t, testServerOptions{})
+	mux := http.NewServeMux()
+	if err := webgen.MountRoutes(mux, bootstrap.cfg); err != nil {
+		t.Fatalf("mount generated routes: %v", err)
+	}
+	mux.HandleFunc("/manual", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write([]byte("manual"))
+	})
+
+	recManual := performRequest(mux, http.MethodGet, "/manual")
+	if recManual.Code != http.StatusCreated {
+		t.Fatalf("manual route status: expected %d, got %d", http.StatusCreated, recManual.Code)
+	}
+	if body := requireBody(t, recManual.Body); body != "manual" {
+		t.Fatalf("manual route body: expected %q, got %q", "manual", body)
+	}
+
+	recGenerated := performRequest(mux, http.MethodGet, "/")
+	if recGenerated.Code != http.StatusOK {
+		t.Fatalf("generated route status: expected %d, got %d", http.StatusOK, recGenerated.Code)
 	}
 }

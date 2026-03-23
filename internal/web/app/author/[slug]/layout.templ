@@ -1,7 +1,7 @@
 package appsrc
 
-import "blog/internal/web/appcore"
+import "blog/internal/web/runtime"
 
-templ Layout(view appcore.RootLayoutView, child templ.Component) {
+templ Layout(view runtime.RootLayoutView, child templ.Component) {
 	@child
 }

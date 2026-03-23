@@ -8,11 +8,11 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"blog/internal/web/appcore"
 	webi18n "blog/internal/web/i18n"
+	"blog/internal/web/runtime"
 )
 
-func ChannelList(view appcore.RootLayoutView) templ.Component {
+func ChannelList(view runtime.RootLayoutView) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -38,7 +38,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelSectionChannels))
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionChannels))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 9, Col: 104}
 		}
@@ -50,7 +50,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 = []any{appcore.ChannelLinkClass(appcore.SidebarAllActive(view))}
+		var templ_7745c5c3_Var3 = []any{runtime.ChannelLinkClass(runtime.SidebarAllActive(view))}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -86,7 +86,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelAll))
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelAll))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 12, Col: 68}
 		}
@@ -99,7 +99,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelSectionNoteType))
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionNoteType))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 15, Col: 104}
 		}
@@ -112,7 +112,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if view.SidebarCurrentType() != "all" {
-			var templ_7745c5c3_Var8 = []any{appcore.ChannelLinkClass(false)}
+			var templ_7745c5c3_Var8 = []any{runtime.ChannelLinkClass(false)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var8...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -148,7 +148,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelAny))
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 17, Col: 143}
 			}
@@ -161,7 +161,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		var templ_7745c5c3_Var12 = []any{appcore.ChannelLinkClass(view.SidebarCurrentType() == "long")}
+		var templ_7745c5c3_Var12 = []any{runtime.ChannelLinkClass(view.SidebarCurrentType() == "long")}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var12...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -197,7 +197,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var15 string
-		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelTales))
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelTales))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 19, Col: 175}
 		}
@@ -209,7 +209,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var16 = []any{appcore.ChannelLinkClass(view.SidebarCurrentType() == "short")}
+		var templ_7745c5c3_Var16 = []any{runtime.ChannelLinkClass(view.SidebarCurrentType() == "short")}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var16...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -245,7 +245,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var19 string
-		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelMicroTales))
+		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelMicroTales))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 20, Col: 182}
 		}
@@ -258,7 +258,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var20 string
-		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelSectionAuthors))
+		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionAuthors))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 22, Col: 103}
 		}
@@ -271,7 +271,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if view.SidebarCurrentAuthorSlug() != "" {
-			var templ_7745c5c3_Var21 = []any{appcore.ChannelLinkClass(false)}
+			var templ_7745c5c3_Var21 = []any{runtime.ChannelLinkClass(false)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var21...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -307,7 +307,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var24 string
-			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelAny))
+			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 24, Col: 145}
 			}
@@ -321,7 +321,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			}
 		}
 		for _, author := range view.SidebarAuthors() {
-			var templ_7745c5c3_Var25 = []any{appcore.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug)}
+			var templ_7745c5c3_Var25 = []any{runtime.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var25...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -357,7 +357,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var28 string
-			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.AuthorChannelLabel(author))
+			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.AuthorChannelLabel(author))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 28, Col: 39}
 			}
@@ -375,7 +375,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var29 string
-		templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelSectionTags))
+		templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionTags))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 32, Col: 100}
 		}
@@ -388,7 +388,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if view.SidebarCurrentTagName() != "" {
-			var templ_7745c5c3_Var30 = []any{appcore.ChannelLinkClass(false)}
+			var templ_7745c5c3_Var30 = []any{runtime.ChannelLinkClass(false)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var30...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -424,7 +424,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var33 string
-			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.Message(view.MessagesMap(), webi18n.KeyChannelAny))
+			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 34, Col: 142}
 			}
@@ -438,7 +438,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 			}
 		}
 		for _, tag := range view.SidebarTags() {
-			var templ_7745c5c3_Var34 = []any{appcore.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name)}
+			var templ_7745c5c3_Var34 = []any{runtime.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var34...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -474,7 +474,7 @@ func ChannelList(view appcore.RootLayoutView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var37 string
-			templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.TagChannelLabel(tag))
+			templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.TagChannelLabel(tag))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/channel_list.templ`, Line: 38, Col: 33}
 			}

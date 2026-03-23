@@ -1,12 +1,12 @@
 package appsrc
 
 import (
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"blog/internal/web/components"
 	"blog/internal/web/seo"
 )
 
-templ Page(view appcore.NotesPageView) {
+templ Page(view runtime.NotesPageView) {
 	if view.IncludeStructuredData {
 		@seo.JSONLDScript(seo.BuildNotesBlogJSONLD(view))
 	}

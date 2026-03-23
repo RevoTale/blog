@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 )
+
 func SetCacheControl(w http.ResponseWriter, value string) {
 	trimmed := strings.TrimSpace(value)
 	if trimmed == "" {

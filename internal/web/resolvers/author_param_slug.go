@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"blog/internal/web/seo"
 	"github.com/RevoTale/no-js/framework"
 	"github.com/RevoTale/no-js/framework/metagen"
@@ -12,7 +12,7 @@ import (
 
 func (Resolver) MetaGenAuthorParamSlugLayout(
 	context.Context,
-	*appcore.Context,
+	*runtime.Context,
 	*http.Request,
 	AuthorParamSlugParams,
 ) (metagen.Metadata, error) {
@@ -21,7 +21,7 @@ func (Resolver) MetaGenAuthorParamSlugLayout(
 
 func (Resolver) MetaGenAuthorParamSlugPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	params AuthorParamSlugParams,
 ) (metagen.Metadata, error) {
@@ -30,9 +30,9 @@ func (Resolver) MetaGenAuthorParamSlugPage(
 
 func (Resolver) ResolveAuthorParamSlugPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	params AuthorParamSlugParams,
-) (appcore.AuthorPageView, error) {
-	return appcore.LoadAuthorPage(ctx, appCtx, r, framework.SlugParams{Slug: params.Slug})
+) (runtime.AuthorPageView, error) {
+	return runtime.LoadAuthorPage(ctx, appCtx, r, framework.SlugParams{Slug: params.Slug})
 }

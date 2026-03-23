@@ -1,4 +1,4 @@
-package appcore
+package runtime
 
 import (
 	"sort"
@@ -89,7 +89,7 @@ type NotePageView struct {
 	AnalyticsEnabled      bool
 }
 
-func NewNotFoundLayoutView(locale string) RootLayoutView {
+func newFallbackView(locale string) RootLayoutView {
 	locale = normalizeLocaleForApp(locale)
 	messages := localizedMessages(nil, locale)
 
@@ -102,6 +102,14 @@ func NewNotFoundLayoutView(locale string) RootLayoutView {
 			Type: notes.NoteTypeAll,
 		},
 	}
+}
+
+func NewNotFoundView(locale string) RootLayoutView {
+	return newFallbackView(locale)
+}
+
+func NewErrorView(locale string) RootLayoutView {
+	return newFallbackView(locale)
 }
 
 func (v NotesPageView) LocaleCode() string {

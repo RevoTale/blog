@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"blog/internal/web/seo"
 	"github.com/RevoTale/no-js/framework"
 	"github.com/RevoTale/no-js/framework/metagen"
@@ -12,7 +12,7 @@ import (
 
 func (Resolver) MetaGenNoteParamSlugPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	params NoteParamSlugParams,
 ) (metagen.Metadata, error) {
@@ -21,9 +21,9 @@ func (Resolver) MetaGenNoteParamSlugPage(
 
 func (Resolver) ResolveNoteParamSlugPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	params NoteParamSlugParams,
-) (appcore.NotePageView, error) {
-	return appcore.LoadNotePage(ctx, appCtx, r, framework.SlugParams{Slug: params.Slug})
+) (runtime.NotePageView, error) {
+	return runtime.LoadNotePage(ctx, appCtx, r, framework.SlugParams{Slug: params.Slug})
 }

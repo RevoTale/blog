@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"blog/internal/config"
@@ -15,13 +13,12 @@ import (
 	"blog/internal/notes"
 	"blog/internal/robots"
 	"blog/internal/seo"
-	"blog/internal/web/appcore"
 	webgen "blog/internal/web/gen"
 	webi18n "blog/internal/web/i18n"
+	"blog/internal/web/runtime"
 
 	"github.com/RevoTale/no-js/framework/httpserver"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
-	"github.com/RevoTale/no-js/framework/staticassets"
 )
 
 const immutableStaticCachePolicy = "public, max-age=31536000, immutable"
@@ -39,15 +36,6 @@ func run() error {
 		return err
 	}
 
-	manifest, err := staticassets.ReadManifest(cfg.StaticManifestPath)
-	if err != nil {
-		return fmt.Errorf(
-			"load static manifest %q: %w (run staticassetsgen during build)",
-			cfg.StaticManifestPath,
-			err,
-		)
-	}
-
 	i18nConfig, err := frameworki18n.NormalizeConfig(webi18n.Config())
 	if err != nil {
 		return fmt.Errorf("normalize i18n config: %w", err)
@@ -56,22 +44,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("load i18n catalog: %w", err)
 	}
-	i18nResolver, err := frameworki18n.NewResolver(i18nConfig)
-	if err != nil {
-		return fmt.Errorf("create i18n resolver: %w", err)
-	}
-
-	appcore.SetStaticAssetBasePath(manifest.URLPrefix)
-	appcore.SetLocalizationConfig(i18nConfig)
 	imageLoader := imageloader.New(cfg.EnableImageLoader)
-	appcore.SetImageLoader(imageLoader)
-	appcore.SetLovelyEye(cfg.LovelyEyeScriptURL, cfg.LovelyEyeSiteID)
-	log.Printf(
-		"lovely eye startup: enabled=%t script_url=%q site_id=%q",
-		appcore.LovelyEyeEnabled(),
-		appcore.LovelyEyeScriptURL(),
-		appcore.LovelyEyeSiteID(),
-	)
 
 	graphqlClient := gql.NewClient(cfg)
 	noteService := notes.NewService(
@@ -85,31 +58,9 @@ func run() error {
 		cachePolicies.LiveNavigation = cfg.CacheLiveNavigation
 	}
 	cachePolicies.Static = immutableStaticCachePolicy
-	publicMiddleware, err := httpserver.WithPublicFiles(
-		httpserver.PublicFilesConfig{Dir: cfg.PublicDir}.WithPublicFileCachePolicy(cfg.CachePublicFiles),
-	)
-	if err != nil {
-		return fmt.Errorf("setup public file serving: %w", err)
-	}
 
-	// Serve static files from the manifest directory so routing cannot drift
-	// to an unprocessed source dir if env configuration is stale.
-	staticDir := filepath.Clean(filepath.Dir(cfg.StaticManifestPath))
-	if info, statErr := os.Stat(staticDir); statErr != nil {
-		return fmt.Errorf("stat static build dir %q: %w", staticDir, statErr)
-	} else if !info.IsDir() {
-		return fmt.Errorf("static build dir %q is not a directory", staticDir)
-	}
-	log.Printf(
-		"static assets bundle loaded: hash=%s prefix=%s dir=%s manifest=%s",
-		manifest.Hash,
-		manifest.URLPrefix,
-		staticDir,
-		cfg.StaticManifestPath,
-	)
-
-	handler, err := httpserver.New(httpserver.Config[*appcore.Context]{
-		AppContext: appcore.NewContext(
+	handler, err := webgen.NewHandler(webgen.ServerConfig{
+		AppContext: runtime.NewContext(
 			noteService,
 			i18nConfig,
 			i18nCatalog,
@@ -117,14 +68,16 @@ func run() error {
 			cfg.LovelyEyeScriptURL,
 			cfg.LovelyEyeSiteID,
 		),
-		Handlers:        webgen.Handlers(webgen.NewRouteResolvers()),
-		IsNotFoundError: appcore.IsNotFoundError,
-		NotFoundPage:    webgen.NotFoundPage,
-		Static: httpserver.StaticMount{
-			URLPrefix: manifest.URLPrefix,
-			Dir:       staticDir,
+		Runtime: runtime.BootstrapConfig{
+			LocalizationConfig: i18nConfig,
+			ImageLoader:        imageLoader,
+			LovelyEyeScriptURL: cfg.LovelyEyeScriptURL,
+			LovelyEyeSiteID:    cfg.LovelyEyeSiteID,
 		},
-		CachePolicies: cachePolicies,
+		StaticManifestPath:     cfg.StaticManifestPath,
+		PublicDir:              cfg.PublicDir,
+		PublicFilesCachePolicy: cfg.CachePublicFiles,
+		CachePolicies:          cachePolicies,
 		LogServerError: func(err error) {
 			log.Printf("blog server error: %v", err)
 		},
@@ -133,17 +86,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("handler setup failed: %w", err)
 	}
-	handler = appcore.WithCanonicalNotesRedirects(handler)
-	handler = frameworki18n.Middleware(frameworki18n.MiddlewareConfig{
-		Resolver: i18nResolver,
-		BypassPrefixes: []string{
-			manifest.URLPrefix,
-		},
-		BypassExact: []string{
-			"/healthz",
-		},
-	})(handler)
-	handler = publicMiddleware(handler)
+	handler = runtime.WithCanonicalNotesRedirects(handler)
 	handler = seo.WithFeedAndSitemapEndpoints(handler, seo.FeedAndSitemapConfig{
 		RootURL:    rootURL,
 		I18nConfig: i18nConfig,
@@ -176,5 +119,3 @@ func validateRootURL(value string) (string, error) {
 	parsed.Fragment = ""
 	return parsed.String(), nil
 }
-
-

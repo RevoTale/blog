@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	"blog/internal/web/appcore"
 	webi18n "blog/internal/web/i18n"
+	"blog/internal/web/runtime"
 	"github.com/a-h/templ"
 )
 
@@ -53,7 +53,7 @@ func BuildOrganizationJSONLD(rootURL string) map[string]any {
 	}
 }
 
-func BuildAuthorJSONLD(view appcore.AuthorPageView) map[string]any {
+func BuildAuthorJSONLD(view runtime.AuthorPageView) map[string]any {
 	if view.ActiveAuthor == nil {
 		return nil
 	}
@@ -71,7 +71,7 @@ func BuildAuthorJSONLD(view appcore.AuthorPageView) map[string]any {
 	return doc
 }
 
-func BuildNoteJSONLD(view appcore.NotePageView) map[string]any {
+func BuildNoteJSONLD(view runtime.NotePageView) map[string]any {
 	canonicalURL := strings.TrimSpace(view.CanonicalURL)
 	if canonicalURL == "" {
 		canonicalURL = absoluteLocalizedURLForRoot(
@@ -128,7 +128,7 @@ func BuildNoteJSONLD(view appcore.NotePageView) map[string]any {
 	return doc
 }
 
-func BuildNotesBlogJSONLD(view appcore.NotesPageView) map[string]any {
+func BuildNotesBlogJSONLD(view runtime.NotesPageView) map[string]any {
 	canonicalURL := strings.TrimSpace(view.CanonicalURL)
 	if canonicalURL == "" {
 		canonicalURL = absoluteLocalizedURLForRoot(view.RootURL, view.LocaleCode(), "/")
@@ -178,11 +178,11 @@ func BuildNotesBlogJSONLD(view appcore.NotesPageView) map[string]any {
 		blogPosts = append(blogPosts, post)
 	}
 
-	name := strings.TrimSpace(appcore.Message(view.MessagesMap(), webi18n.KeySeoNotesJSONLDName))
+	name := strings.TrimSpace(runtime.Message(view.MessagesMap(), webi18n.KeySeoNotesJSONLDName))
 	if name == "" || name == string(webi18n.KeySeoNotesJSONLDName) {
 		name = "Notes"
 	}
-	description := strings.TrimSpace(appcore.Message(view.MessagesMap(), webi18n.KeySeoNotesJSONLDDescription))
+	description := strings.TrimSpace(runtime.Message(view.MessagesMap(), webi18n.KeySeoNotesJSONLDDescription))
 	if description == "" || description == string(webi18n.KeySeoNotesJSONLDDescription) {
 		description = "Explore a collection of notes on coding, web performance, SEO, AI workflows, and book takeaways."
 	}
@@ -218,7 +218,7 @@ func authorAvatarImageObject(rootURL string, avatar *notes.AuthorMedia) map[stri
 	if avatar == nil {
 		return nil
 	}
-	thumbURL, thumbWidth, thumbHeight := appcore.ImageThumb(
+	thumbURL, thumbWidth, thumbHeight := runtime.ImageThumb(
 		strings.TrimSpace(avatar.URL),
 		avatar.Width,
 		avatar.Height,
@@ -248,7 +248,7 @@ func attachmentToImageObject(rootURL string, attachment *notes.Attachment) map[s
 	if attachment == nil {
 		return nil
 	}
-	thumbURL, thumbWidth, thumbHeight := appcore.ImageThumb(
+	thumbURL, thumbWidth, thumbHeight := runtime.ImageThumb(
 		strings.TrimSpace(attachment.URL),
 		attachment.Width,
 		attachment.Height,
@@ -307,7 +307,7 @@ func absoluteMentionURL(rootURL string, locale string, rawURL string) string {
 
 	localizedPath := parsed.Path
 	if strings.TrimSpace(localizedPath) != "" {
-		localizedPath = appcore.LocalizeAppPath(locale, localizedPath)
+		localizedPath = runtime.LocalizeAppPath(locale, localizedPath)
 	}
 	return joinRootAndPath(rootURL, localizedPath)
 }
@@ -329,11 +329,11 @@ func absoluteMediaURLForRoot(rootURL string, rawURL string) string {
 }
 
 func absoluteLocalizedURLForRoot(rootURL string, locale string, strippedPath string) string {
-	localizedPath := appcore.LocalizeAppPath(locale, strippedPath)
+	localizedPath := runtime.LocalizeAppPath(locale, strippedPath)
 	return joinRootAndPath(rootURL, localizedPath)
 }
 
-func authorCanonicalURL(view appcore.AuthorPageView, authorSlug string) string {
+func authorCanonicalURL(view runtime.AuthorPageView, authorSlug string) string {
 	if canonical := strings.TrimSpace(view.CanonicalURL); canonical != "" {
 		return canonical
 	}

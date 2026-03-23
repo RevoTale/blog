@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 )
+
 func WithRobotsEndpoint(
 	next http.Handler,
 	rootURL string,
@@ -42,6 +43,3 @@ func buildRobotsTXT(rootURL string) string {
 	}
 	return strings.Join(out, "\n") + "\n"
 }
-
-
-

@@ -2,7 +2,7 @@
 package resolvers
 
 import (
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"context"
 	"github.com/RevoTale/no-js/framework/metagen"
 	"net/http"
@@ -33,22 +33,22 @@ type TalesParams struct {
 }
 
 type RouteResolver interface {
-	MetaGenRootLayout(ctx context.Context, appCtx *appcore.Context, r *http.Request) (metagen.Metadata, error)
-	MetaGenAuthorParamSlugLayout(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error)
-	MetaGenRootPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (metagen.Metadata, error)
-	MetaGenAuthorParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error)
-	MetaGenChannelsPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (metagen.Metadata, error)
-	MetaGenMicroTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (metagen.Metadata, error)
-	MetaGenNoteParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (metagen.Metadata, error)
-	MetaGenTagParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (metagen.Metadata, error)
-	MetaGenTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (metagen.Metadata, error)
-	ResolveRootPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params RootParams) (appcore.NotesPageView, error)
-	ResolveAuthorParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params AuthorParamSlugParams) (appcore.AuthorPageView, error)
-	ResolveChannelsPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params ChannelsParams) (appcore.NotesPageView, error)
-	ResolveMicroTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params MicroTalesParams) (appcore.NotesPageView, error)
-	ResolveNoteParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params NoteParamSlugParams) (appcore.NotePageView, error)
-	ResolveTagParamSlugPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TagParamSlugParams) (appcore.NotesPageView, error)
-	ResolveTalesPage(ctx context.Context, appCtx *appcore.Context, r *http.Request, params TalesParams) (appcore.NotesPageView, error)
+	MetaGenRootLayout(ctx context.Context, appCtx *runtime.Context, r *http.Request) (metagen.Metadata, error)
+	MetaGenAuthorParamSlugLayout(ctx context.Context, appCtx *runtime.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error)
+	MetaGenRootPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params RootParams) (metagen.Metadata, error)
+	MetaGenAuthorParamSlugPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params AuthorParamSlugParams) (metagen.Metadata, error)
+	MetaGenChannelsPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params ChannelsParams) (metagen.Metadata, error)
+	MetaGenMicroTalesPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params MicroTalesParams) (metagen.Metadata, error)
+	MetaGenNoteParamSlugPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params NoteParamSlugParams) (metagen.Metadata, error)
+	MetaGenTagParamSlugPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params TagParamSlugParams) (metagen.Metadata, error)
+	MetaGenTalesPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params TalesParams) (metagen.Metadata, error)
+	ResolveRootPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params RootParams) (runtime.NotesPageView, error)
+	ResolveAuthorParamSlugPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params AuthorParamSlugParams) (runtime.AuthorPageView, error)
+	ResolveChannelsPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params ChannelsParams) (runtime.NotesPageView, error)
+	ResolveMicroTalesPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params MicroTalesParams) (runtime.NotesPageView, error)
+	ResolveNoteParamSlugPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params NoteParamSlugParams) (runtime.NotePageView, error)
+	ResolveTagParamSlugPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params TagParamSlugParams) (runtime.NotesPageView, error)
+	ResolveTalesPage(ctx context.Context, appCtx *runtime.Context, r *http.Request, params TalesParams) (runtime.NotesPageView, error)
 }
 
 type Resolver struct{}

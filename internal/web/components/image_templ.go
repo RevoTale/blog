@@ -7,7 +7,7 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "blog/internal/web/appcore"
+import "blog/internal/web/runtime"
 
 func ImageResponsive(className string, src string, alt string, loading string, sizes string, width int, height int) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -30,7 +30,7 @@ func ImageResponsive(className string, src string, alt string, loading string, s
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		if appcore.ImageLoaderEnabled() {
+		if runtime.ImageLoaderEnabled() {
 			var templ_7745c5c3_Var2 = []any{className}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 			if templ_7745c5c3_Err != nil {
@@ -54,7 +54,7 @@ func ImageResponsive(className string, src string, alt string, loading string, s
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.ImageURL(src, appcore.ImageResponsiveTargetWidth(width, appcore.ImageResponsiveSizes(sizes, width))))
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.ImageURL(src, runtime.ImageResponsiveTargetWidth(width, runtime.ImageResponsiveSizes(sizes, width))))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/image.templ`, Line: 10, Col: 117}
 			}
@@ -67,7 +67,7 @@ func ImageResponsive(className string, src string, alt string, loading string, s
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.ImageResponsiveSrcSet(src, appcore.ImageResponsiveTargetWidth(width, appcore.ImageResponsiveSizes(sizes, width))))
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.ImageResponsiveSrcSet(src, runtime.ImageResponsiveTargetWidth(width, runtime.ImageResponsiveSizes(sizes, width))))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/image.templ`, Line: 11, Col: 133}
 			}
@@ -80,7 +80,7 @@ func ImageResponsive(className string, src string, alt string, loading string, s
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(appcore.ImageResponsiveSizes(sizes, width))
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.ImageResponsiveSizes(sizes, width))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/image.templ`, Line: 12, Col: 53}
 			}

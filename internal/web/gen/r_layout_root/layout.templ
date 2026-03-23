@@ -3,31 +3,31 @@ package r_layout_root
 
 import (
 	"blog/internal/techstack"
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"blog/internal/web/components"
 	webi18n "blog/internal/web/i18n"
 	"github.com/RevoTale/no-js/framework/metagen"
 )
 
-templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Component) {
+templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Component) {
 	<div class="app-shell">
-		<aside class="server-rail" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaWorkspaceNavigation) }>
-			<a class="server-button is-active" href={ appcore.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaBlogHome) }>
-				@components.ImageResponsive("server-logo", appcore.StaticAssetURL("revtale-logo.svg"), "RevTale", "lazy", "28px", 28, 28)
+		<aside class="server-rail" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaWorkspaceNavigation) }>
+			<a class="server-button is-active" href={ runtime.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaBlogHome) }>
+				@components.ImageResponsive("server-logo", runtime.StaticAssetURL("revtale-logo.svg"), "RevTale", "lazy", "28px", 28, 28)
 			</a>
 			<span class="server-divider" aria-hidden="true"></span>
-			<a class="server-button" href={ appcore.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaNotesChannel) }>#</a>
+			<a class="server-button" href={ runtime.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaNotesChannel) }>#</a>
 		</aside>
 
 		<div class="workspace">
-			<aside class="channel-panel" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaChannelList) }>
+			<aside class="channel-panel" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaChannelList) }>
 				<header class="guild-header">
-					<strong>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutGuildBlog) }</strong>
+					<strong>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutGuildBlog) }</strong>
 					<span class="guild-presence">
 						<span class="presence-dot" aria-hidden="true"></span>
-						<span class="guild-presence-label">{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutGuildOnline) }</span>
+						<span class="guild-presence-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutGuildOnline) }</span>
 					</span>
-					<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutGuildServer) }</span>
+					<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutGuildServer) }</span>
 				</header>
 
 				<div class="channel-scroll">
@@ -36,9 +36,9 @@ templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Com
 			</aside>
 
 			<div class="workspace-main">
-				<header class="topbar" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaChannelHeader) }>
+				<header class="topbar" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaChannelHeader) }>
 					<div class="topbar-left">
-						<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutChannelsButton) }</a>
+						<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutChannelsButton) }</a>
 						<div class="topbar-title">
 							if view.SidebarCurrentAuthorSlug() != "" {
 								<span class="channel-marker">&#64;</span>
@@ -48,23 +48,23 @@ templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Com
 								<span>{ view.SidebarCurrentTagName() }</span>
 							} else if view.SidebarCurrentType() == "long" {
 								<span class="channel-marker">#</span>
-								<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutTitleTales) }</span>
+								<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutTitleTales) }</span>
 							} else if view.SidebarCurrentType() == "short" {
 								<span class="channel-marker">#</span>
-								<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutTitleMicroTales) }</span>
+								<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutTitleMicroTales) }</span>
 							} else {
 								<span class="channel-marker">#</span>
-								<span>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutTitleAll) }</span>
+								<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutTitleAll) }</span>
 							}
 						</div>
 						<a
 							class="topbar-rss-link"
 							href={ view.RSSFeedURL() }
-							aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyNotesAriaFeed) }
+							aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyNotesAriaFeed) }
 						>RSS</a>
 					</div>
-					<nav class="topbar-nav" aria-label={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutAriaUtility) }>
-						<form class="topbar-search" role="search" method="get" action={ appcore.LocalizeAppPath(view.LocaleCode(), "/") }>
+					<nav class="topbar-nav" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaUtility) }>
+						<form class="topbar-search" role="search" method="get" action={ runtime.LocalizeAppPath(view.LocaleCode(), "/") }>
 							if view.SidebarCurrentAuthorSlug() != "" {
 								<input type="hidden" name="author" value={ view.SidebarCurrentAuthorSlug() }/>
 							}
@@ -80,12 +80,12 @@ templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Com
 								type="search"
 								name="q"
 								value={ view.LayoutSearchQuery() }
-								placeholder={ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutSearchPlaceholder) }
+								placeholder={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutSearchPlaceholder) }
 								required
 							/>
-							<button class="topbar-search-submit" type="submit">{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutSearchSubmit) }</button>
+							<button class="topbar-search-submit" type="submit">{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutSearchSubmit) }</button>
 							if view.LayoutSearchQuery() != "" {
-								<a class="topbar-search-clear" href={ appcore.BuildNotesFilterURL(view.LocaleCode(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutSearchClear) }</a>
+								<a class="topbar-search-clear" href={ runtime.BuildNotesFilterURL(view.LocaleCode(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutSearchClear) }</a>
 							}
 						</form>
 					</nav>
@@ -97,7 +97,7 @@ templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Com
 					<footer class="footer">
 						<div class="footer-locales">
 							<span class="footer-locales-label">Switch Language: </span>
-							for _, localeLink := range appcore.FooterLocaleLinks(meta, view.LocaleCode()) {
+							for _, localeLink := range runtime.FooterLocaleLinks(meta, view.LocaleCode()) {
 								if localeLink.Active {
 									<span class="footer-locale-link is-active" aria-current="true">{ localeLink.Label }</span>
 								} else {
@@ -106,17 +106,17 @@ templ Layout(meta metagen.Metadata, view appcore.RootLayoutView, child templ.Com
 							}
 						</div>
 						<p>
-							{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutFooterOpensourcePrefix) }
-							<a href="https://github.com/RevoTale/blog" target="_blank" rel="noopener noreferrer">{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutFooterOpensourceLink) }</a>
+							{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterOpensourcePrefix) }
+							<a href="https://github.com/RevoTale/blog" target="_blank" rel="noopener noreferrer">{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterOpensourceLink) }</a>
 						</p>
 						if view.LovelyEyeEnabled() {
 							<p>
-								{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutFooterAnalyticsPrefix) }
-								<a href="https://github.com/RevoTale/lovely-eye" target="_blank" rel="noopener noreferrer">{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutFooterAnalyticsLink) }</a>
+								{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterAnalyticsPrefix) }
+								<a href="https://github.com/RevoTale/lovely-eye" target="_blank" rel="noopener noreferrer">{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterAnalyticsLink) }</a>
 							</p>
 						}
 						<p>
-							{ appcore.Message(view.MessagesMap(), webi18n.KeyLayoutFooterStackPrefix) }
+							{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterStackPrefix) }
 							for idx, pkg := range techstack.Packages() {
 								if idx > 0 {
 									,

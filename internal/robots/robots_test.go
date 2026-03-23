@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 )
+
 func TestBuildRobotsTXTIncludesSitemap(t *testing.T) {
 	t.Parallel()
 

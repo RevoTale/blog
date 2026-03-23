@@ -1,12 +1,12 @@
 package appsrc
 
 import (
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"blog/internal/web/components"
 	"blog/internal/web/seo"
 )
 
-templ Page(view appcore.AuthorPageView) {
+templ Page(view runtime.AuthorPageView) {
 	if view.IncludeStructuredData {
 		@seo.JSONLDScript(seo.BuildAuthorJSONLD(view))
 	}

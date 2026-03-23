@@ -1,7 +1,7 @@
 package appsrc
 
 import (
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"github.com/RevoTale/no-js/framework/metagen"
 )
 
@@ -20,11 +20,11 @@ templ RootLayout(meta metagen.Metadata, locale string, child templ.Component) {
 			<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"/>
 			<meta name="msapplication-TileColor" content="#00aba9"/>
 			<meta name="theme-color" content="#ffffff"/>
-			<link rel="stylesheet" href={ appcore.StaticAssetURL("tui.css") }/>
-			<script src={ appcore.StaticAssetURL("vendor/htmx.min.js") }></script>
-			<script src={ appcore.StaticAssetURL("app.js") }></script>
-			if appcore.LovelyEyeEnabled() {
-				<script defer src={ appcore.LovelyEyeScriptURL() } data-site-key={ appcore.LovelyEyeSiteID() }></script>
+			<link rel="stylesheet" href={ runtime.StaticAssetURL("tui.css") }/>
+			<script src={ runtime.StaticAssetURL("vendor/htmx.min.js") }></script>
+			<script src={ runtime.StaticAssetURL("app.js") }></script>
+			if runtime.LovelyEyeEnabled() {
+				<script defer src={ runtime.LovelyEyeScriptURL() } data-site-key={ runtime.LovelyEyeSiteID() }></script>
 			}
 		</head>
 		@templ.Flush()

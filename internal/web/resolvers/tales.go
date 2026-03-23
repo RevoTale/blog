@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"blog/internal/web/seo"
 	"github.com/RevoTale/no-js/framework"
 	"github.com/RevoTale/no-js/framework/metagen"
@@ -12,7 +12,7 @@ import (
 
 func (Resolver) MetaGenTalesPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	_ TalesParams,
 ) (metagen.Metadata, error) {
@@ -21,9 +21,9 @@ func (Resolver) MetaGenTalesPage(
 
 func (Resolver) ResolveTalesPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	_ TalesParams,
-) (appcore.NotesPageView, error) {
-	return appcore.LoadNotesTalesPage(ctx, appCtx, r, framework.EmptyParams{})
+) (runtime.NotesPageView, error) {
+	return runtime.LoadNotesTalesPage(ctx, appCtx, r, framework.EmptyParams{})
 }

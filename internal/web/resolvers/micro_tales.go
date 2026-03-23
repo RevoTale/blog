@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"blog/internal/web/seo"
 	"github.com/RevoTale/no-js/framework"
 	"github.com/RevoTale/no-js/framework/metagen"
@@ -12,7 +12,7 @@ import (
 
 func (Resolver) MetaGenMicroTalesPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	_ MicroTalesParams,
 ) (metagen.Metadata, error) {
@@ -21,9 +21,9 @@ func (Resolver) MetaGenMicroTalesPage(
 
 func (Resolver) ResolveMicroTalesPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	_ MicroTalesParams,
-) (appcore.NotesPageView, error) {
-	return appcore.LoadNotesMicroTalesPage(ctx, appCtx, r, framework.EmptyParams{})
+) (runtime.NotesPageView, error) {
+	return runtime.LoadNotesMicroTalesPage(ctx, appCtx, r, framework.EmptyParams{})
 }

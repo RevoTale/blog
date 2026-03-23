@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	"blog/internal/web/appcore"
 	webi18n "blog/internal/web/i18n"
+	"blog/internal/web/runtime"
 	"github.com/RevoTale/no-js/framework"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	"github.com/RevoTale/no-js/framework/metagen"
@@ -18,10 +18,10 @@ import (
 
 func MetaGenRootPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 ) (metagen.Metadata, error) {
-	view, err := appcore.LoadNotesPage(ctx, appCtx, r, framework.EmptyParams{})
+	view, err := runtime.LoadNotesPage(ctx, appCtx, r, framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -54,10 +54,10 @@ func MetaGenRootPage(
 
 func MetaGenTalesPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 ) (metagen.Metadata, error) {
-	view, err := appcore.LoadNotesTalesPage(ctx, appCtx, r, framework.EmptyParams{})
+	view, err := runtime.LoadNotesTalesPage(ctx, appCtx, r, framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -82,10 +82,10 @@ func MetaGenTalesPage(
 
 func MetaGenMicroTalesPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 ) (metagen.Metadata, error) {
-	view, err := appcore.LoadNotesMicroTalesPage(ctx, appCtx, r, framework.EmptyParams{})
+	view, err := runtime.LoadNotesMicroTalesPage(ctx, appCtx, r, framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -110,11 +110,11 @@ func MetaGenMicroTalesPage(
 
 func MetaGenTagPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := appcore.LoadTagPage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadTagPage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -141,10 +141,10 @@ func MetaGenTagPage(
 
 func MetaGenChannelsPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 ) (metagen.Metadata, error) {
-	view, err := appcore.LoadChannelsPage(ctx, appCtx, r, framework.EmptyParams{})
+	view, err := runtime.LoadChannelsPage(ctx, appCtx, r, framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -169,11 +169,11 @@ func MetaGenChannelsPage(
 
 func MetaGenAuthorPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := appcore.LoadAuthorPage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadAuthorPage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -266,11 +266,11 @@ func MetaGenAuthorPage(
 
 func MetaGenNotePage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := appcore.LoadNotePage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadNotePage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -356,9 +356,9 @@ func MetaGenNotePage(
 }
 
 func notesListingMetadata(
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
-	view appcore.NotesPageView,
+	view runtime.NotesPageView,
 	cardTitle string,
 	description string,
 	openGraphType string,
@@ -499,7 +499,7 @@ type siteMetadata struct {
 	RootURL     string
 }
 
-func siteInfo(appCtx *appcore.Context, locale string) siteMetadata {
+func siteInfo(appCtx *runtime.Context, locale string) siteMetadata {
 	name := localizeSEO(appCtx, locale, webi18n.KeySeoSiteName, "RevoTale", nil)
 	description := localizeSEO(
 		appCtx,
@@ -524,7 +524,7 @@ func siteInfo(appCtx *appcore.Context, locale string) siteMetadata {
 }
 
 func localizeSEO(
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	locale string,
 	key webi18n.Key,
 	fallback string,
@@ -554,7 +554,7 @@ func titleWithSite(pageTitle string, siteName string) string {
 }
 
 func buildAlternates(
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	locale string,
 	alternateTypes map[string]string,
@@ -590,7 +590,7 @@ func requestPathWithQuery(r *http.Request) string {
 	return pathValue + "?" + strings.TrimSpace(r.URL.RawQuery)
 }
 
-func notesRSSAlternateTypes(appCtx *appcore.Context, r *http.Request, locale string) map[string]string {
+func notesRSSAlternateTypes(appCtx *runtime.Context, r *http.Request, locale string) map[string]string {
 	if appCtx == nil {
 		return nil
 	}
@@ -623,7 +623,7 @@ func notesRSSAlternateTypes(appCtx *appcore.Context, r *http.Request, locale str
 	}
 }
 
-func firstListingImage(appCtx *appcore.Context, notes []notes.NoteSummary) *metagen.OpenGraphImage {
+func firstListingImage(appCtx *runtime.Context, notes []notes.NoteSummary) *metagen.OpenGraphImage {
 	for _, note := range notes {
 		if image := noteImage(appCtx, note.MetaImage, note.Attachment); image != nil {
 			return image
@@ -633,7 +633,7 @@ func firstListingImage(appCtx *appcore.Context, notes []notes.NoteSummary) *meta
 }
 
 func noteImage(
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	metaImage *notes.Attachment,
 	attachment *notes.Attachment,
 ) *metagen.OpenGraphImage {
@@ -643,11 +643,11 @@ func noteImage(
 	return noteAttachmentImage(appCtx, attachment)
 }
 
-func noteAttachmentImage(appCtx *appcore.Context, attachment *notes.Attachment) *metagen.OpenGraphImage {
+func noteAttachmentImage(appCtx *runtime.Context, attachment *notes.Attachment) *metagen.OpenGraphImage {
 	if attachment == nil {
 		return nil
 	}
-	thumbURL, thumbWidth, thumbHeight := appcore.ImageThumb(
+	thumbURL, thumbWidth, thumbHeight := runtime.ImageThumb(
 		strings.TrimSpace(attachment.URL),
 		attachment.Width,
 		attachment.Height,
@@ -664,11 +664,11 @@ func noteAttachmentImage(appCtx *appcore.Context, attachment *notes.Attachment) 
 	}
 }
 
-func authorAvatarImage(appCtx *appcore.Context, author *notes.Author) *metagen.OpenGraphImage {
+func authorAvatarImage(appCtx *runtime.Context, author *notes.Author) *metagen.OpenGraphImage {
 	if author == nil || author.Avatar == nil {
 		return nil
 	}
-	thumbURL, thumbWidth, thumbHeight := appcore.ImageThumb(
+	thumbURL, thumbWidth, thumbHeight := runtime.ImageThumb(
 		strings.TrimSpace(author.Avatar.URL),
 		author.Avatar.Width,
 		author.Avatar.Height,
@@ -685,7 +685,7 @@ func authorAvatarImage(appCtx *appcore.Context, author *notes.Author) *metagen.O
 	}
 }
 
-func absoluteMediaURL(appCtx *appcore.Context, rawURL string) string {
+func absoluteMediaURL(appCtx *runtime.Context, rawURL string) string {
 	trimmed := strings.TrimSpace(rawURL)
 	if trimmed == "" {
 		return ""
@@ -706,8 +706,8 @@ func absoluteMediaURL(appCtx *appcore.Context, rawURL string) string {
 	return joinRootAndPath(root, parsed.Path)
 }
 
-func absoluteLocalizedURL(appCtx *appcore.Context, locale string, strippedPath string) string {
-	localizedPath := appcore.LocalizeAppPath(locale, strippedPath)
+func absoluteLocalizedURL(appCtx *runtime.Context, locale string, strippedPath string) string {
+	localizedPath := runtime.LocalizeAppPath(locale, strippedPath)
 	root := ""
 	if appCtx != nil {
 		root = strings.TrimSpace(appCtx.RootURL())

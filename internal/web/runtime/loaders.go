@@ -1,4 +1,4 @@
-package appcore
+package runtime
 
 import (
 	"context"
@@ -757,7 +757,7 @@ func loaderCacheKey(loaderName string, locale string, r *http.Request, fragments
 		queryValue = strings.TrimSpace(r.URL.RawQuery)
 	}
 
-	keyParts := []string{"appcore", strings.TrimSpace(loaderName), strings.TrimSpace(locale), pathValue, queryValue}
+	keyParts := []string{"runtime", strings.TrimSpace(loaderName), strings.TrimSpace(locale), pathValue, queryValue}
 	for _, fragment := range fragments {
 		keyParts = append(keyParts, strings.TrimSpace(fragment))
 	}

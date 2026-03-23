@@ -1,4 +1,4 @@
-package appcore
+package runtime
 
 import (
 	"net/http"
@@ -17,7 +17,8 @@ func WithCanonicalNotesRedirects(next http.Handler) http.Handler {
 			return
 		}
 
-		target, ok := CanonicalNotesRedirectURL(frameworki18n.LocaleFromContext(r.Context()), r.URL.Path, r.URL.Query())
+		locale, strippedPath := canonicalNotesRequestDetails(r)
+		target, ok := CanonicalNotesRedirectURL(locale, strippedPath, r.URL.Query())
 		if !ok {
 			next.ServeHTTP(w, r)
 			return
@@ -30,6 +31,24 @@ func WithCanonicalNotesRedirects(next http.Handler) http.Handler {
 
 		http.Redirect(w, r, target, http.StatusPermanentRedirect)
 	})
+}
+
+func canonicalNotesRequestDetails(r *http.Request) (string, string) {
+	cfg, _ := routingConfigValue.Load().(frameworki18n.Config)
+	if r == nil || r.URL == nil {
+		return cfg.DefaultLocale, "/"
+	}
+
+	if info, ok := frameworki18n.RequestInfoFromContext(r.Context()); ok {
+		return info.Locale, info.StrippedPath
+	}
+
+	locale, strippedPath, _, ok := frameworki18n.StripLocale(cfg, r.URL.Path)
+	if ok {
+		return locale, strippedPath
+	}
+
+	return cfg.DefaultLocale, frameworki18n.NormalizePath(r.URL.Path)
 }
 
 func shouldSkipCanonicalNotesRedirect(r *http.Request) bool {

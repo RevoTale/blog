@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"blog/internal/web/appcore"
+	"blog/internal/web/runtime"
 	"blog/internal/web/seo"
 	"github.com/RevoTale/no-js/framework"
 	"github.com/RevoTale/no-js/framework/metagen"
@@ -12,17 +12,17 @@ import (
 
 func (Resolver) MetaGenRootLayout(
 	_ context.Context,
-	_ *appcore.Context,
+	_ *runtime.Context,
 	_ *http.Request,
 ) (metagen.Metadata, error) {
 	return metagen.Metadata{
-		DangerRawHead: []string{appcore.ChromaStyleTag()},
+		DangerRawHead: []string{runtime.ChromaStyleTag()},
 	}, nil
 }
 
 func (Resolver) MetaGenRootPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	_ RootParams,
 ) (metagen.Metadata, error) {
@@ -31,9 +31,9 @@ func (Resolver) MetaGenRootPage(
 
 func (Resolver) ResolveRootPage(
 	ctx context.Context,
-	appCtx *appcore.Context,
+	appCtx *runtime.Context,
 	r *http.Request,
 	_ RootParams,
-) (appcore.NotesPageView, error) {
-	return appcore.LoadNotesPage(ctx, appCtx, r, framework.EmptyParams{})
+) (runtime.NotesPageView, error) {
+	return runtime.LoadNotesPage(ctx, appCtx, r, framework.EmptyParams{})
 }
