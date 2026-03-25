@@ -2,15 +2,10 @@ package req
 
 import (
 	"net/http"
-	"strings"
 )
 
 func SetCacheControl(w http.ResponseWriter, value string) {
-	trimmed := strings.TrimSpace(value)
-	if trimmed == "" {
-		return
-	}
-	w.Header().Set("Cache-Control", trimmed)
+	w.Header().Set("Cache-Control", value)
 }
 
 func IsReadMethod(method string) bool {
