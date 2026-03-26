@@ -195,6 +195,122 @@ func WithFeedAndSitemapEndpoints(next http.Handler, cfg FeedAndSitemapConfig) ht
 	})
 }
 
+func Mount(mux *http.ServeMux, cfg FeedAndSitemapConfig) error {
+	if mux == nil {
+		return fmt.Errorf("mux is required")
+	}
+
+	normalizedI18n, err := frameworki18n.NormalizeConfig(cfg.I18nConfig)
+	if err != nil {
+		normalizedI18n = frameworki18n.Config{
+			Locales:       []string{"en"},
+			DefaultLocale: "en",
+			PrefixMode:    frameworki18n.PrefixAsNeeded,
+		}
+	}
+
+	authorsPageSize := cfg.AuthorsSitemapLimit
+	if authorsPageSize < 1 {
+		authorsPageSize = defaultSitemapAuthorsPageSize
+	}
+
+	tagsPageSize := cfg.TagsSitemapLimit
+	if tagsPageSize < 1 {
+		tagsPageSize = defaultSitemapTagsPageSize
+	}
+
+	rssCachePolicy := strings.TrimSpace(cfg.RSSCachePolicy)
+	if rssCachePolicy == "" {
+		rssCachePolicy = defaultRSSCachePolicy
+	}
+
+	sitemapCachePolicy := strings.TrimSpace(cfg.SitemapCachePolicy)
+	if sitemapCachePolicy == "" {
+		sitemapCachePolicy = defaultSitemapCachePolicy
+	}
+
+	sitemapIndexPolicy := strings.TrimSpace(cfg.SitemapIndexPolicy)
+	if sitemapIndexPolicy == "" {
+		sitemapIndexPolicy = defaultSitemapIndexCachePolicy
+	}
+
+	rootURL := strings.TrimSpace(cfg.RootURL)
+
+	mux.HandleFunc(rssEndpointPath, func(w http.ResponseWriter, r *http.Request) {
+		serveRSSFeedEndpoint(w, r, feedEndpointConfig{
+			RootURL:     rootURL,
+			I18nConfig:  normalizedI18n,
+			Notes:       cfg.Notes,
+			CachePolicy: rssCachePolicy,
+		})
+	})
+	mux.HandleFunc(sitemapPath, func(w http.ResponseWriter, r *http.Request) {
+		serveRootSitemapEndpoint(w, r, sitemapEndpointConfig{
+			RootURL:     rootURL,
+			I18nConfig:  normalizedI18n,
+			CachePolicy: sitemapCachePolicy,
+		})
+	})
+	indexHandler := func(w http.ResponseWriter, r *http.Request) {
+		serveSitemapIndexEndpoint(w, r, sitemapIndexEndpointConfig{
+			RootURL:         rootURL,
+			I18nConfig:      normalizedI18n,
+			Notes:           cfg.Notes,
+			CachePolicy:     sitemapIndexPolicy,
+			AuthorsPageSize: authorsPageSize,
+			TagsPageSize:    tagsPageSize,
+		})
+	}
+	mux.HandleFunc(sitemapIndexPath, indexHandler)
+	mux.HandleFunc(sitemapIndexXMLPath, indexHandler)
+	mux.HandleFunc(noteSitemapPrefix, func(w http.ResponseWriter, r *http.Request) {
+		chunkID, ok := parseSitemapChunkID(r.URL.Path, noteSitemapPrefix)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		serveNoteSitemapEndpoint(w, r, chunkedSitemapEndpointConfig{
+			RootURL:     rootURL,
+			I18nConfig:  normalizedI18n,
+			Notes:       cfg.Notes,
+			ChunkID:     chunkID,
+			CachePolicy: sitemapCachePolicy,
+		})
+	})
+	mux.HandleFunc(authorSitemapPrefix, func(w http.ResponseWriter, r *http.Request) {
+		chunkID, ok := parseSitemapChunkID(r.URL.Path, authorSitemapPrefix)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		serveAuthorSitemapEndpoint(w, r, chunkedSitemapEndpointConfig{
+			RootURL:         rootURL,
+			I18nConfig:      normalizedI18n,
+			Notes:           cfg.Notes,
+			ChunkID:         chunkID,
+			CachePolicy:     sitemapCachePolicy,
+			AuthorsPageSize: authorsPageSize,
+		})
+	})
+	mux.HandleFunc(tagSitemapPrefix, func(w http.ResponseWriter, r *http.Request) {
+		chunkID, ok := parseSitemapChunkID(r.URL.Path, tagSitemapPrefix)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		serveTagSitemapEndpoint(w, r, chunkedSitemapEndpointConfig{
+			RootURL:      rootURL,
+			I18nConfig:   normalizedI18n,
+			Notes:        cfg.Notes,
+			ChunkID:      chunkID,
+			CachePolicy:  sitemapCachePolicy,
+			TagsPageSize: tagsPageSize,
+		})
+	})
+
+	return nil
+}
+
 type feedEndpointConfig struct {
 	RootURL     string
 	I18nConfig  frameworki18n.Config

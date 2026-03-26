@@ -2,6 +2,7 @@ package robots
 
 import (
 	"blog/internal/req"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -32,6 +33,28 @@ func WithRobotsEndpoint(
 		_, _ = w.Write([]byte(buildRobotsTXT(rootURL)))
 	})
 }
+
+func Mount(mux *http.ServeMux, rootURL string, cachePolicy string) error {
+	if mux == nil {
+		return fmt.Errorf("mux is required")
+	}
+
+	mux.Handle("/robots.txt", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r == nil || r.URL == nil {
+			return
+		}
+		if !req.IsReadMethod(r.Method) {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		req.SetCacheControl(w, cachePolicy)
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		_, _ = w.Write([]byte(buildRobotsTXT(rootURL)))
+	}))
+
+	return nil
+}
+
 func buildRobotsTXT(rootURL string) string {
 	out := []string{
 		"User-agent: *",

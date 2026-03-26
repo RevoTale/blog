@@ -9,9 +9,8 @@ import (
 type Config struct {
 	ListenAddr string
 
-	StaticDir          string
-	StaticBuildDir     string
 	StaticManifestPath string
+	StaticURLPrefix    string
 	PublicDir          string
 
 	RootURL string
@@ -31,19 +30,13 @@ type Config struct {
 }
 
 func Load() Config {
-	staticDir := getEnv("BLOG_STATIC_DIR", "internal/web/static")
-	staticBuildDir := getEnv("BLOG_STATIC_BUILD_DIR", "internal/web/static-build")
-	staticManifestPath := getEnv(
-		"BLOG_STATIC_MANIFEST_PATH",
-		staticBuildDir+"/manifest.json",
-	)
+	staticManifestPath := getEnv("BLOG_STATIC_MANIFEST_PATH", "internal/web/static-build/manifest.json")
 	publicDir := getEnv("BLOG_PUBLIC_DIR", "internal/web/public")
 
 	return Config{
 		ListenAddr:         getEnv("BLOG_LISTEN_ADDR", ":8080"),
-		StaticDir:          staticDir,
-		StaticBuildDir:     staticBuildDir,
 		StaticManifestPath: staticManifestPath,
+		StaticURLPrefix:    getEnv("BLOG_STATIC_URL_PREFIX", "/_assets/"),
 		PublicDir:          publicDir,
 		RootURL:            getEnv("BLOG_ROOT_URL", ""),
 		LovelyEyeScriptURL: strings.TrimSpace(os.Getenv("LOVELY_EYE_SCRIPT_URL")),

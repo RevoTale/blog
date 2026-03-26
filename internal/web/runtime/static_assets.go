@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 )
 
-const defaultStaticAssetBasePath = "/.revotale/"
+const defaultStaticAssetBasePath = "/_assets/"
 
 var staticAssetBasePath atomic.Value
 

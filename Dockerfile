@@ -9,11 +9,7 @@ COPY . .
 
 # Build hashed + minified static assets during image build.
 RUN GOCACHE=/tmp/go-cache GOMODCACHE=/go/pkg/mod \
-    go run github.com/RevoTale/no-js/framework/cmd/staticassetsgen \
-      -source internal/web/static \
-      -out internal/web/static-build \
-      -manifest internal/web/static-build/manifest.json \
-      -url-prefix /.revotale/
+    go run github.com/RevoTale/no-js/cmd/no-js gen assets -root .
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -trimpath \
@@ -28,7 +24,6 @@ COPY --from=builder /src/internal/web/static-build /app/internal/web/static-buil
 COPY --from=builder /src/internal/web/public /app/internal/web/public
 
 ENV BLOG_LISTEN_ADDR=:8080
-ENV BLOG_STATIC_BUILD_DIR=/app/internal/web/static-build
 ENV BLOG_STATIC_MANIFEST_PATH=/app/internal/web/static-build/manifest.json
 ENV BLOG_PUBLIC_DIR=/app/internal/web/public
 

@@ -15,11 +15,9 @@ import (
 
 	"blog/internal/imageloader"
 	"blog/internal/notes"
-	"blog/internal/robots"
-	"blog/internal/seo"
+	"blog/internal/web/bootstrap"
 	webgen "blog/internal/web/gen"
 	webi18n "blog/internal/web/i18n"
-	"blog/internal/web/runtime"
 	"github.com/Khan/genqlient/graphql"
 	"github.com/RevoTale/no-js/bundler/staticassets"
 	"github.com/RevoTale/no-js/framework/httpserver"
@@ -362,17 +360,15 @@ type testServer struct {
 }
 
 type testServerBootstrap struct {
-	cfg           webgen.ServerConfig
-	bundle        *staticassets.Bundle
-	notes         *notes.Service
-	i18nConfig    frameworki18n.Config
-	cachePolicies httpserver.CachePolicies
+	cfg    webgen.ServerConfig
+	bundle *staticassets.Bundle
 }
 
 type testServerOptions struct {
 	enableImageLoader  bool
 	lovelyEyeScriptURL string
 	lovelyEyeSiteID    string
+	staticURLPrefix    string
 }
 
 func newTestServer(t *testing.T) testServer {
@@ -403,13 +399,6 @@ func newTestServerWithOptions(t *testing.T, options testServerOptions) testServe
 	if err != nil {
 		t.Fatalf("new handler: %v", err)
 	}
-	handler = runtime.WithCanonicalNotesRedirects(handler)
-	handler = seo.WithFeedAndSitemapEndpoints(handler, seo.FeedAndSitemapConfig{
-		RootURL:    testRootURL,
-		I18nConfig: bootstrap.i18nConfig,
-		Notes:      bootstrap.notes,
-	})
-	handler = robots.WithRobotsEndpoint(handler, testRootURL, bootstrap.cachePolicies.HTML)
 
 	return testServer{
 		handler: handler,
@@ -420,9 +409,14 @@ func newTestServerWithOptions(t *testing.T, options testServerOptions) testServe
 func newTestServerBootstrap(t *testing.T, options testServerOptions) testServerBootstrap {
 	t.Helper()
 
+	staticURLPrefix := strings.TrimSpace(options.staticURLPrefix)
+	if staticURLPrefix == "" {
+		staticURLPrefix = "/_assets/"
+	}
+
 	bundle, err := staticassets.Build(staticassets.BuildConfig{
 		SourceDir: "../../internal/web/static",
-		URLPrefix: "/.revotale/",
+		URLPrefix: staticURLPrefix,
 	})
 	if err != nil {
 		t.Fatalf("build static assets: %v", err)
@@ -448,35 +442,23 @@ func newTestServerBootstrap(t *testing.T, options testServerOptions) testServerB
 	}
 	imageLoader := imageloader.New(options.enableImageLoader)
 	noteService := notes.NewService(fakeGraphQLClient{}, 12, testRootURL, imageLoader)
-	cachePolicies := httpserver.DefaultCachePolicies()
 
 	return testServerBootstrap{
-		cfg: webgen.ServerConfig{
-			AppContext: runtime.NewContext(
-				noteService,
-				i18nConfig,
-				i18nCatalog,
-				testRootURL,
-				options.lovelyEyeScriptURL,
-				options.lovelyEyeSiteID,
-			),
-			Runtime: runtime.BootstrapConfig{
-				LocalizationConfig:  i18nConfig,
-				StaticAssetBasePath: bundle.URLPrefix(),
-				ImageLoader:         imageLoader,
-				LovelyEyeScriptURL:  options.lovelyEyeScriptURL,
-				LovelyEyeSiteID:     options.lovelyEyeSiteID,
-			},
+		cfg: bootstrap.ServerConfig(bootstrap.Inputs{
+			RootURL:            testRootURL,
+			Notes:              noteService,
+			I18nConfig:         i18nConfig,
+			I18nCatalog:        i18nCatalog,
+			ImageLoader:        imageLoader,
 			StaticManifestPath: manifestPath,
+			StaticURLPrefix:    staticURLPrefix,
 			PublicDir:          "../../internal/web/public",
-			CachePolicies:      cachePolicies,
+			LovelyEyeScriptURL: options.lovelyEyeScriptURL,
+			LovelyEyeSiteID:    options.lovelyEyeSiteID,
 			LogServerError: func(error) {
 			},
-		},
-		bundle:        bundle,
-		notes:         noteService,
-		i18nConfig:    i18nConfig,
-		cachePolicies: cachePolicies,
+		}),
+		bundle: bundle,
 	}
 }
 
@@ -1335,7 +1317,7 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 		t.Fatalf("healthz body: expected %q, got %q", "ok", body)
 	}
 
-	recStatic := performRequest(mux, http.MethodGet, "/.revotale/tui.css")
+	recStatic := performRequest(mux, http.MethodGet, "/_assets/tui.css")
 	if recStatic.Code != http.StatusNotFound {
 		t.Fatalf("unhashed static status: expected %d, got %d", http.StatusNotFound, recStatic.Code)
 	}
@@ -1422,6 +1404,47 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	missingRouteBody := requireBody(t, recMissingRoute.Body)
 	if !strings.Contains(missingRouteBody, "/missing-route") {
 		t.Fatalf("missing route page should include requested path")
+	}
+}
+
+func TestGeneratedBootstrapUsesRuntimeStaticURLPrefix(t *testing.T) {
+	t.Parallel()
+
+	bootstrapA := newTestServerBootstrap(t, testServerOptions{staticURLPrefix: "/assets-a/"})
+	handlerA, err := webgen.NewHandler(bootstrapA.cfg)
+	if err != nil {
+		t.Fatalf("new handler A: %v", err)
+	}
+
+	expectedA := "/assets-a/" + bootstrapA.bundle.Hash() + "/tui.css"
+	recA := performRequest(handlerA, http.MethodGet, "/")
+	bodyA := requireBody(t, recA.Body)
+	if !strings.Contains(bodyA, expectedA) {
+		t.Fatalf("handler A should use runtime static prefix %q", expectedA)
+	}
+
+	bootstrapBConfig := bootstrapA.cfg
+	bootstrapBConfig.Runtime.Bootstrap.StaticAssetBasePath = "/assets-b/"
+	bootstrapBConfig.Features.StaticAssets.URLPrefix = "/assets-b/"
+	handlerB, err := webgen.NewHandler(bootstrapBConfig)
+	if err != nil {
+		t.Fatalf("new handler B: %v", err)
+	}
+
+	expectedB := "/assets-b/" + bootstrapA.bundle.Hash() + "/tui.css"
+
+	recB := performRequest(handlerB, http.MethodGet, "/")
+	bodyB := requireBody(t, recB.Body)
+	if !strings.Contains(bodyB, expectedB) {
+		t.Fatalf("handler B should use runtime static prefix %q", expectedB)
+	}
+	if strings.Contains(bodyB, expectedA) {
+		t.Fatalf("handler B should not use handler A runtime static prefix")
+	}
+
+	recStaticB := performRequest(handlerB, http.MethodGet, expectedB)
+	if recStaticB.Code != http.StatusOK {
+		t.Fatalf("runtime-prefixed static asset status: expected %d, got %d", http.StatusOK, recStaticB.Code)
 	}
 }
 

@@ -14,20 +14,51 @@ import (
 	"strings"
 )
 
+type RuntimeConfig struct {
+	AppContext *runtime.Context
+	Bootstrap  runtime.BootstrapConfig
+	Resolvers  RouteResolvers
+}
+
+type StaticAssetsConfig struct {
+	ManifestPath string
+	URLPrefix    string
+}
+
+type PublicFilesConfig struct {
+	Dir               string
+	RequestPathPrefix string
+	CachePolicy       string
+}
+
+type HealthConfig struct {
+	Path string
+	Body string
+}
+
+type FeatureConfig struct {
+	StaticAssets StaticAssetsConfig
+	PublicFiles  PublicFilesConfig
+	Health       HealthConfig
+}
+
+type Hooks struct {
+	Middleware []func(http.Handler) http.Handler
+	Mount      []func(*http.ServeMux) error
+}
+
+type Observability struct {
+	CachePolicies       httpserver.CachePolicies
+	LogServerError      func(error)
+	LogResolverTiming   func(event framework.ResolverTiming)
+	EnableResolverDebug bool
+}
+
 type ServerConfig struct {
-	AppContext              *runtime.Context
-	Runtime                 runtime.BootstrapConfig
-	Resolvers               RouteResolvers
-	StaticManifestPath      string
-	PublicDir               string
-	PublicRequestPathPrefix string
-	PublicFilesCachePolicy  string
-	CachePolicies           httpserver.CachePolicies
-	LogServerError          func(error)
-	LogResolverTiming       func(event framework.ResolverTiming)
-	EnableResolverDebug     bool
-	HealthPath              string
-	HealthBody              string
+	Runtime       RuntimeConfig
+	Features      FeatureConfig
+	Hooks         Hooks
+	Observability Observability
 }
 
 func NewHandler(cfg ServerConfig) (http.Handler, error) {
@@ -42,12 +73,15 @@ func MountRoutes(mux *http.ServeMux, cfg ServerConfig) error {
 	if mux == nil {
 		return fmt.Errorf("mux is required")
 	}
-	resolvers := cfg.Resolvers
+	resolvers := cfg.Runtime.Resolvers
 	if resolvers == nil {
 		resolvers = NewRouteResolvers()
 	}
-	runtimeCfg := cfg.Runtime
-	staticMount, err := loadStaticMount(cfg.StaticManifestPath)
+	runtimeCfg := cfg.Runtime.Bootstrap
+	staticMount, err := loadStaticMount(
+		cfg.Features.StaticAssets.ManifestPath,
+		cfg.Features.StaticAssets.URLPrefix,
+	)
 	if err != nil {
 		return err
 	}
@@ -56,20 +90,27 @@ func MountRoutes(mux *http.ServeMux, cfg ServerConfig) error {
 	}
 	runtime.Initialize(runtimeCfg)
 	handler, err := httpserver.New(httpserver.Config[*runtime.Context]{
-		AppContext:          cfg.AppContext,
+		AppContext:          cfg.Runtime.AppContext,
 		Handlers:            Handlers(resolvers),
 		IsNotFoundError:     runtime.IsNotFoundError,
 		NotFoundPage:        NotFoundPage,
 		Static:              staticMount,
-		CachePolicies:       cfg.CachePolicies,
-		LogServerError:      cfg.LogServerError,
-		LogResolverTiming:   cfg.LogResolverTiming,
-		EnableResolverDebug: cfg.EnableResolverDebug,
-		HealthPath:          cfg.HealthPath,
-		HealthBody:          cfg.HealthBody,
+		CachePolicies:       cfg.Observability.CachePolicies,
+		LogServerError:      cfg.Observability.LogServerError,
+		LogResolverTiming:   cfg.Observability.LogResolverTiming,
+		EnableResolverDebug: cfg.Observability.EnableResolverDebug,
+		HealthPath:          cfg.Features.Health.Path,
+		HealthBody:          cfg.Features.Health.Body,
 	})
 	if err != nil {
 		return fmt.Errorf("build generated handler: %w", err)
+	}
+	for idx := len(cfg.Hooks.Middleware) - 1; idx >= 0; idx-- {
+		hook := cfg.Hooks.Middleware[idx]
+		if hook == nil {
+			continue
+		}
+		handler = hook(handler)
 	}
 	i18nResolver, err := frameworki18n.NewResolver(runtimeCfg.LocalizationConfig)
 	if err != nil {
@@ -82,18 +123,18 @@ func MountRoutes(mux *http.ServeMux, cfg ServerConfig) error {
 	handler = frameworki18n.Middleware(frameworki18n.MiddlewareConfig{
 		Resolver:       i18nResolver,
 		BypassPrefixes: bypassPrefixes,
-		BypassExact:    []string{normalizeHealthPath(cfg.HealthPath)},
+		BypassExact:    []string{normalizeHealthPath(cfg.Features.Health.Path)},
 	})(handler)
-	publicDir := strings.TrimSpace(cfg.PublicDir)
+	publicDir := strings.TrimSpace(cfg.Features.PublicFiles.Dir)
 	if publicDir != "" {
 		publicPrefix := strings.TrimSpace("/")
-		if strings.TrimSpace(cfg.PublicRequestPathPrefix) != "" {
-			publicPrefix = strings.TrimSpace(cfg.PublicRequestPathPrefix)
+		if strings.TrimSpace(cfg.Features.PublicFiles.RequestPathPrefix) != "" {
+			publicPrefix = strings.TrimSpace(cfg.Features.PublicFiles.RequestPathPrefix)
 		}
 		publicConfig := httpserver.PublicFilesConfig{
 			Dir:               publicDir,
 			RequestPathPrefix: publicPrefix,
-			CachePolicy:       strings.TrimSpace(cfg.PublicFilesCachePolicy),
+			CachePolicy:       strings.TrimSpace(cfg.Features.PublicFiles.CachePolicy),
 		}
 		publicMiddleware, err := httpserver.WithPublicFiles(publicConfig)
 		if err != nil {
@@ -102,6 +143,14 @@ func MountRoutes(mux *http.ServeMux, cfg ServerConfig) error {
 		handler = publicMiddleware(handler)
 	}
 	mux.Handle("/", handler)
+	for _, mount := range cfg.Hooks.Mount {
+		if mount == nil {
+			continue
+		}
+		if err := mount(mux); err != nil {
+			return fmt.Errorf("mount hook: %w", err)
+		}
+	}
 	return nil
 }
 
@@ -116,7 +165,7 @@ func normalizeHealthPath(pathValue string) string {
 	return trimmed
 }
 
-func loadStaticMount(manifestPath string) (httpserver.StaticMount, error) {
+func loadStaticMount(manifestPath string, basePrefix string) (httpserver.StaticMount, error) {
 	trimmedManifestPath := strings.TrimSpace(manifestPath)
 	if trimmedManifestPath == "" {
 		return httpserver.StaticMount{}, nil
@@ -133,5 +182,6 @@ func loadStaticMount(manifestPath string) (httpserver.StaticMount, error) {
 	if !info.IsDir() {
 		return httpserver.StaticMount{}, fmt.Errorf("static build dir %q is not a directory", staticDir)
 	}
-	return httpserver.StaticMount{URLPrefix: manifest.URLPrefix, Dir: staticDir}, nil
+	versionedPrefix := manifest.VersionedURLPrefix(basePrefix)
+	return httpserver.StaticMount{URLPrefix: versionedPrefix, Dir: staticDir}, nil
 }
