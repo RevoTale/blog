@@ -10,25 +10,25 @@ tasks:
     desc: Run Go code generation
     cmds:
       - go run github.com/RevoTale/no-js/cmd/no-js gen assets -root .
-      - go generate ./internal/gql
-      - go generate ./internal/web
-      - go run ./internal/cmd/techstackgen -in go.mod -out internal/techstack/generated.go
-      - go run ./internal/cmd/fetchschema
+      - go generate ./internal/cmsgraphql
+      - go generate ./web
+      - go run ./cmd/techstackgen -in go.mod -out internal/techstack/generated.go
+      - go run ./cmd/fetchschema
 
   go:gen:code-diff:
     desc: Verify generated outputs are committed
     cmds:
       - |
         set -euo pipefail
-        templ_files="$(find internal/web -type f -name '*_templ.go' | sort)"
-        git diff --exit-code -- go.mod go.sum internal/gql/generated.go internal/techstack/generated.go internal/web/resolvers/generated.go internal/web/gen/registry_gen.go internal/web/gen/server_gen.go $templ_files
+        templ_files="$(find web -type f -name '*_templ.go' | sort)"
+        git diff --exit-code -- go.mod go.sum internal/cmsgraphql/generated.go internal/techstack/generated.go web/resolvers/generated.go web/generated/registry_gen.go $templ_files
 
   go:fmt:
     desc: Format Go sources
     cmds:
       - |
         set -euo pipefail
-        files="$(find . -type f -name '*.go' -not -path './vendor/*')"
+        files="$(find . -type f -name '*.go' -not -path './vendor/*' -not -path './no-js/*')"
         if [ -n "$files" ]; then
           gofmt -w $files
         fi

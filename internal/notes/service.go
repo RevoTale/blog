@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"blog/internal/gql"
+	"blog/internal/cmsgraphql"
 	"blog/internal/imageloader"
 	md "blog/internal/markdown"
 	genqlientgraphql "github.com/Khan/genqlient/graphql"

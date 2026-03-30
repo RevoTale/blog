@@ -1,0 +1,41 @@
+package components
+
+import (
+	"blog/web/view"
+	webi18n "blog/web/i18n"
+)
+
+templ ChannelList(view runtime.RootLayoutView) {
+	<p class="channel-panel-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionChannels) }</p>
+	<a class={ runtime.ChannelLinkClass(runtime.SidebarAllActive(view)) } href={ view.SidebarAllURL() }>
+		<span class="channel-prefix">#</span>
+		<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelAll) }</span>
+	</a>
+
+	<p class="channel-panel-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionNoteType) }</p>
+	if view.SidebarCurrentType() != "all" {
+		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyTypeURL() }># { runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
+	}
+	<a class={ runtime.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelTales) }</a>
+	<a class={ runtime.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelMicroTales) }</a>
+
+	<p class="channel-panel-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionAuthors) }</p>
+	if view.SidebarCurrentAuthorSlug() != "" {
+		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyAuthorURL() }># { runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
+	}
+	for _, author := range view.SidebarAuthors() {
+		<a class={ runtime.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug) } href={ view.SidebarAuthorURL(author.Slug) }>
+			{ runtime.AuthorChannelLabel(author) }
+		</a>
+	}
+
+	<p class="channel-panel-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionTags) }</p>
+	if view.SidebarCurrentTagName() != "" {
+		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyTagURL() }># { runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
+	}
+	for _, tag := range view.SidebarTags() {
+		<a class={ runtime.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name) } href={ view.SidebarTagURL(tag.Name) }>
+			{ runtime.TagChannelLabel(tag) }
+		</a>
+	}
+}

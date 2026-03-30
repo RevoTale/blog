@@ -1,0 +1,21 @@
+package components
+
+import "blog/web/view"
+
+
+templ ImageResponsive(className string, src string, alt string, loading string, sizes string, width int, height int) {
+	if runtime.ImageLoaderEnabled() {
+		<img
+			class={ className }
+			src={ runtime.ImageURL(src, runtime.ImageResponsiveTargetWidth(width, runtime.ImageResponsiveSizes(sizes, width))) }
+			srcset={ runtime.ImageResponsiveSrcSet(src, runtime.ImageResponsiveTargetWidth(width, runtime.ImageResponsiveSizes(sizes, width))) }
+			sizes={ runtime.ImageResponsiveSizes(sizes, width) }
+			alt={ alt }
+			loading={ loading }
+			width={ width }
+			height={ height }
+		/>
+	} else {
+		<img class={ className } src={ src } alt={ alt } loading={ loading } width={ width } height={ height }/>
+	}
+}

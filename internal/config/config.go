@@ -30,8 +30,8 @@ type Config struct {
 }
 
 func Load() Config {
-	staticManifestPath := getEnv("BLOG_STATIC_MANIFEST_PATH", "internal/web/static-build/manifest.json")
-	publicDir := getEnv("BLOG_PUBLIC_DIR", "internal/web/public")
+	staticManifestPath := getEnv("BLOG_STATIC_MANIFEST_PATH", "web/assets-build/manifest.json")
+	publicDir := getEnv("BLOG_PUBLIC_DIR", "web/public")
 
 	return Config{
 		ListenAddr:         getEnv("BLOG_LISTEN_ADDR", ":8080"),

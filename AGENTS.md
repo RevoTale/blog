@@ -28,9 +28,9 @@ pages from CMS GraphQL data.
 ### Working Agreements
 - MUST follow root interaction protocol from [../AGENTS.md](../AGENTS.md) before finalizing policy changes.
 - MUST ask user to choose test/lint scope when scope is ambiguous (`all packages` vs `subset`).
-- MUST keep all user-facing copy localized via `internal/web/i18n` typed keys; avoid hardcoded English text in
+- MUST keep all user-facing copy localized via `web/i18n` typed keys; avoid hardcoded English text in
   `.templ` files and app-facing view-model helpers.
-- MUST update all locale files in `internal/web/i18n/messages/` when adding or changing message IDs.
+- MUST update all locale files in `web/i18n/messages/` when adding or changing message IDs.
 
 ## Taskfile Workflow Module
 
@@ -60,6 +60,6 @@ pages from CMS GraphQL data.
 - Markdown rendering: `github.com/gomarkdown/markdown`
   Link: https://github.com/gomarkdown/markdown
 - Keep data fetching server-side; templates receive pre-mapped view models.
-- Keep styling minimal and terminal-like in `internal/web/static/tui.css`.
+- Keep styling minimal and terminal-like in `web/assets/tui.css`.
 - Default run command from `blog/`: `go run .`
 - Optional env: `BLOG_ROOT_URL` (used by markdown link formatter to normalize same-domain absolute URLs).

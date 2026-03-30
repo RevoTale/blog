@@ -1,5 +1,0 @@
-version: 1
-
-project:
-  bootstrap_dir: internal/web/bootstrap
-  public_dir: internal/web/public

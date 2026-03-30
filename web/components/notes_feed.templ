@@ -1,0 +1,97 @@
+package components
+
+import (
+	"blog/web/view"
+	webi18n "blog/web/i18n"
+	"strconv"
+)
+
+templ NotesFeed(view runtime.NotesPageView, emptyMessage string) {
+	<section class="context-panel">
+		<h1>{ view.ContextTitle }</h1>
+		if view.ContextSubtitle != "" {
+			if view.ContextSubtitle == runtime.Message(view.MessagesMap(), webi18n.KeyContextFeed) {
+				<p class="muted">{ view.ContextSubtitle } · { runtime.Message(view.MessagesMap(), webi18n.KeyPagerPage) } { strconv.Itoa(view.Pagination.Page) }</p>
+			} else {
+				<p class="muted">{ view.ContextSubtitle }</p>
+			}
+		}
+		if view.ContextDescription != "" {
+			<p>{ view.ContextDescription }</p>
+		}
+	</section>
+
+	<section class="message-list" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyNotesAriaFeed) }>
+		if len(view.Notes) > 0 {
+			for _, note := range view.Notes {
+				@NoteCard(view.LocaleCode(), view.MessagesMap(), note)
+			}
+		} else {
+			<article class="panel empty-state">
+				<p>{ emptyMessage }</p>
+			</article>
+		}
+	</section>
+
+	<section class="feed-toolbar">
+		<p class="muted">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerPage) } { strconv.Itoa(view.Pagination.Page) } / { strconv.Itoa(view.Pagination.TotalPages) }</p>
+		<div class="pager-controls">
+			if view.Pagination.HasPrev {
+				<a
+					class="pager-link"
+					href={ view.Pagination.FirstURL }
+					hx-get={ runtime.BuildHTMXNavigationURL(view.Pagination.FirstURL) }
+					hx-target="#notes-content"
+					hx-select="#notes-content"
+					hx-swap="outerHTML"
+					hx-push-url={ view.Pagination.FirstURL }
+				>{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerFirst) }</a>
+			} else {
+				<span class="pager-link" aria-disabled="true">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerFirst) }</span>
+			}
+			if view.Pagination.HasPrev {
+				<a
+					class="pager-link"
+					href={ view.Pagination.PrevURL }
+					hx-get={ runtime.BuildHTMXNavigationURL(view.Pagination.PrevURL) }
+					hx-target="#notes-content"
+					hx-select="#notes-content"
+					hx-swap="outerHTML"
+					hx-push-url={ view.Pagination.PrevURL }
+				>{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerPrev) }</a>
+			} else {
+				<span class="pager-link" aria-disabled="true">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerPrev) }</span>
+			}
+			if view.Pagination.HasNext {
+				<a
+					class="pager-link"
+					href={ view.Pagination.NextURL }
+					hx-get={ runtime.BuildHTMXNavigationURL(view.Pagination.NextURL) }
+					hx-target="#notes-content"
+					hx-select="#notes-content"
+					hx-swap="outerHTML"
+					hx-push-url={ view.Pagination.NextURL }
+				>{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerNext) }</a>
+			} else {
+				<span class="pager-link" aria-disabled="true">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerNext) }</span>
+			}
+			if view.Pagination.HasNext {
+				<a
+					class="pager-link"
+					href={ view.Pagination.LastURL }
+					hx-get={ runtime.BuildHTMXNavigationURL(view.Pagination.LastURL) }
+					hx-target="#notes-content"
+					hx-select="#notes-content"
+					hx-swap="outerHTML"
+					hx-push-url={ view.Pagination.LastURL }
+				>{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerLast) }</a>
+			} else {
+				<span class="pager-link" aria-disabled="true">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerLast) }</span>
+			}
+		</div>
+	</section>
+
+	<section class="composer" aria-disabled="true">
+		<p>{ runtime.Message(view.MessagesMap(), webi18n.KeyComposerReadOnly) }</p>
+	</section>
+}

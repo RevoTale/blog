@@ -8,7 +8,7 @@ Use one source of truth for visual colors so dark/light theme changes are predic
 
 All themeable colors are defined as CSS custom properties in:
 
-- `internal/web/static/tui.css`
+- `web/assets/tui.css`
 
 Theme values are set in two places only:
 
@@ -64,4 +64,4 @@ This ensures all bar surfaces switch with the system theme from a centralized to
 1. Change token values in `tui.css`.
 2. Verify dark and light in browser.
 3. Run project checks:
-   - `go test ./internal/web/...`
+   - `go test ./web/...`

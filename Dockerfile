@@ -20,12 +20,12 @@ FROM gcr.io/distroless/static-debian12 AS runtime
 WORKDIR /app
 
 COPY --from=builder /out/blog /app/blog
-COPY --from=builder /src/internal/web/static-build /app/internal/web/static-build
-COPY --from=builder /src/internal/web/public /app/internal/web/public
+COPY --from=builder /src/web/assets-build /app/web/assets-build
+COPY --from=builder /src/web/public /app/web/public
 
 ENV BLOG_LISTEN_ADDR=:8080
-ENV BLOG_STATIC_MANIFEST_PATH=/app/internal/web/static-build/manifest.json
-ENV BLOG_PUBLIC_DIR=/app/internal/web/public
+ENV BLOG_STATIC_MANIFEST_PATH=/app/web/assets-build/manifest.json
+ENV BLOG_PUBLIC_DIR=/app/web/public
 
 EXPOSE 8080
 

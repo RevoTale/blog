@@ -1,0 +1,16 @@
+package appsrc
+
+import (
+	"blog/web/view"
+	"blog/web/components"
+	"blog/web/seo"
+)
+
+templ Page(view runtime.AuthorPageView) {
+	if view.IncludeStructuredData {
+		@seo.JSONLDScript(seo.BuildAuthorJSONLD(view))
+	}
+	<div id="notes-content" hx-history-elt>
+		@components.NotesFeed(view, view.EmptyStateMessage)
+	</div>
+}
