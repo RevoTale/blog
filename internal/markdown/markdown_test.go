@@ -1,10 +1,10 @@
 package markdown
 
 import (
-	"strings"
 	"testing"
 
 	"blog/internal/imageloader"
+	"github.com/stretchr/testify/require"
 )
 
 func TestToHTML_TransformsExternalLinkTokens(t *testing.T) {
@@ -13,15 +13,9 @@ func TestToHTML_TransformsExternalLinkTokens(t *testing.T) {
 		RootURL:        "https://revotale.com",
 	}))
 
-	if !strings.Contains(html, `href="https://example.com/read"`) {
-		t.Fatalf("expected translated external href, got %s", html)
-	}
-	if !strings.Contains(html, `target="_blank"`) {
-		t.Fatalf("expected target blank, got %s", html)
-	}
-	if !strings.Contains(html, `rel="noopener noreferrer"`) {
-		t.Fatalf("expected external rel attrs, got %s", html)
-	}
+	require.Contains(t, html, `href="https://example.com/read"`)
+	require.Contains(t, html, `target="_blank"`)
+	require.Contains(t, html, `rel="noopener noreferrer"`)
 }
 
 func TestToHTML_TransformsInternalLinkTokens(t *testing.T) {
@@ -29,15 +23,9 @@ func TestToHTML_TransformsInternalLinkTokens(t *testing.T) {
 		TranslateLinks: map[string]string{"n1": "/note/hello-world"},
 	}))
 
-	if !strings.Contains(html, `href="/note/hello-world"`) {
-		t.Fatalf("expected translated internal href, got %s", html)
-	}
-	if !strings.Contains(html, `target="_blank"`) {
-		t.Fatalf("expected target blank, got %s", html)
-	}
-	if !strings.Contains(html, `rel="noopener noreferrer"`) {
-		t.Fatalf("expected rel attrs for non-domain links, got %s", html)
-	}
+	require.Contains(t, html, `href="/note/hello-world"`)
+	require.Contains(t, html, `target="_blank"`)
+	require.Contains(t, html, `rel="noopener noreferrer"`)
 }
 
 func TestToHTML_NormalizesSameDomainAbsoluteLinks(t *testing.T) {
@@ -45,53 +33,33 @@ func TestToHTML_NormalizesSameDomainAbsoluteLinks(t *testing.T) {
 		RootURL: "https://revotale.com",
 	}))
 
-	if !strings.Contains(html, `href="/note/a?x=1#k"`) {
-		t.Fatalf("expected normalized same-domain href, got %s", html)
-	}
-	if !strings.Contains(html, `target="_blank"`) {
-		t.Fatalf("expected target blank, got %s", html)
-	}
-	if strings.Contains(html, `rel="noopener noreferrer"`) {
-		t.Fatalf("did not expect rel attrs for same-domain absolute links, got %s", html)
-	}
+	require.Contains(t, html, `href="/note/a?x=1#k"`)
+	require.Contains(t, html, `target="_blank"`)
+	require.NotContains(t, html, `rel="noopener noreferrer"`)
 }
 
 func TestToHTML_HighlightsCodeBlocks(t *testing.T) {
 	source := "```go\nfmt.Println(\"hello\")\n```"
 	html := string(ToHTML(source, Options{}))
 
-	if !strings.Contains(html, `class="chroma"`) {
-		t.Fatalf("expected chroma class for fenced code block, got %s", html)
-	}
-	if !strings.Contains(html, `class="code-copy-button"`) {
-		t.Fatalf("expected copy button for fenced code block, got %s", html)
-	}
-	if !strings.Contains(html, `class="code-block-language">go</p>`) {
-		t.Fatalf("expected language label for fenced code block, got %s", html)
-	}
-	if !strings.Contains(html, `class="code-copy-source"`) {
-		t.Fatalf("expected copy source payload for fenced code block, got %s", html)
-	}
-	if !strings.Contains(html, "Println") {
-		t.Fatalf("expected code content in rendered block, got %s", html)
-	}
+	require.Contains(t, html, `class="chroma"`)
+	require.Contains(t, html, `class="code-copy-button"`)
+	require.Contains(t, html, `class="code-block-language">go</p>`)
+	require.Contains(t, html, `class="code-copy-source"`)
+	require.Contains(t, html, "Println")
 }
 
 func TestToHTML_UsesPlainTextLabelWhenCodeLanguageIsMissing(t *testing.T) {
 	source := "```\nfmt.Println(\"hello\")\n```"
 	html := string(ToHTML(source, Options{}))
 
-	if !strings.Contains(html, `class="code-block-language">plain text</p>`) {
-		t.Fatalf("expected plain text label for untyped code blocks, got %s", html)
-	}
+	require.Contains(t, html, `class="code-block-language">plain text</p>`)
 }
 
 func TestToHTML_RendersInlineCodeClass(t *testing.T) {
 	html := string(ToHTML("Use `go test ./...` now.", Options{}))
 
-	if !strings.Contains(html, `<code class="inline-code">go test ./...</code>`) {
-		t.Fatalf("expected inline code class, got %s", html)
-	}
+	require.Contains(t, html, `<code class="inline-code">go test ./...</code>`)
 }
 
 func TestExcerpt_RemovesTokenizedMarkdownLinkTargets(t *testing.T) {
@@ -100,19 +68,13 @@ func TestExcerpt_RemovesTokenizedMarkdownLinkTargets(t *testing.T) {
 		"[https://github.com/RevoTale/blog](external_link://dea8fb62-8df8-4301-b1b3-b30791abeaf8)"
 	got := Excerpt(input, 300)
 
-	if strings.Contains(got, "external_link://") {
-		t.Fatalf("expected no external_link token in excerpt, got %s", got)
-	}
-	if !strings.Contains(got, "https://github.com/RevoTale/blog") {
-		t.Fatalf("expected human-readable link text to stay in excerpt, got %s", got)
-	}
+	require.NotContains(t, got, "external_link://")
+	require.Contains(t, got, "https://github.com/RevoTale/blog")
 }
 
 func TestExcerpt_TruncatesOnWordBoundary(t *testing.T) {
 	got := Excerpt("alpha beta gamma delta", 12)
-	if got != "alpha beta..." {
-		t.Fatalf("expected graceful word truncation, got %q", got)
-	}
+	require.Equal(t, "alpha beta...", got)
 }
 
 func TestExcerpt_ReplacesSpecialMarkdownBlocksWithLabels(t *testing.T) {
@@ -126,25 +88,15 @@ func TestExcerpt_ReplacesSpecialMarkdownBlocksWithLabels(t *testing.T) {
 
 	got := Excerpt(input, 500)
 
-	if !strings.Contains(got, "[code block]") {
-		t.Fatalf("expected code block label in excerpt, got %q", got)
-	}
-	if !strings.Contains(got, "[image]") {
-		t.Fatalf("expected image label in excerpt, got %q", got)
-	}
-	if !strings.Contains(got, "[table]") {
-		t.Fatalf("expected table label in excerpt, got %q", got)
-	}
-	if strings.Contains(got, "PHCODEBLOCK") {
-		t.Fatalf("expected no raw placeholder token, got %q", got)
-	}
+	require.Contains(t, got, "[code block]")
+	require.Contains(t, got, "[image]")
+	require.Contains(t, got, "[table]")
+	require.NotContains(t, got, "PHCODEBLOCK")
 }
 
 func TestExcerpt_DoesNotCutPlaceholderToken(t *testing.T) {
 	got := Excerpt("alpha ![img](https://example.com/p.png) omega", 10)
-	if got != "alpha..." {
-		t.Fatalf("expected truncation before placeholder boundary, got %q", got)
-	}
+	require.Equal(t, "alpha...", got)
 }
 
 func TestToHTML_TransformsImageSourcesWithLoader(t *testing.T) {
@@ -157,18 +109,10 @@ func TestToHTML_TransformsImageSourcesWithLoader(t *testing.T) {
 		},
 	))
 
-	if !strings.Contains(html, `src="/cdn/image/blog/1080/images/hero.webp"`) {
-		t.Fatalf("expected transformed image src, got %s", html)
-	}
-	if !strings.Contains(html, `srcset="/cdn/image/blog/32/images/hero.webp 32w`) {
-		t.Fatalf("expected responsive srcset in image markup, got %s", html)
-	}
-	if !strings.Contains(html, `/cdn/image/blog/1080/images/hero.webp 1080w`) {
-		t.Fatalf("expected allowed 1080 width candidate in srcset, got %s", html)
-	}
-	if !strings.Contains(html, `sizes="(max-width: 660px) 100vw, 672px"`) {
-		t.Fatalf("expected markdown image sizes attribute, got %s", html)
-	}
+	require.Contains(t, html, `src="/cdn/image/blog/1080/images/hero.webp"`)
+	require.Contains(t, html, `srcset="/cdn/image/blog/32/images/hero.webp 32w`)
+	require.Contains(t, html, `/cdn/image/blog/1080/images/hero.webp 1080w`)
+	require.Contains(t, html, `sizes="(max-width: 660px) 100vw, 672px"`)
 }
 
 func TestToHTML_DemotesHeadingsToAvoidH1(t *testing.T) {
@@ -176,16 +120,8 @@ func TestToHTML_DemotesHeadingsToAvoidH1(t *testing.T) {
 
 	html := string(ToHTML("# Main title\n\n## Section title\n\n###### Small title", Options{}))
 
-	if strings.Contains(html, "<h1") {
-		t.Fatalf("markdown output should not include h1, got %s", html)
-	}
-	if !strings.Contains(html, `<h2 id="main-title">Main title</h2>`) {
-		t.Fatalf("expected h1 to be rendered as h2 with id, got %s", html)
-	}
-	if !strings.Contains(html, `<h3 id="section-title">Section title</h3>`) {
-		t.Fatalf("expected h2 to be rendered as h3 with id, got %s", html)
-	}
-	if !strings.Contains(html, `<h6 id="small-title">Small title</h6>`) {
-		t.Fatalf("expected h6 to stay capped at h6, got %s", html)
-	}
+	require.NotContains(t, html, "<h1")
+	require.Contains(t, html, `<h2 id="main-title">Main title</h2>`)
+	require.Contains(t, html, `<h3 id="section-title">Section title</h3>`)
+	require.Contains(t, html, `<h6 id="small-title">Small title</h6>`)
 }

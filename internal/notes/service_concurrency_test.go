@@ -116,7 +116,7 @@ func TestServiceListNotes_StartsIndependentFetchesInParallel(t *testing.T) {
 	case err := <-resultCh:
 		require.NoError(t, err)
 	case <-time.After(2 * time.Second):
-		t.Fatal("ListNotes did not finish in time")
+		require.FailNow(t, "ListNotes did not finish in time")
 	}
 
 	require.True(t, authorsStarted, "expected AvailableAuthors to start")

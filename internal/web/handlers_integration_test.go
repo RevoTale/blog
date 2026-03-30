@@ -22,6 +22,7 @@ import (
 	"github.com/RevoTale/no-js/bundler/staticassets"
 	"github.com/RevoTale/no-js/framework/httpserver"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
+	"github.com/stretchr/testify/require"
 )
 
 const testRootURL = "https://revotale.com/blog/notes"
@@ -396,9 +397,7 @@ func newTestServerWithOptions(t *testing.T, options testServerOptions) testServe
 	bootstrap := newTestServerBootstrap(t, options)
 
 	handler, err := webgen.NewHandler(bootstrap.cfg)
-	if err != nil {
-		t.Fatalf("new handler: %v", err)
-	}
+	require.NoError(t, err)
 
 	return testServer{
 		handler: handler,
@@ -418,28 +417,18 @@ func newTestServerBootstrap(t *testing.T, options testServerOptions) testServerB
 		SourceDir: "../../internal/web/static",
 		URLPrefix: staticURLPrefix,
 	})
-	if err != nil {
-		t.Fatalf("build static assets: %v", err)
-	}
+	require.NoError(t, err)
 	t.Cleanup(func() {
-		if cleanupErr := bundle.Cleanup(); cleanupErr != nil {
-			t.Fatalf("cleanup static assets: %v", cleanupErr)
-		}
+		require.NoError(t, bundle.Cleanup())
 	})
 
 	manifestPath := filepath.Join(bundle.Dir(), "manifest.json")
-	if err := staticassets.WriteManifest(manifestPath, bundle.Manifest()); err != nil {
-		t.Fatalf("write static manifest: %v", err)
-	}
+	require.NoError(t, staticassets.WriteManifest(manifestPath, bundle.Manifest()))
 
 	i18nConfig, err := frameworki18n.NormalizeConfig(webi18n.Config())
-	if err != nil {
-		t.Fatalf("normalize i18n config: %v", err)
-	}
+	require.NoError(t, err)
 	i18nCatalog, err := webi18n.LoadCatalog()
-	if err != nil {
-		t.Fatalf("load i18n catalog: %v", err)
-	}
+	require.NoError(t, err)
 	imageLoader := imageloader.New(options.enableImageLoader)
 	noteService := notes.NewService(fakeGraphQLClient{}, 12, testRootURL, imageLoader)
 
@@ -466,9 +455,7 @@ func requireBody(t *testing.T, body io.Reader) string {
 	t.Helper()
 
 	content, err := io.ReadAll(body)
-	if err != nil {
-		t.Fatalf("read body: %v", err)
-	}
+	require.NoError(t, err)
 	return string(content)
 }
 
@@ -505,15 +492,13 @@ func parseJSONLDScripts(t *testing.T, html string) []map[string]any {
 	}
 
 	out := make([]map[string]any, 0, len(matches))
-	for idx, match := range matches {
+	for _, match := range matches {
 		if len(match) < 2 {
 			continue
 		}
 
 		var doc map[string]any
-		if err := json.Unmarshal([]byte(match[1]), &doc); err != nil {
-			t.Fatalf("parse json-ld script[%d]: %v", idx, err)
-		}
+		require.NoError(t, json.Unmarshal([]byte(match[1]), &doc))
 		out = append(out, doc)
 	}
 	return out
@@ -527,7 +512,7 @@ func requireJSONLDDocByType(t *testing.T, docs []map[string]any, typeName string
 			return doc
 		}
 	}
-	t.Fatalf("expected JSON-LD document with @type=%q", typeName)
+	require.FailNow(t, "expected JSON-LD document with @type=%q", typeName)
 	return nil
 }
 
@@ -535,13 +520,9 @@ func stringField(t *testing.T, object map[string]any, key string) string {
 	t.Helper()
 
 	value, ok := object[key]
-	if !ok {
-		t.Fatalf("missing field %q", key)
-	}
+	require.True(t, ok)
 	text, ok := value.(string)
-	if !ok {
-		t.Fatalf("field %q should be string, got %T", key, value)
-	}
+	require.True(t, ok)
 	return text
 }
 
@@ -549,13 +530,9 @@ func objectField(t *testing.T, object map[string]any, key string) map[string]any
 	t.Helper()
 
 	value, ok := object[key]
-	if !ok {
-		t.Fatalf("missing field %q", key)
-	}
+	require.True(t, ok)
 	out, ok := value.(map[string]any)
-	if !ok {
-		t.Fatalf("field %q should be object, got %T", key, value)
-	}
+	require.True(t, ok)
 	return out
 }
 
@@ -563,13 +540,9 @@ func arrayField(t *testing.T, object map[string]any, key string) []any {
 	t.Helper()
 
 	value, ok := object[key]
-	if !ok {
-		t.Fatalf("missing field %q", key)
-	}
+	require.True(t, ok)
 	out, ok := value.([]any)
-	if !ok {
-		t.Fatalf("field %q should be array, got %T", key, value)
-	}
+	require.True(t, ok)
 	return out
 }
 
@@ -577,14 +550,11 @@ func objectFromAny(t *testing.T, value any, field string) map[string]any {
 	t.Helper()
 
 	out, ok := value.(map[string]any)
-	if !ok {
-		t.Fatalf("field %s should be object, got %T", field, value)
-	}
+	require.True(t, ok)
 	return out
 }
 
 func TestHandlerPageRoutesRenderHTML(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 	rootTitleToken := "Notes - Quick Coding, Experience, Open Source, SEO &amp; Science Insights | RevoTale</title>"
@@ -607,26 +577,16 @@ func TestHandlerPageRoutesRenderHTML(t *testing.T) {
 	for _, tc := range cases {
 		rec := performRequest(mux, http.MethodGet, tc.path)
 
-		if rec.Code != http.StatusOK {
-			t.Fatalf("%s status: expected %d, got %d", tc.path, http.StatusOK, rec.Code)
-		}
-
-		if contentType := rec.Header().Get("Content-Type"); !strings.Contains(contentType, "text/html") {
-			t.Fatalf("%s content-type: expected html, got %q", tc.path, contentType)
-		}
+		require.Equal(t, http.StatusOK, rec.Code)
+		require.Contains(t, rec.Header().Get("Content-Type"), "text/html")
 
 		body := requireBody(t, rec.Body)
-		if !strings.Contains(body, tc.mustContain) {
-			t.Fatalf("%s body missing %q", tc.path, tc.mustContain)
-		}
-		if strings.Contains(body, "event: datastar-patch-elements") {
-			t.Fatalf("%s should not include live SSE patch payload", tc.path)
-		}
+		require.Contains(t, body, tc.mustContain)
+		require.NotContains(t, body, "event: datastar-patch-elements")
 	}
 }
 
 func TestCanonicalListingQueryRedirects(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
@@ -647,17 +607,12 @@ func TestCanonicalListingQueryRedirects(t *testing.T) {
 
 	for _, tc := range cases {
 		rec := performRequest(mux, http.MethodGet, tc.path)
-		if rec.Code != http.StatusPermanentRedirect {
-			t.Fatalf("%s status: expected %d, got %d", tc.path, http.StatusPermanentRedirect, rec.Code)
-		}
-		if location := rec.Header().Get("Location"); location != tc.location {
-			t.Fatalf("%s redirect: expected %q, got %q", tc.path, tc.location, location)
-		}
+		require.Equal(t, http.StatusPermanentRedirect, rec.Code)
+		require.Equal(t, tc.location, rec.Header().Get("Location"))
 	}
 }
 
 func TestRobotsRulesWithAndWithoutQuery(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
@@ -678,19 +633,14 @@ func TestRobotsRulesWithAndWithoutQuery(t *testing.T) {
 
 	for _, tc := range cases {
 		rec := performRequest(mux, http.MethodGet, tc.path)
-		if rec.Code != http.StatusOK {
-			t.Fatalf("%s status: expected %d, got %d", tc.path, http.StatusOK, rec.Code)
-		}
+		require.Equal(t, http.StatusOK, rec.Code)
 		body := requireBody(t, rec.Body)
 		expectedTag := `name="robots" content="` + tc.expectedRobots + `"`
-		if !strings.Contains(body, expectedTag) {
-			t.Fatalf("%s should include robots tag %q", tc.path, expectedTag)
-		}
+		require.Contains(t, body, expectedTag)
 	}
 }
 
 func TestUnknownListingQueryParamsStayNoIndexWithoutCanonicalRedirect(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
@@ -702,205 +652,107 @@ func TestUnknownListingQueryParamsStayNoIndexWithoutCanonicalRedirect(t *testing
 
 	for _, path := range cases {
 		rec := performRequest(mux, http.MethodGet, path)
-		if rec.Code != http.StatusOK {
-			t.Fatalf("%s status: expected %d, got %d", path, http.StatusOK, rec.Code)
-		}
+		require.Equal(t, http.StatusOK, rec.Code)
 
 		body := requireBody(t, rec.Body)
-		if !strings.Contains(body, `name="robots" content="noindex, follow"`) {
-			t.Fatalf("%s should include noindex robots metadata", path)
-		}
+		require.Contains(t, body, `name="robots" content="noindex, follow"`)
 	}
 }
 
 func TestSidebarLinkBehavior(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
 	root := performRequest(mux, http.MethodGet, "/")
 	rootBody := requireBody(t, root.Body)
-	if !strings.Contains(rootBody, `href="/channels"`) {
-		t.Fatalf("root page missing channels button link")
-	}
-	if !strings.Contains(rootBody, `href="/author/l-you"`) {
-		t.Fatalf("root notes missing canonical author link")
-	}
-	if !strings.Contains(rootBody, `href="/tag/go"`) {
-		t.Fatalf("root notes missing canonical tag link")
-	}
-	if !strings.Contains(rootBody, `class="topbar-rss-link" href="/feed.xml?locale=en"`) {
-		t.Fatalf("root page should include rss link to local feed endpoint")
-	}
-	if !strings.Contains(rootBody, `href="/tales"`) {
-		t.Fatalf("root notes missing tales route link")
-	}
-	if !strings.Contains(rootBody, `href="/micro-tales"`) {
-		t.Fatalf("root notes missing micro-tales route link")
-	}
-	if strings.Contains(rootBody, `href="/?author=`) {
-		t.Fatalf("root notes should not render author # All clear link when no author filter")
-	}
-	if strings.Contains(rootBody, `href="/?tag=`) {
-		t.Fatalf("root notes should not render tag # All clear link when no tag filter")
-	}
-	if strings.Contains(rootBody, `topbar-search-clear`) {
-		t.Fatalf("root page should not render search clear action when q is empty")
-	}
+	require.Contains(t, rootBody, `href="/channels"`)
+	require.Contains(t, rootBody, `href="/author/l-you"`)
+	require.Contains(t, rootBody, `href="/tag/go"`)
+	require.Contains(t, rootBody, `class="topbar-rss-link" href="/feed.xml?locale=en"`)
+	require.Contains(t, rootBody, `href="/tales"`)
+	require.Contains(t, rootBody, `href="/micro-tales"`)
+	require.NotContains(t, rootBody, `href="/?author=`)
+	require.NotContains(t, rootBody, `href="/?tag=`)
+	require.NotContains(t, rootBody, `topbar-search-clear`)
 
 	search := performRequest(mux, http.MethodGet, "/?q=hello")
 	searchBody := requireBody(t, search.Body)
-	if !strings.Contains(searchBody, `<form class="topbar-search" role="search" method="get" action="/">`) {
-		t.Fatalf("search page should render topbar search form")
-	}
-	if !strings.Contains(searchBody, `name="q"`) || !strings.Contains(searchBody, `value="hello"`) {
-		t.Fatalf("search page should preserve q value in search input")
-	}
-	if !strings.Contains(searchBody, `class="topbar-rss-link" href="/feed.xml?locale=en&amp;q=hello"`) {
-		t.Fatalf("search page should preserve q in rss feed link")
-	}
-	if !strings.Contains(searchBody, `href="/channels?q=hello"`) {
-		t.Fatalf("search page should preserve q in channels link")
-	}
-	if !strings.Contains(searchBody, `href="/?author=l-you&amp;q=hello"`) {
-		t.Fatalf("search page should preserve q in author links")
-	}
-	if !strings.Contains(searchBody, `href="/?q=hello&amp;tag=go"`) {
-		t.Fatalf("search page should preserve q in tag links")
-	}
-	if !strings.Contains(searchBody, `class="topbar-search-clear"`) {
-		t.Fatalf("search page should render search clear action when q is present")
-	}
-	if !strings.Contains(searchBody, `class="topbar-search-clear" href="/"`) {
-		t.Fatalf("search clear action should reset to root when only q is active")
-	}
-	if !strings.Contains(
+	require.Contains(t, searchBody, `<form class="topbar-search" role="search" method="get" action="/">`)
+	require.Contains(t, searchBody, `name="q"`)
+	require.Contains(t, searchBody, `value="hello"`)
+	require.Contains(t, searchBody, `class="topbar-rss-link" href="/feed.xml?locale=en&amp;q=hello"`)
+	require.Contains(t, searchBody, `href="/channels?q=hello"`)
+	require.Contains(t, searchBody, `href="/?author=l-you&amp;q=hello"`)
+	require.Contains(t, searchBody, `href="/?q=hello&amp;tag=go"`)
+	require.Contains(t, searchBody, `class="topbar-search-clear"`)
+	require.Contains(t, searchBody, `class="topbar-search-clear" href="/"`)
+	require.Contains(
+		t,
 		searchBody,
 		`rel="alternate" type="application/rss+xml" href="https://revotale.com/blog/notes/feed.xml?locale=en&amp;q=hello"`,
-	) {
-		t.Fatalf("search page should include filtered rss alternate metadata")
-	}
+	)
 
 	filtered := performRequest(mux, http.MethodGet, "/author/l-you?tag=go&type=short")
 	filteredBody := requireBody(t, filtered.Body)
-	if !strings.Contains(filteredBody, `href="/channels?author=l-you&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("filtered page missing carried channels button link")
-	}
-	if !strings.Contains(filteredBody, `href="/"`) {
-		t.Fatalf("filtered page missing All link to /")
-	}
-	if !strings.Contains(filteredBody, `href="/?tag=go&amp;type=short"`) {
-		t.Fatalf("filtered page missing ANY author clear link")
-	}
-	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;type=short"`) {
-		t.Fatalf("filtered page missing ANY tag clear link")
-	}
-	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;tag=go"`) {
-		t.Fatalf("filtered page missing ANY type clear link")
-	}
-	if !strings.Contains(
+	require.Contains(t, filteredBody, `href="/channels?author=l-you&amp;tag=go&amp;type=short"`)
+	require.Contains(t, filteredBody, `href="/"`)
+	require.Contains(t, filteredBody, `href="/?tag=go&amp;type=short"`)
+	require.Contains(t, filteredBody, `href="/?author=l-you&amp;type=short"`)
+	require.Contains(t, filteredBody, `href="/?author=l-you&amp;tag=go"`)
+	require.Contains(
+		t,
 		filteredBody,
 		`class="topbar-rss-link" href="/feed.xml?author=l-you&amp;locale=en&amp;tag=go&amp;type=short"`,
-	) {
-		t.Fatalf("filtered page should preserve author/tag/type in rss feed link")
-	}
-	if !strings.Contains(filteredBody, `href="/?author=zed&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("filtered page missing merged author link")
-	}
-	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;tag=rust&amp;type=short"`) {
-		t.Fatalf("filtered page missing merged tag link")
-	}
-	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;tag=go&amp;type=long"`) {
-		t.Fatalf("filtered page missing merged tales type link")
-	}
-	if !strings.Contains(filteredBody, `href="/?tag=go&amp;type=short"`) {
-		t.Fatalf("filtered page should render author # All clear link")
-	}
-	if !strings.Contains(filteredBody, `href="/?author=l-you&amp;type=short"`) {
-		t.Fatalf("filtered page should render tag # All clear link")
-	}
+	)
+	require.Contains(t, filteredBody, `href="/?author=zed&amp;tag=go&amp;type=short"`)
+	require.Contains(t, filteredBody, `href="/?author=l-you&amp;tag=rust&amp;type=short"`)
+	require.Contains(t, filteredBody, `href="/?author=l-you&amp;tag=go&amp;type=long"`)
+	require.Contains(t, filteredBody, `href="/?tag=go&amp;type=short"`)
+	require.Contains(t, filteredBody, `href="/?author=l-you&amp;type=short"`)
 
 	channelsFiltered := performRequest(mux, http.MethodGet, "/channels?author=l-you&tag=go&type=short")
 	channelsFilteredBody := requireBody(t, channelsFiltered.Body)
-	if !strings.Contains(channelsFilteredBody, `href="/?tag=go&amp;type=short"`) {
-		t.Fatalf("channels page missing author clear link")
-	}
-	if !strings.Contains(channelsFilteredBody, `href="/?author=zed&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("channels page missing merged author link")
-	}
-	if !strings.Contains(channelsFilteredBody, `channels-desktop-hint`) {
-		t.Fatalf("channels page missing desktop hint block")
-	}
-	if !strings.Contains(channelsFilteredBody, `channels-mobile-panel`) {
-		t.Fatalf("channels page missing mobile panel block")
-	}
+	require.Contains(t, channelsFilteredBody, `href="/?tag=go&amp;type=short"`)
+	require.Contains(t, channelsFilteredBody, `href="/?author=zed&amp;tag=go&amp;type=short"`)
+	require.Contains(t, channelsFilteredBody, `channels-desktop-hint`)
+	require.Contains(t, channelsFilteredBody, `channels-mobile-panel`)
 
 	channelsSingle := performRequest(mux, http.MethodGet, "/channels?author=l-you")
 	channelsSingleBody := requireBody(t, channelsSingle.Body)
-	if !strings.Contains(channelsSingleBody, `class="back-link channels-back-button" href="/author/l-you"`) {
-		t.Fatalf("channels page back button should use canonical author landing for a single filter")
-	}
+	require.Contains(t, channelsSingleBody, `class="back-link channels-back-button" href="/author/l-you"`)
 }
 
 func TestI18nRoutingAndLocalizedURLs(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
 	recUK := performRequest(mux, http.MethodGet, "/uk")
-	if recUK.Code != http.StatusOK {
-		t.Fatalf("/uk status: expected %d, got %d", http.StatusOK, recUK.Code)
-	}
+	require.Equal(t, http.StatusOK, recUK.Code)
 	ukBody := requireBody(t, recUK.Body)
-	if !strings.Contains(strings.ToLower(ukBody), "<!doctype html>") {
-		t.Fatalf("/uk should render root document doctype")
-	}
-	if !strings.Contains(ukBody, `<html lang="uk">`) {
-		t.Fatalf("/uk should render localized html lang")
-	}
+	require.Contains(t, strings.ToLower(ukBody), "<!doctype html>")
+	require.Contains(t, ukBody, `<html lang="uk">`)
 	headIndex := strings.Index(ukBody, "<head>")
 	mainIndex := strings.Index(ukBody, "<main")
-	if headIndex < 0 || mainIndex < 0 || headIndex > mainIndex {
-		t.Fatalf("/uk should render head before body content")
-	}
-	if !strings.Contains(ukBody, `href="/uk/channels"`) {
-		t.Fatalf("/uk should render localized channels URL")
-	}
-	if !strings.Contains(ukBody, `href="/uk/author/l-you"`) {
-		t.Fatalf("/uk should render localized author URL")
-	}
-	if !strings.Contains(ukBody, `href="/uk/tag/go"`) {
-		t.Fatalf("/uk should render localized tag URL")
-	}
-	if !strings.Contains(ukBody, `href="/uk/note/hello-world"`) {
-		t.Fatalf("/uk should render localized note URL")
-	}
+	require.True(t, headIndex >= 0 && mainIndex >= 0 && headIndex <= mainIndex)
+	require.Contains(t, ukBody, `href="/uk/channels"`)
+	require.Contains(t, ukBody, `href="/uk/author/l-you"`)
+	require.Contains(t, ukBody, `href="/uk/tag/go"`)
+	require.Contains(t, ukBody, `href="/uk/note/hello-world"`)
 
 	recUKNote := performRequest(mux, http.MethodGet, "/uk/note/hello-world")
-	if recUKNote.Code != http.StatusOK {
-		t.Fatalf("/uk/note status: expected %d, got %d", http.StatusOK, recUKNote.Code)
-	}
+	require.Equal(t, http.StatusOK, recUKNote.Code)
 	ukNoteBody := requireBody(t, recUKNote.Body)
-	if !strings.Contains(ukNoteBody, `href="/uk"`) {
-		t.Fatalf("/uk/note should keep back-link localized")
-	}
+	require.Contains(t, ukNoteBody, `href="/uk"`)
 
 	recDefaultPrefixed := performRequest(mux, http.MethodGet, "/en/note/hello-world")
-	if recDefaultPrefixed.Code != http.StatusPermanentRedirect {
-		t.Fatalf("/en/note status: expected %d, got %d", http.StatusPermanentRedirect, recDefaultPrefixed.Code)
-	}
-	if location := recDefaultPrefixed.Header().Get("Location"); location != "/note/hello-world" {
-		t.Fatalf("/en/note redirect: expected %q, got %q", "/note/hello-world", location)
-	}
+	require.Equal(t, http.StatusPermanentRedirect, recDefaultPrefixed.Code)
+	require.Equal(t, "/note/hello-world", recDefaultPrefixed.Header().Get("Location"))
 
 	recUnknownLocale := performRequest(mux, http.MethodGet, "/it/note/hello-world")
-	if recUnknownLocale.Code != http.StatusNotFound {
-		t.Fatalf("/it/note status: expected %d, got %d", http.StatusNotFound, recUnknownLocale.Code)
-	}
+	require.Equal(t, http.StatusNotFound, recUnknownLocale.Code)
 }
 
 func TestHandlerHTMXRoutesReturnPartial(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
@@ -919,229 +771,121 @@ func TestHandlerHTMXRoutesReturnPartial(t *testing.T) {
 		rec := performRequestWithHeaders(mux, http.MethodGet, tc.path, map[string]string{
 			"HX-Request": "true",
 		})
-		if rec.Code != http.StatusOK {
-			t.Fatalf("%s status: expected %d, got %d", tc.path, http.StatusOK, rec.Code)
-		}
-		if got := rec.Header().Get("Cache-Control"); got != httpserver.DefaultCachePolicies().Live {
-			t.Fatalf("%s cache policy: expected %q, got %q", tc.path, httpserver.DefaultCachePolicies().Live, got)
-		}
+		require.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, httpserver.DefaultCachePolicies().Live, rec.Header().Get("Cache-Control"))
 
 		body := requireBody(t, rec.Body)
-		if !strings.Contains(body, tc.mustContain) {
-			t.Fatalf("%s body missing %q", tc.path, tc.mustContain)
-		}
-		if strings.Contains(body, "<title>") {
-			t.Fatalf("%s should return partial HTMX payload without layout title", tc.path)
-		}
-		if strings.Contains(body, `application/ld+json`) {
-			t.Fatalf("%s should not include structured data scripts in HTMX partial payload", tc.path)
-		}
+		require.Contains(t, body, tc.mustContain)
+		require.NotContains(t, body, "<title>")
+		require.NotContains(t, body, `application/ld+json`)
 	}
 }
 
 func TestHandlerSEOMetadataAndHTMXPatchHeaders(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
 	recNote := performRequest(mux, http.MethodGet, "/uk/note/hello-world")
-	if recNote.Code != http.StatusOK {
-		t.Fatalf("note status: expected %d, got %d", http.StatusOK, recNote.Code)
-	}
+	require.Equal(t, http.StatusOK, recNote.Code)
 	noteBody := requireBody(t, recNote.Body)
-	if !strings.Contains(noteBody, `rel="canonical" href="https://revotale.com/blog/notes/uk/note/hello-world"`) {
-		t.Fatalf("note page missing canonical link")
-	}
-	if strings.Contains(noteBody, "__live=navigation") {
-		t.Fatalf("note canonical/hreflang should not include __live marker")
-	}
-	if !strings.Contains(noteBody, `rel="alternate" hreflang="en"`) {
-		t.Fatalf("note page missing hreflang=en")
-	}
-	if !strings.Contains(noteBody, `property="og:title"`) {
-		t.Fatalf("note page missing Open Graph title metadata")
-	}
-	if !strings.Contains(noteBody, `property="og:url" content="https://revotale.com/blog/notes/uk/note/hello-world"`) {
-		t.Fatalf("note page should publish canonical Open Graph url")
-	}
-	if !strings.Contains(noteBody, `name="twitter:card"`) {
-		t.Fatalf("note page missing twitter metadata")
-	}
-	if !strings.Contains(noteBody, `property="article:published_time"`) {
-		t.Fatalf("note page should include article:published_time Open Graph metadata")
-	}
-	if !strings.Contains(noteBody, `property="article:author" content="https://revotale.com/blog/notes/uk/author/l-you"`) {
-		t.Fatalf("note page should include article:author Open Graph metadata")
-	}
-	if !strings.Contains(noteBody, `property="article:tag" content="Go"`) {
-		t.Fatalf("note page should include article:tag Open Graph metadata")
-	}
-	if !strings.Contains(noteBody, `class="topbar-rss-link" href="/feed.xml?locale=uk"`) {
-		t.Fatalf("note page should include locale-aware rss link")
-	}
+	require.Contains(t, noteBody, `rel="canonical" href="https://revotale.com/blog/notes/uk/note/hello-world"`)
+	require.NotContains(t, noteBody, "__live=navigation")
+	require.Contains(t, noteBody, `rel="alternate" hreflang="en"`)
+	require.Contains(t, noteBody, `property="og:title"`)
+	require.Contains(t, noteBody, `property="og:url" content="https://revotale.com/blog/notes/uk/note/hello-world"`)
+	require.Contains(t, noteBody, `name="twitter:card"`)
+	require.Contains(t, noteBody, `property="article:published_time"`)
+	require.Contains(t, noteBody, `property="article:author" content="https://revotale.com/blog/notes/uk/author/l-you"`)
+	require.Contains(t, noteBody, `property="article:tag" content="Go"`)
+	require.Contains(t, noteBody, `class="topbar-rss-link" href="/feed.xml?locale=uk"`)
 	noteDocs := parseJSONLDScripts(t, noteBody)
 	noteDoc := requireJSONLDDocByType(t, noteDocs, "BlogPosting")
-	if got := stringField(t, noteDoc, "url"); got != "https://revotale.com/blog/notes/uk/note/hello-world" {
-		t.Fatalf("note JSON-LD url: expected canonical note URL, got %q", got)
-	}
+	require.Equal(t, "https://revotale.com/blog/notes/uk/note/hello-world", stringField(t, noteDoc, "url"))
 	mainEntity := objectField(t, noteDoc, "mainEntityOfPage")
-	if got := stringField(t, mainEntity, "@id"); got != "https://revotale.com/blog/notes/uk/note/hello-world" {
-		t.Fatalf("note JSON-LD mainEntityOfPage.@id: expected canonical note URL, got %q", got)
-	}
+	require.Equal(t, "https://revotale.com/blog/notes/uk/note/hello-world", stringField(t, mainEntity, "@id"))
 	publisher := objectField(t, noteDoc, "publisher")
-	if got := stringField(t, publisher, "url"); got != "https://revotale.com/blog/notes" {
-		t.Fatalf("note JSON-LD publisher.url: expected root URL, got %q", got)
-	}
+	require.Equal(t, "https://revotale.com/blog/notes", stringField(t, publisher, "url"))
 	authors := arrayField(t, noteDoc, "author")
-	if len(authors) == 0 {
-		t.Fatalf("note JSON-LD should include at least one author")
-	}
+	require.NotEmpty(t, authors)
 	firstAuthor := objectFromAny(t, authors[0], "author[0]")
-	if got := stringField(t, firstAuthor, "url"); got != "https://revotale.com/blog/notes/uk/author/l-you" {
-		t.Fatalf("note JSON-LD author.url: expected localized author URL, got %q", got)
-	}
+	require.Equal(t, "https://revotale.com/blog/notes/uk/author/l-you", stringField(t, firstAuthor, "url"))
 	datePublished := stringField(t, noteDoc, "datePublished")
-	if _, err := time.Parse(time.RFC3339, datePublished); err != nil {
-		t.Fatalf("note JSON-LD datePublished should be RFC3339/ISO timestamp, got %q", datePublished)
-	}
+	_, err := time.Parse(time.RFC3339, datePublished)
+	require.NoError(t, err)
 	mentions := arrayField(t, noteDoc, "mentions")
-	if len(mentions) < 2 {
-		t.Fatalf("note JSON-LD should include internal and external mentions, got %d", len(mentions))
-	}
+	require.GreaterOrEqual(t, len(mentions), 2)
 	mentionURLs := make(map[string]struct{}, len(mentions))
 	for idx, mention := range mentions {
 		obj := objectFromAny(t, mention, fmt.Sprintf("mentions[%d]", idx))
 		mentionURLs[stringField(t, obj, "@id")] = struct{}{}
 	}
-	if _, ok := mentionURLs["https://example.com/docs"]; !ok {
-		t.Fatalf("note JSON-LD should include external mention URL")
-	}
-	if _, ok := mentionURLs["https://revotale.com/blog/notes/uk/note/hello-linked"]; !ok {
-		t.Fatalf("note JSON-LD should include localized internal mention URL")
-	}
+	_, ok := mentionURLs["https://example.com/docs"]
+	require.True(t, ok)
+	_, ok = mentionURLs["https://revotale.com/blog/notes/uk/note/hello-linked"]
+	require.True(t, ok)
 
 	recRoot := performRequest(mux, http.MethodGet, "/")
-	if recRoot.Code != http.StatusOK {
-		t.Fatalf("root status: expected %d, got %d", http.StatusOK, recRoot.Code)
-	}
+	require.Equal(t, http.StatusOK, recRoot.Code)
 
 	recFavicon := performRequest(mux, http.MethodGet, "/favicon.svg")
-	if recFavicon.Code != http.StatusOK {
-		t.Fatalf("favicon status: expected %d, got %d", http.StatusOK, recFavicon.Code)
-	}
-	if got := recFavicon.Header().Get("Content-Type"); !strings.Contains(got, "image/svg+xml") {
-		t.Fatalf("favicon content-type: expected svg, got %q", got)
-	}
+	require.Equal(t, http.StatusOK, recFavicon.Code)
+	require.Contains(t, recFavicon.Header().Get("Content-Type"), "image/svg+xml")
 
 	recManifest := performRequest(mux, http.MethodGet, "/site.webmanifest")
-	if recManifest.Code != http.StatusOK {
-		t.Fatalf("manifest status: expected %d, got %d", http.StatusOK, recManifest.Code)
-	}
-	if got := recManifest.Header().Get("Content-Type"); !strings.Contains(got, "application/manifest+json") {
-		t.Fatalf("manifest content-type: expected manifest+json, got %q", got)
-	}
+	require.Equal(t, http.StatusOK, recManifest.Code)
+	require.Contains(t, recManifest.Header().Get("Content-Type"), "application/manifest+json")
 
 	rootBody := requireBody(t, recRoot.Body)
 	expectedLogoURL := testSrv.bundle.URL("revtale-logo.svg")
-	if !strings.Contains(rootBody, `class="server-logo" src="`+expectedLogoURL+`"`) {
-		t.Fatalf("root page should keep original server logo src when image loader is disabled")
-	}
+	require.Contains(t, rootBody, `class="server-logo" src="`+expectedLogoURL+`"`)
 	transformedLogoURL := imageloader.New(true).URL(expectedLogoURL, 28)
-	if strings.Contains(rootBody, transformedLogoURL) {
-		t.Fatalf("root page should not rewrite server logo src when image loader is disabled")
-	}
-	if !strings.Contains(rootBody, `rel="manifest" href="/site.webmanifest"`) {
-		t.Fatalf("root page should include manifest link tag")
-	}
-	if !strings.Contains(rootBody, `rel="icon" href="/favicon.ico"`) {
-		t.Fatalf("root page should include favicon link tag")
-	}
-	if !strings.Contains(rootBody, `rel="apple-touch-icon"`) {
-		t.Fatalf("root page should include apple-touch-icon link tag")
-	}
-	if !strings.Contains(rootBody, `rel="alternate" type="application/rss+xml"`) {
-		t.Fatalf("root page should include rss alternate metadata")
-	}
+	require.NotContains(t, rootBody, transformedLogoURL)
+	require.Contains(t, rootBody, `rel="manifest" href="/site.webmanifest"`)
+	require.Contains(t, rootBody, `rel="icon" href="/favicon.ico"`)
+	require.Contains(t, rootBody, `rel="apple-touch-icon"`)
+	require.Contains(t, rootBody, `rel="alternate" type="application/rss+xml"`)
 	rootDocs := parseJSONLDScripts(t, rootBody)
 	rootBlog := requireJSONLDDocByType(t, rootDocs, "Blog")
-	if got := stringField(t, rootBlog, "url"); got != "https://revotale.com/blog/notes" {
-		t.Fatalf("root Blog JSON-LD url: expected blog root URL, got %q", got)
-	}
+	require.Equal(t, "https://revotale.com/blog/notes", stringField(t, rootBlog, "url"))
 	blogPosts := arrayField(t, rootBlog, "blogPost")
-	if len(blogPosts) == 0 {
-		t.Fatalf("root Blog JSON-LD should include linked blog posts")
-	}
+	require.NotEmpty(t, blogPosts)
 	firstPost := objectFromAny(t, blogPosts[0], "blogPost[0]")
-	if got := stringField(t, firstPost, "@type"); got != "BlogPosting" {
-		t.Fatalf("root Blog JSON-LD blogPost[0].@type: expected BlogPosting, got %q", got)
-	}
-	if got := stringField(t, firstPost, "url"); got != "https://revotale.com/blog/notes/note/hello-world" {
-		t.Fatalf("root Blog JSON-LD blogPost[0].url: expected note URL, got %q", got)
-	}
+	require.Equal(t, "BlogPosting", stringField(t, firstPost, "@type"))
+	require.Equal(t, "https://revotale.com/blog/notes/note/hello-world", stringField(t, firstPost, "url"))
 	firstPostMainEntity := objectField(t, firstPost, "mainEntityOfPage")
-	if got := stringField(t, firstPostMainEntity, "@id"); got != "https://revotale.com/blog/notes/note/hello-world" {
-		t.Fatalf("root Blog JSON-LD blogPost[0].mainEntityOfPage.@id: expected note URL, got %q", got)
-	}
+	require.Equal(t, "https://revotale.com/blog/notes/note/hello-world", stringField(t, firstPostMainEntity, "@id"))
 	firstPostAuthors := arrayField(t, firstPost, "author")
-	if len(firstPostAuthors) == 0 {
-		t.Fatalf("root Blog JSON-LD blogPost[0] should include authors")
-	}
+	require.NotEmpty(t, firstPostAuthors)
 	firstPostAuthor := objectFromAny(t, firstPostAuthors[0], "blogPost[0].author[0]")
-	if got := stringField(t, firstPostAuthor, "url"); got != "https://revotale.com/blog/notes/author/l-you" {
-		t.Fatalf("root Blog JSON-LD blogPost[0].author[0].url: expected author URL, got %q", got)
-	}
+	require.Equal(t, "https://revotale.com/blog/notes/author/l-you", stringField(t, firstPostAuthor, "url"))
 	firstPostMentions := arrayField(t, firstPost, "mentions")
-	if len(firstPostMentions) < 2 {
-		t.Fatalf("root Blog JSON-LD blogPost[0] should include mentions, got %d", len(firstPostMentions))
-	}
+	require.GreaterOrEqual(t, len(firstPostMentions), 2)
 
 	recChannels := performRequest(mux, http.MethodGet, "/channels")
-	if recChannels.Code != http.StatusOK {
-		t.Fatalf("channels status: expected %d, got %d", http.StatusOK, recChannels.Code)
-	}
+	require.Equal(t, http.StatusOK, recChannels.Code)
 	channelsBody := requireBody(t, recChannels.Body)
-	if !strings.Contains(channelsBody, `name="robots" content="noindex, follow"`) {
-		t.Fatalf("channels page should include noindex robots metadata")
-	}
+	require.Contains(t, channelsBody, `name="robots" content="noindex, follow"`)
 	channelsDocs := parseJSONLDScripts(t, channelsBody)
-	if len(channelsDocs) != 0 {
-		t.Fatalf("channels page should not include structured data scripts, got %d", len(channelsDocs))
-	}
+	require.Len(t, channelsDocs, 0)
 
 	recHTMX := performRequestWithHeaders(mux, http.MethodGet, "/?__live=navigation", map[string]string{
 		"HX-Request": "true",
 	})
-	if recHTMX.Code != http.StatusOK {
-		t.Fatalf("htmx status: expected %d, got %d", http.StatusOK, recHTMX.Code)
-	}
+	require.Equal(t, http.StatusOK, recHTMX.Code)
 	patchHeader := strings.TrimSpace(recHTMX.Header().Get("HX-Trigger-After-Settle"))
-	if patchHeader == "" {
-		t.Fatalf("htmx response should include metadata patch header")
-	}
-	if !strings.Contains(patchHeader, "metagen:patch") {
-		t.Fatalf("htmx metadata patch header should include metagen patch event")
-	}
-	if strings.Contains(patchHeader, "__live=navigation") {
-		t.Fatalf("htmx metadata patch should strip __live marker from canonical/hreflang")
-	}
+	require.NotEmpty(t, patchHeader)
+	require.Contains(t, patchHeader, "metagen:patch")
+	require.NotContains(t, patchHeader, "__live=navigation")
 
 	payload := make(map[string]json.RawMessage)
-	if err := json.Unmarshal([]byte(patchHeader), &payload); err != nil {
-		t.Fatalf("htmx metadata patch header should be valid json payload: %v", err)
-	}
+	require.NoError(t, json.Unmarshal([]byte(patchHeader), &payload))
 	patchPayloadRaw, ok := payload["metagen:patch"]
-	if !ok {
-		t.Fatalf("htmx metadata patch header should include metagen:patch payload")
-	}
+	require.True(t, ok)
 	var patchPayload struct {
 		Head string `json:"head"`
 	}
-	if err := json.Unmarshal(patchPayloadRaw, &patchPayload); err != nil {
-		t.Fatalf("htmx metadata patch payload should be valid json: %v", err)
-	}
-	if strings.Contains(patchPayload.Head, `application/ld+json`) {
-		t.Fatalf("htmx metadata patch head should not include structured data scripts")
-	}
+	require.NoError(t, json.Unmarshal(patchPayloadRaw, &patchPayload))
+	require.NotContains(t, patchPayload.Head, `application/ld+json`)
 }
 
 func TestHandlerLovelyEyeAnalyticsRendersWhenConfigured(t *testing.T) {
@@ -1149,38 +893,22 @@ func TestHandlerLovelyEyeAnalyticsRendersWhenConfigured(t *testing.T) {
 	mux := testSrv.handler
 
 	recRoot := performRequest(mux, http.MethodGet, "/")
-	if recRoot.Code != http.StatusOK {
-		t.Fatalf("root status: expected %d, got %d", http.StatusOK, recRoot.Code)
-	}
+	require.Equal(t, http.StatusOK, recRoot.Code)
 
 	rootBody := requireBody(t, recRoot.Body)
-	if !strings.Contains(rootBody, `src="`+testLovelyEyeTrackerURL+`"`) {
-		t.Fatalf("root page should include lovely eye tracker script")
-	}
-	if !strings.Contains(rootBody, `data-site-key="`+testLovelyEyeSiteID+`"`) {
-		t.Fatalf("root page should include lovely eye site key")
-	}
-	if !strings.Contains(rootBody, `href="https://github.com/RevoTale/lovely-eye"`) {
-		t.Fatalf("root page should include lovely eye footer note")
-	}
+	require.Contains(t, rootBody, `src="`+testLovelyEyeTrackerURL+`"`)
+	require.Contains(t, rootBody, `data-site-key="`+testLovelyEyeSiteID+`"`)
+	require.Contains(t, rootBody, `href="https://github.com/RevoTale/lovely-eye"`)
 
 	recHTMX := performRequestWithHeaders(mux, http.MethodGet, "/?__live=navigation", map[string]string{
 		"HX-Request": "true",
 	})
-	if recHTMX.Code != http.StatusOK {
-		t.Fatalf("htmx status: expected %d, got %d", http.StatusOK, recHTMX.Code)
-	}
+	require.Equal(t, http.StatusOK, recHTMX.Code)
 
 	patchHeader := strings.TrimSpace(recHTMX.Header().Get("HX-Trigger-After-Settle"))
-	if patchHeader == "" {
-		t.Fatalf("htmx response should include metadata patch header")
-	}
-	if strings.Contains(patchHeader, testLovelyEyeTrackerURL) {
-		t.Fatalf("htmx metadata patch should not include lovely eye tracker url")
-	}
-	if strings.Contains(patchHeader, testLovelyEyeSiteID) {
-		t.Fatalf("htmx metadata patch should not include lovely eye site id")
-	}
+	require.NotEmpty(t, patchHeader)
+	require.NotContains(t, patchHeader, testLovelyEyeTrackerURL)
+	require.NotContains(t, patchHeader, testLovelyEyeSiteID)
 }
 
 func TestHandlerLovelyEyeAnalyticsRequiresBothValues(t *testing.T) {
@@ -1197,17 +925,11 @@ func TestHandlerLovelyEyeAnalyticsRequiresBothValues(t *testing.T) {
 	for _, tc := range cases {
 		testSrv := newTestServerWithLovelyEye(t, tc.scriptURL, tc.siteID)
 		recRoot := performRequest(testSrv.handler, http.MethodGet, "/")
-		if recRoot.Code != http.StatusOK {
-			t.Fatalf("%s status: expected %d, got %d", tc.name, http.StatusOK, recRoot.Code)
-		}
+		require.Equal(t, http.StatusOK, recRoot.Code)
 
 		rootBody := requireBody(t, recRoot.Body)
-		if strings.Contains(rootBody, `src="`+testLovelyEyeTrackerURL+`"`) {
-			t.Fatalf("%s should not include lovely eye tracker script", tc.name)
-		}
-		if strings.Contains(rootBody, `href="https://github.com/RevoTale/lovely-eye"`) {
-			t.Fatalf("%s should not include lovely eye footer note", tc.name)
-		}
+		require.NotContains(t, rootBody, `src="`+testLovelyEyeTrackerURL+`"`)
+		require.NotContains(t, rootBody, `href="https://github.com/RevoTale/lovely-eye"`)
 	}
 }
 
@@ -1216,306 +938,182 @@ func TestHandlerImageLoaderEnabledTransformsTemplateAndSEOImages(t *testing.T) {
 	mux := testSrv.handler
 
 	recRoot := performRequest(mux, http.MethodGet, "/")
-	if recRoot.Code != http.StatusOK {
-		t.Fatalf("root status: expected %d, got %d", http.StatusOK, recRoot.Code)
-	}
+	require.Equal(t, http.StatusOK, recRoot.Code)
 	rootBody := requireBody(t, recRoot.Body)
 	rawLogoURL := testSrv.bundle.URL("revtale-logo.svg")
 	expectedLogoURL := imageloader.New(true).URL(rawLogoURL, 28)
-	if !strings.Contains(rootBody, `class="server-logo" src="`+expectedLogoURL+`"`) {
-		t.Fatalf("root page should rewrite server logo src when image loader is enabled")
-	}
+	require.Contains(t, rootBody, `class="server-logo" src="`+expectedLogoURL+`"`)
 
 	recNote := performRequest(mux, http.MethodGet, "/uk/note/hello-world")
-	if recNote.Code != http.StatusOK {
-		t.Fatalf("note status: expected %d, got %d", http.StatusOK, recNote.Code)
-	}
+	require.Equal(t, http.StatusOK, recNote.Code)
 	noteBody := requireBody(t, recNote.Body)
 	expectedSEOURL := "https://revotale.com/blog/notes/cdn/image/blog/1080/images/meta-hello.webp"
-	if !strings.Contains(noteBody, `property="og:image" content="`+expectedSEOURL+`"`) {
-		t.Fatalf("note page should include transformed og:image URL when loader is enabled")
-	}
-	if !strings.Contains(noteBody, `name="twitter:image" content="`+expectedSEOURL+`"`) {
-		t.Fatalf("note page should include transformed twitter:image URL when loader is enabled")
-	}
+	require.Contains(t, noteBody, `property="og:image" content="`+expectedSEOURL+`"`)
+	require.Contains(t, noteBody, `name="twitter:image" content="`+expectedSEOURL+`"`)
 
 	noteDocs := parseJSONLDScripts(t, noteBody)
 	noteDoc := requireJSONLDDocByType(t, noteDocs, "BlogPosting")
 	noteImage := objectField(t, noteDoc, "image")
-	if got := stringField(t, noteImage, "url"); got != expectedSEOURL {
-		t.Fatalf("note JSON-LD image.url: expected %q, got %q", expectedSEOURL, got)
-	}
+	require.Equal(t, expectedSEOURL, stringField(t, noteImage, "url"))
 }
 
 func TestPagerLinksIncludeHTMXNavigationActions(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
 	recPrev := performRequest(mux, http.MethodGet, "/?page=2&author=l-you&tag=go&type=short")
-	if recPrev.Code != http.StatusOK {
-		t.Fatalf("pager prev page status: expected %d, got %d", http.StatusOK, recPrev.Code)
-	}
+	require.Equal(t, http.StatusOK, recPrev.Code)
 	prevBody := requireBody(t, recPrev.Body)
-	if !strings.Contains(prevBody, `hx-get="/?__live=navigation&amp;author=l-you&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("prev link should include htmx navigation url marker")
-	}
+	require.Contains(t, prevBody, `hx-get="/?__live=navigation&amp;author=l-you&amp;tag=go&amp;type=short"`)
 
 	recNext := performRequest(mux, http.MethodGet, "/?author=l-you&tag=go&type=short")
-	if recNext.Code != http.StatusOK {
-		t.Fatalf("pager next page status: expected %d, got %d", http.StatusOK, recNext.Code)
-	}
+	require.Equal(t, http.StatusOK, recNext.Code)
 	nextBody := requireBody(t, recNext.Body)
-	if !strings.Contains(nextBody, `hx-get="/?__live=navigation&amp;author=l-you&amp;page=2&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("next link should include htmx navigation url marker")
-	}
-	if !strings.Contains(nextBody, `hx-target="#notes-content"`) {
-		t.Fatalf("pager links should target notes-content for partial swap")
-	}
-	if !strings.Contains(nextBody, `hx-select="#notes-content"`) {
-		t.Fatalf("pager links should select notes-content fragment")
-	}
-	if !strings.Contains(nextBody, `hx-swap="outerHTML"`) {
-		t.Fatalf("pager links should replace notes-content outer html")
-	}
+	require.Contains(t, nextBody, `hx-get="/?__live=navigation&amp;author=l-you&amp;page=2&amp;tag=go&amp;type=short"`)
+	require.Contains(t, nextBody, `hx-target="#notes-content"`)
+	require.Contains(t, nextBody, `hx-select="#notes-content"`)
+	require.Contains(t, nextBody, `hx-swap="outerHTML"`)
 
 	recSearch := performRequest(mux, http.MethodGet, "/?q=hello&author=l-you&tag=go&type=short")
-	if recSearch.Code != http.StatusOK {
-		t.Fatalf("pager next search page status: expected %d, got %d", http.StatusOK, recSearch.Code)
-	}
+	require.Equal(t, http.StatusOK, recSearch.Code)
 	searchBody := requireBody(t, recSearch.Body)
-	if !strings.Contains(
+	require.Contains(
+		t,
 		searchBody,
 		`hx-get="/?__live=navigation&amp;author=l-you&amp;page=2&amp;q=hello&amp;tag=go&amp;type=short"`,
-	) {
-		t.Fatalf("next link should preserve q in htmx navigation url marker")
-	}
-	if !strings.Contains(searchBody, `class="topbar-search-clear" href="/?author=l-you&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("search clear action should preserve author/tag/type and drop q")
-	}
-	if !strings.Contains(nextBody, `hx-push-url="/?author=l-you&amp;page=2&amp;tag=go&amp;type=short"`) {
-		t.Fatalf("pager links should push canonical url to history")
-	}
-	if !strings.Contains(nextBody, testSrv.bundle.URL("vendor/htmx.min.js")) {
-		t.Fatalf("layout should include self-hosted htmx script")
-	}
-	if !strings.Contains(nextBody, testSrv.bundle.URL("app.js")) {
-		t.Fatalf("layout should include self-hosted app script")
-	}
+	)
+	require.Contains(t, searchBody, `class="topbar-search-clear" href="/?author=l-you&amp;tag=go&amp;type=short"`)
+	require.Contains(t, nextBody, `hx-push-url="/?author=l-you&amp;page=2&amp;tag=go&amp;type=short"`)
+	require.Contains(t, nextBody, testSrv.bundle.URL("vendor/htmx.min.js"))
+	require.Contains(t, nextBody, testSrv.bundle.URL("app.js"))
 }
 
 func TestHandlerNotFoundAndHealth(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
 	recHealth := performRequest(mux, http.MethodGet, "/healthz")
-	if recHealth.Code != http.StatusOK {
-		t.Fatalf("healthz status: expected %d, got %d", http.StatusOK, recHealth.Code)
-	}
-	if body := strings.TrimSpace(requireBody(t, recHealth.Body)); body != "ok" {
-		t.Fatalf("healthz body: expected %q, got %q", "ok", body)
-	}
+	require.Equal(t, http.StatusOK, recHealth.Code)
+	require.Equal(t, "ok", strings.TrimSpace(requireBody(t, recHealth.Body)))
 
 	recStatic := performRequest(mux, http.MethodGet, "/_assets/tui.css")
-	if recStatic.Code != http.StatusNotFound {
-		t.Fatalf("unhashed static status: expected %d, got %d", http.StatusNotFound, recStatic.Code)
-	}
+	require.Equal(t, http.StatusNotFound, recStatic.Code)
 
 	recHashedStatic := performRequest(mux, http.MethodGet, testSrv.bundle.URL("tui.css"))
-	if recHashedStatic.Code != http.StatusOK {
-		t.Fatalf("hashed static status: expected %d, got %d", http.StatusOK, recHashedStatic.Code)
-	}
-	if !strings.Contains(recHashedStatic.Header().Get("Content-Type"), "text/css") {
-		t.Fatalf("hashed static content-type: expected css, got %q", recHashedStatic.Header().Get("Content-Type"))
-	}
+	require.Equal(t, http.StatusOK, recHashedStatic.Code)
+	require.Contains(t, recHashedStatic.Header().Get("Content-Type"), "text/css")
 	staticBody := requireBody(t, recHashedStatic.Body)
-	if !strings.Contains(staticBody, `:placeholder-shown)+.topbar-search-submit`) {
-		t.Fatalf("static css should include active selector for search submit button")
-	}
+	require.Contains(t, staticBody, `:placeholder-shown)+.topbar-search-submit`)
 
 	recScript := performRequest(mux, http.MethodGet, testSrv.bundle.URL("app.js"))
-	if recScript.Code != http.StatusOK {
-		t.Fatalf("static script status: expected %d, got %d", http.StatusOK, recScript.Code)
-	}
-	if !strings.Contains(recScript.Header().Get("Content-Type"), "javascript") {
-		t.Fatalf("static script content-type: expected javascript, got %q", recScript.Header().Get("Content-Type"))
-	}
+	require.Equal(t, http.StatusOK, recScript.Code)
+	require.Contains(t, recScript.Header().Get("Content-Type"), "javascript")
 	scriptBody := requireBody(t, recScript.Body)
-	if !strings.Contains(scriptBody, `scrollTo`) || !strings.Contains(scriptBody, `behavior:"smooth"`) {
-		t.Fatalf("static script should include smooth scroll to top behavior")
-	}
-	if !strings.Contains(scriptBody, `.code-copy-button`) || !strings.Contains(scriptBody, `clipboard`) {
-		t.Fatalf("static script should include copy button behavior")
-	}
+	require.Contains(t, scriptBody, `scrollTo`)
+	require.Contains(t, scriptBody, `behavior:"smooth"`)
+	require.Contains(t, scriptBody, `.code-copy-button`)
+	require.Contains(t, scriptBody, `clipboard`)
 
 	recMissingNote := performRequest(mux, http.MethodGet, "/note/missing")
-	if recMissingNote.Code != http.StatusNotFound {
-		t.Fatalf("missing note status: expected %d, got %d", http.StatusNotFound, recMissingNote.Code)
-	}
+	require.Equal(t, http.StatusNotFound, recMissingNote.Code)
 	missingNoteBody := requireBody(t, recMissingNote.Body)
-	if !strings.Contains(missingNoteBody, "404 Not Found</title>") {
-		t.Fatalf("missing note page should render custom 404 title")
-	}
-	if !strings.Contains(missingNoteBody, "/note/missing") {
-		t.Fatalf("missing note page should include requested path")
-	}
+	require.Contains(t, missingNoteBody, "404 Not Found</title>")
+	require.Contains(t, missingNoteBody, "/note/missing")
 
 	recMissingAuthor := performRequest(mux, http.MethodGet, "/author/missing")
-	if recMissingAuthor.Code != http.StatusNotFound {
-		t.Fatalf("missing author status: expected %d, got %d", http.StatusNotFound, recMissingAuthor.Code)
-	}
+	require.Equal(t, http.StatusNotFound, recMissingAuthor.Code)
 	missingAuthorBody := requireBody(t, recMissingAuthor.Body)
-	if !strings.Contains(missingAuthorBody, "Signal lost") {
-		t.Fatalf("missing author page should render custom 404 body")
-	}
+	require.Contains(t, missingAuthorBody, "Signal lost")
 
 	recMissingTag := performRequest(mux, http.MethodGet, "/tag/missing")
-	if recMissingTag.Code != http.StatusNotFound {
-		t.Fatalf("missing tag status: expected %d, got %d", http.StatusNotFound, recMissingTag.Code)
-	}
+	require.Equal(t, http.StatusNotFound, recMissingTag.Code)
 	missingTagBody := requireBody(t, recMissingTag.Body)
-	if !strings.Contains(missingTagBody, "/tag/missing") {
-		t.Fatalf("missing tag page should include requested path")
-	}
+	require.Contains(t, missingTagBody, "/tag/missing")
 
 	recNoLive := performRequest(mux, http.MethodGet, "/.live/note/hello-world")
-	if recNoLive.Code != http.StatusNotFound {
-		t.Fatalf("note live status: expected %d, got %d", http.StatusNotFound, recNoLive.Code)
-	}
+	require.Equal(t, http.StatusNotFound, recNoLive.Code)
 	noLiveBody := requireBody(t, recNoLive.Body)
-	if !strings.Contains(noLiveBody, "/.live/note/hello-world") {
-		t.Fatalf("note live fallback should render requested path")
-	}
+	require.Contains(t, noLiveBody, "/.live/note/hello-world")
 
 	recLegacyLive := performRequest(mux, http.MethodGet, "/live")
-	if recLegacyLive.Code != http.StatusNotFound {
-		t.Fatalf("legacy live status: expected %d, got %d", http.StatusNotFound, recLegacyLive.Code)
-	}
+	require.Equal(t, http.StatusNotFound, recLegacyLive.Code)
 	legacyLiveBody := requireBody(t, recLegacyLive.Body)
-	if !strings.Contains(legacyLiveBody, "/live") {
-		t.Fatalf("legacy live fallback should render requested path")
-	}
+	require.Contains(t, legacyLiveBody, "/live")
 
 	recMissingRoute := performRequest(mux, http.MethodGet, "/missing-route")
-	if recMissingRoute.Code != http.StatusNotFound {
-		t.Fatalf("missing route status: expected %d, got %d", http.StatusNotFound, recMissingRoute.Code)
-	}
+	require.Equal(t, http.StatusNotFound, recMissingRoute.Code)
 	missingRouteBody := requireBody(t, recMissingRoute.Body)
-	if !strings.Contains(missingRouteBody, "/missing-route") {
-		t.Fatalf("missing route page should include requested path")
-	}
+	require.Contains(t, missingRouteBody, "/missing-route")
 }
 
 func TestGeneratedBootstrapUsesRuntimeStaticURLPrefix(t *testing.T) {
-	t.Parallel()
 
 	bootstrapA := newTestServerBootstrap(t, testServerOptions{staticURLPrefix: "/assets-a/"})
 	handlerA, err := webgen.NewHandler(bootstrapA.cfg)
-	if err != nil {
-		t.Fatalf("new handler A: %v", err)
-	}
+	require.NoError(t, err)
 
 	expectedA := "/assets-a/" + bootstrapA.bundle.Hash() + "/tui.css"
 	recA := performRequest(handlerA, http.MethodGet, "/")
 	bodyA := requireBody(t, recA.Body)
-	if !strings.Contains(bodyA, expectedA) {
-		t.Fatalf("handler A should use runtime static prefix %q", expectedA)
-	}
+	require.Contains(t, bodyA, expectedA)
 
 	bootstrapBConfig := bootstrapA.cfg
 	bootstrapBConfig.Runtime.Bootstrap.StaticAssetBasePath = "/assets-b/"
 	bootstrapBConfig.Features.StaticAssets.URLPrefix = "/assets-b/"
 	handlerB, err := webgen.NewHandler(bootstrapBConfig)
-	if err != nil {
-		t.Fatalf("new handler B: %v", err)
-	}
+	require.NoError(t, err)
 
 	expectedB := "/assets-b/" + bootstrapA.bundle.Hash() + "/tui.css"
 
 	recB := performRequest(handlerB, http.MethodGet, "/")
 	bodyB := requireBody(t, recB.Body)
-	if !strings.Contains(bodyB, expectedB) {
-		t.Fatalf("handler B should use runtime static prefix %q", expectedB)
-	}
-	if strings.Contains(bodyB, expectedA) {
-		t.Fatalf("handler B should not use handler A runtime static prefix")
-	}
+	require.Contains(t, bodyB, expectedB)
+	require.NotContains(t, bodyB, expectedA)
 
 	recStaticB := performRequest(handlerB, http.MethodGet, expectedB)
-	if recStaticB.Code != http.StatusOK {
-		t.Fatalf("runtime-prefixed static asset status: expected %d, got %d", http.StatusOK, recStaticB.Code)
-	}
+	require.Equal(t, http.StatusOK, recStaticB.Code)
 }
 
 func TestGeneratedBootstrapSupportsAppOwnedEndpoints(t *testing.T) {
-	t.Parallel()
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
 	recFeed := performRequest(mux, http.MethodGet, "/feed.xml?locale=en")
-	if recFeed.Code != http.StatusOK {
-		t.Fatalf("feed status: expected %d, got %d", http.StatusOK, recFeed.Code)
-	}
-	if got := recFeed.Header().Get("Content-Type"); !strings.Contains(got, "application/rss+xml") {
-		t.Fatalf("feed content-type: expected rss xml, got %q", got)
-	}
+	require.Equal(t, http.StatusOK, recFeed.Code)
+	require.Contains(t, recFeed.Header().Get("Content-Type"), "application/rss+xml")
 	feedBody := requireBody(t, recFeed.Body)
-	if !strings.Contains(feedBody, "<rss") || !strings.Contains(feedBody, "Hello World") {
-		t.Fatalf("feed endpoint should render rss payload")
-	}
+	require.Contains(t, feedBody, "<rss")
+	require.Contains(t, feedBody, "Hello World")
 
 	recSitemap := performRequest(mux, http.MethodGet, "/sitemap-index")
-	if recSitemap.Code != http.StatusOK {
-		t.Fatalf("sitemap-index status: expected %d, got %d", http.StatusOK, recSitemap.Code)
-	}
-	if got := recSitemap.Header().Get("Content-Type"); !strings.Contains(got, "application/xml") {
-		t.Fatalf("sitemap-index content-type: expected xml, got %q", got)
-	}
+	require.Equal(t, http.StatusOK, recSitemap.Code)
+	require.Contains(t, recSitemap.Header().Get("Content-Type"), "application/xml")
 	sitemapBody := requireBody(t, recSitemap.Body)
-	if !strings.Contains(sitemapBody, "<sitemapindex") || !strings.Contains(sitemapBody, "/sitemap.xml") {
-		t.Fatalf("sitemap-index endpoint should render sitemap index payload")
-	}
+	require.Contains(t, sitemapBody, "<sitemapindex")
+	require.Contains(t, sitemapBody, "/sitemap.xml")
 
 	recRobots := performRequest(mux, http.MethodGet, "/robots.txt")
-	if recRobots.Code != http.StatusOK {
-		t.Fatalf("robots status: expected %d, got %d", http.StatusOK, recRobots.Code)
-	}
-	if got := recRobots.Header().Get("Content-Type"); !strings.Contains(got, "text/plain") {
-		t.Fatalf("robots content-type: expected text/plain, got %q", got)
-	}
+	require.Equal(t, http.StatusOK, recRobots.Code)
+	require.Contains(t, recRobots.Header().Get("Content-Type"), "text/plain")
 	robotsBody := requireBody(t, recRobots.Body)
-	if !strings.Contains(robotsBody, "User-agent: *") {
-		t.Fatalf("robots endpoint should include user-agent rule")
-	}
-	if !strings.Contains(robotsBody, "Sitemap: https://revotale.com/blog/notes/sitemap-index") {
-		t.Fatalf("robots endpoint should include sitemap index reference")
-	}
+	require.Contains(t, robotsBody, "User-agent: *")
+	require.Contains(t, robotsBody, "Sitemap: https://revotale.com/blog/notes/sitemap-index")
 }
 
 func TestGeneratedMountRoutesAllowsManualRoutes(t *testing.T) {
-	t.Parallel()
 
 	bootstrap := newTestServerBootstrap(t, testServerOptions{})
 	mux := http.NewServeMux()
-	if err := webgen.MountRoutes(mux, bootstrap.cfg); err != nil {
-		t.Fatalf("mount generated routes: %v", err)
-	}
+	require.NoError(t, webgen.MountRoutes(mux, bootstrap.cfg))
 	mux.HandleFunc("/manual", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte("manual"))
 	})
 
 	recManual := performRequest(mux, http.MethodGet, "/manual")
-	if recManual.Code != http.StatusCreated {
-		t.Fatalf("manual route status: expected %d, got %d", http.StatusCreated, recManual.Code)
-	}
-	if body := requireBody(t, recManual.Body); body != "manual" {
-		t.Fatalf("manual route body: expected %q, got %q", "manual", body)
-	}
+	require.Equal(t, http.StatusCreated, recManual.Code)
+	require.Equal(t, "manual", requireBody(t, recManual.Body))
 
 	recGenerated := performRequest(mux, http.MethodGet, "/")
-	if recGenerated.Code != http.StatusOK {
-		t.Fatalf("generated route status: expected %d, got %d", http.StatusOK, recGenerated.Code)
-	}
+	require.Equal(t, http.StatusOK, recGenerated.Code)
 }
