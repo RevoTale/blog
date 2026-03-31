@@ -17,7 +17,17 @@ import (
 	genqlientgraphql "github.com/Khan/genqlient/graphql"
 )
 
-var ErrNotFound = errors.New("not found")
+type notFoundError struct{}
+
+func (notFoundError) Error() string {
+	return "not found"
+}
+
+func (notFoundError) NotFound() bool {
+	return true
+}
+
+var ErrNotFound error = notFoundError{}
 
 type NoteType string
 

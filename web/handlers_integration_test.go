@@ -12,10 +12,13 @@ import (
 	"testing"
 	"time"
 
+	"blog/internal/config"
+	"blog/internal/discovery"
 	"blog/internal/imageloader"
 	"blog/internal/notes"
-	"blog/web/bootstrap"
-	webi18n "blog/web/i18n"
+	"blog/internal/site"
+	generated "blog/web/generated"
+	"blog/web/view"
 	"github.com/Khan/genqlient/graphql"
 	"github.com/RevoTale/no-js/framework/httpserver"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
@@ -358,11 +361,6 @@ type testServer struct {
 	bundle  testStaticBundle
 }
 
-type testServerBootstrap struct {
-	inputs bootstrap.Inputs
-	bundle testStaticBundle
-}
-
 type testStaticBundle struct {
 	hash      string
 	urlPrefix string
@@ -382,6 +380,7 @@ type testServerOptions struct {
 	lovelyEyeScriptURL string
 	lovelyEyeSiteID    string
 	staticURLPrefix    string
+	mountExtraRoutes   func(*http.ServeMux) error
 }
 
 func newTestServer(t *testing.T) testServer {
@@ -406,18 +405,15 @@ func newTestServerWithLovelyEye(t *testing.T, scriptURL string, siteID string) t
 func newTestServerWithOptions(t *testing.T, options testServerOptions) testServer {
 	t.Helper()
 
-	setup := newTestServerBootstrap(t, options)
-
-	handler, err := bootstrap.NewHandler(setup.inputs)
-	require.NoError(t, err)
+	handler, bundle := newTestHandler(t, options)
 
 	return testServer{
 		handler: handler,
-		bundle:  setup.bundle,
+		bundle:  bundle,
 	}
 }
 
-func newTestServerBootstrap(t *testing.T, options testServerOptions) testServerBootstrap {
+func newTestHandler(t *testing.T, options testServerOptions) (http.Handler, testStaticBundle) {
 	t.Helper()
 
 	staticURLPrefix := strings.TrimSpace(options.staticURLPrefix)
@@ -429,32 +425,77 @@ func newTestServerBootstrap(t *testing.T, options testServerOptions) testServerB
 	manifest, err := frameworkstaticassets.ReadManifest(manifestPath)
 	require.NoError(t, err)
 
-	i18nConfig, err := frameworki18n.NormalizeConfig(webi18n.Config())
-	require.NoError(t, err)
-	i18nCatalog, err := webi18n.LoadCatalog()
+	siteResolver, err := site.NewResolver(config.Config{RootURL: testRootURL})
 	require.NoError(t, err)
 	imageLoader := imageloader.New(options.enableImageLoader)
 	noteService := notes.NewService(fakeGraphQLClient{}, 12, testRootURL, imageLoader)
+	appContext, err := runtime.NewContext(runtime.Config{
+		Notes:              noteService,
+		SiteResolver:       siteResolver,
+		ImageLoader:        imageLoader,
+		LovelyEyeScriptURL: options.lovelyEyeScriptURL,
+		LovelyEyeSiteID:    options.lovelyEyeSiteID,
+	})
+	require.NoError(t, err)
 
-	return testServerBootstrap{
-		inputs: bootstrap.Inputs{
-			RootURL:            testRootURL,
-			Notes:              noteService,
-			I18nConfig:         i18nConfig,
-			I18nCatalog:        i18nCatalog,
-			ImageLoader:        imageLoader,
-			StaticManifestPath: manifestPath,
-			StaticURLPrefix:    staticURLPrefix,
-			PublicDir:          "public",
-			LovelyEyeScriptURL: options.lovelyEyeScriptURL,
-			LovelyEyeSiteID:    options.lovelyEyeSiteID,
-			LogServerError: func(error) {
+	cachePolicies := httpserver.DefaultCachePolicies()
+	cachePolicies.Static = "public, max-age=31536000, immutable"
+
+	mountExtraRoutes := defaultTestExtraRoutes(noteService, appContext.I18nConfig())
+	if options.mountExtraRoutes != nil {
+		customMount := options.mountExtraRoutes
+		mountExtraRoutes = func(mux *http.ServeMux) error {
+			if err := defaultTestExtraRoutes(noteService, appContext.I18nConfig())(mux); err != nil {
+				return err
+			}
+			return customMount(mux)
+		}
+	}
+
+	handler, err := httpserver.NewApp(httpserver.Config[*runtime.Context]{
+		App: generated.Bundle(appContext),
+		Custom: httpserver.CustomConfig{
+			ExtraRoutes: mountExtraRoutes,
+			MainMiddlewares: []func(http.Handler) http.Handler{
+				runtime.WithCanonicalNotesRedirects,
 			},
+			CachePolicies: cachePolicies,
+			StaticAssets: &httpserver.StaticAssetsConfig{
+				ManifestPath: "assets-build/manifest.json",
+				URLPrefix:    staticURLPrefix,
+			},
+			PublicFiles: &httpserver.PublicFilesConfig{
+				Dir: "public",
+			},
+			LogServerError: func(error) {},
 		},
-		bundle: testStaticBundle{
-			hash:      manifest.Hash,
-			urlPrefix: staticURLPrefix,
-		},
+	})
+	require.NoError(t, err)
+
+	return handler, testStaticBundle{
+		hash:      manifest.Hash,
+		urlPrefix: staticURLPrefix,
+	}
+}
+
+func defaultTestExtraRoutes(
+	noteService *notes.Service,
+	i18nConfig frameworki18n.Config,
+) func(*http.ServeMux) error {
+	return func(mux *http.ServeMux) error {
+		if err := discovery.MountFeedAndSitemapEndpoints(mux, discovery.FeedAndSitemapConfig{
+			RootURL:    testRootURL,
+			I18nConfig: i18nConfig,
+			Notes:      noteService,
+		}); err != nil {
+			return err
+		}
+
+		return discovery.MountRobotsEndpoint(
+			mux,
+			testRootURL,
+			httpserver.DefaultCachePolicies().HTML,
+		)
 	}
 }
 
@@ -1053,23 +1094,17 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	require.Contains(t, missingRouteBody, "/missing-route")
 }
 
-func TestGeneratedBootstrapUsesRuntimeStaticURLPrefix(t *testing.T) {
+func TestHTTPServerUsesRuntimeStaticURLPrefix(t *testing.T) {
+	handlerA, bundleA := newTestHandler(t, testServerOptions{staticURLPrefix: "/assets-a/"})
 
-	bootstrapA := newTestServerBootstrap(t, testServerOptions{staticURLPrefix: "/assets-a/"})
-	handlerA, err := bootstrap.NewHandler(bootstrapA.inputs)
-	require.NoError(t, err)
-
-	expectedA := "/assets-a/" + bootstrapA.bundle.Hash() + "/tui.css"
+	expectedA := "/assets-a/" + bundleA.Hash() + "/tui.css"
 	recA := performRequest(handlerA, http.MethodGet, "/")
 	bodyA := requireBody(t, recA.Body)
 	require.Contains(t, bodyA, expectedA)
 
-	bootstrapBInputs := bootstrapA.inputs
-	bootstrapBInputs.StaticURLPrefix = "/assets-b/"
-	handlerB, err := bootstrap.NewHandler(bootstrapBInputs)
-	require.NoError(t, err)
+	handlerB, bundleB := newTestHandler(t, testServerOptions{staticURLPrefix: "/assets-b/"})
 
-	expectedB := "/assets-b/" + bootstrapA.bundle.Hash() + "/tui.css"
+	expectedB := "/assets-b/" + bundleB.Hash() + "/tui.css"
 
 	recB := performRequest(handlerB, http.MethodGet, "/")
 	bodyB := requireBody(t, recB.Body)
@@ -1080,7 +1115,7 @@ func TestGeneratedBootstrapUsesRuntimeStaticURLPrefix(t *testing.T) {
 	require.Equal(t, http.StatusOK, recStaticB.Code)
 }
 
-func TestGeneratedBootstrapSupportsAppOwnedEndpoints(t *testing.T) {
+func TestHTTPServerSupportsAppOwnedEndpoints(t *testing.T) {
 	testSrv := newTestServer(t)
 	mux := testSrv.handler
 
@@ -1106,19 +1141,22 @@ func TestGeneratedBootstrapSupportsAppOwnedEndpoints(t *testing.T) {
 	require.Contains(t, robotsBody, "Sitemap: https://revotale.com/blog/notes/sitemap-index")
 }
 
-func TestGeneratedMountRoutesAllowsManualRoutes(t *testing.T) {
-	setup := newTestServerBootstrap(t, testServerOptions{})
-	mux := http.NewServeMux()
-	require.NoError(t, bootstrap.MountRoutes(mux, setup.inputs))
-	mux.HandleFunc("/manual", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusCreated)
-		_, _ = w.Write([]byte("manual"))
+func TestHTTPServerExtraRoutesHookAllowsManualRoutes(t *testing.T) {
+	testSrv := newTestServerWithOptions(t, testServerOptions{
+		mountExtraRoutes: func(mux *http.ServeMux) error {
+			mux.HandleFunc("/manual", func(w http.ResponseWriter, _ *http.Request) {
+				w.WriteHeader(http.StatusCreated)
+				_, _ = w.Write([]byte("manual"))
+			})
+
+			return nil
+		},
 	})
 
-	recManual := performRequest(mux, http.MethodGet, "/manual")
+	recManual := performRequest(testSrv.handler, http.MethodGet, "/manual")
 	require.Equal(t, http.StatusCreated, recManual.Code)
 	require.Equal(t, "manual", requireBody(t, recManual.Body))
 
-	recGenerated := performRequest(mux, http.MethodGet, "/")
+	recGenerated := performRequest(testSrv.handler, http.MethodGet, "/")
 	require.Equal(t, http.StatusOK, recGenerated.Code)
 }

@@ -31,6 +31,11 @@ pages from CMS GraphQL data.
 - MUST keep all user-facing copy localized via `web/i18n` typed keys; avoid hardcoded English text in
   `.templ` files and app-facing view-model helpers.
 - MUST update all locale files in `web/i18n/messages/` when adding or changing message IDs.
+- MUST use the canonical architecture terms in docs and plans: `App Bundle`, `Custom Config`, `Site Resolver`, and
+  `Advanced composition`.
+- MUST keep generic framework config separate from app-specific hooks and dependencies.
+- MUST not introduce a broad `blog/web` facade package for server wiring.
+- MUST not treat `web/bootstrap` as a contract term; advanced composition may live in any app-owned package.
 
 ## Taskfile Workflow Module
 
@@ -62,4 +67,5 @@ pages from CMS GraphQL data.
 - Keep data fetching server-side; templates receive pre-mapped view models.
 - Keep styling minimal and terminal-like in `web/assets/tui.css`.
 - Default run command from `blog/`: `go run .`
-- Optional env: `BLOG_ROOT_URL` (used by markdown link formatter to normalize same-domain absolute URLs).
+- Preferred target integration: `generated.Bundle(appContext)` passed to `httpserver.NewApp(...)`.
+- Optional env: `BLOG_ROOT_URL` (currently used as canonical site input while site-resolution refactoring is in flight).

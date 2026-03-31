@@ -28,7 +28,14 @@ The `cms` app now redirects legacy `/blog/*` routes to this dedicated blog runti
 - [`go-i18n`](https://github.com/nicksnyder/go-i18n) for localization
 - [`esbuild`](https://esbuild.github.io/) for static asset bundling/fingerprints
 
+## Architecture
 
+- The target happy path is `generated.Bundle(appContext)` passed to `httpserver.NewApp(...)`.
+- `main.go` should stay responsible for environment loading and business service construction only.
+- Generated code is the `App Bundle` boundary between the blog app and the framework runtime.
+- App-owned hooks such as extra routes or middleware belong in `Custom Config`, not in generic framework config.
+- Site and domain policy should be centralized through a `Site Resolver`, not scattered raw root URL fields.
+- The current `cmd/server/handler.go` is transitional and not the intended long-term integration model.
 
 ## What This Project Optimizes For
 

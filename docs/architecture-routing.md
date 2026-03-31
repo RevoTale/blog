@@ -8,6 +8,7 @@ This project uses a split generation model:
 - Components from `web/components` are generated in place (`*_templ.go` next to the source file).
 - Resolver contracts are generated into `web/resolvers/generated.go`.
 - Resolver implementations are handwritten in `web/resolvers/*.go`.
+- The generated namespace is the `App Bundle` boundary used by the preferred `httpserver.NewApp(...)` integration.
 
 ## Why `web/generated` Exists
 
@@ -18,7 +19,7 @@ Generating route modules into `web/generated` solves this by:
 
 - using deterministic, Go-safe package names such as `r_page_author_param_slug`
 - keeping generated route wrappers separate from authored route templates
-- giving registry wiring a stable namespace to import from
+- giving the generated app contract a stable namespace to import from
 
 ## Source Of Truth
 
@@ -34,9 +35,28 @@ Generating route modules into `web/generated` solves this by:
 - `web/generated/registry_gen.go`: route registry, parameter parsing, not-found composition, `NewRouteResolvers`
 - `web/resolvers/generated.go`: `RouteResolver` interface + param structs + compile assertion
 - `web/components/*_templ.go`: templ output for components
-- No generated file assembles the HTTP server; server construction lives in `web/bootstrap`.
+- The target integration treats `web/generated` as the `App Bundle` boundary consumed by `httpserver.NewApp(...)`.
+- The current `cmd/server/handler.go` remains transitional and is not the intended long-term integration model.
 
 All generated files include `DO NOT EDIT` headers and must not be edited manually.
+
+## App Bundle Boundary
+
+The preferred runtime model is:
+
+```go
+handler, err := httpserver.NewApp(httpserver.Config[*runtime.Context]{
+	App:    generated.Bundle(appContext),
+	Custom: customConfig,
+})
+```
+
+In that model:
+
+- `generated.Bundle(appContext)` is the generated `App Bundle`
+- `httpserver.NewApp(...)` is the happy-path framework entrypoint
+- app-owned hooks live in `Custom Config`
+- advanced composition may live in any app-owned package when needed
 
 ## Resolver Contract Boundary
 
@@ -53,6 +73,8 @@ This keeps route signatures generator-owned while data logic stays handwritten.
 
 - Canonical routes are served by the `no-js` framework runtime
   (`github.com/RevoTale/no-js/framework/engine` + `github.com/RevoTale/no-js/framework/httpserver`).
+- `main.go` should stay focused on environment loading and business service construction.
+- Site and canonical-domain policy should be centralized through a `Site Resolver`.
 - HTMX partial updates use canonical URLs with `HX-Request: true`.
 - Full-page rendering and partial rendering share the same page resolver method.
 
