@@ -24,8 +24,6 @@ COPY --from=builder /src/web/assets-build /app/web/assets-build
 COPY --from=builder /src/web/public /app/web/public
 
 ENV BLOG_LISTEN_ADDR=:8080
-ENV BLOG_STATIC_MANIFEST_PATH=/app/web/assets-build/manifest.json
-ENV BLOG_PUBLIC_DIR=/app/web/public
 
 EXPOSE 8080
 

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"blog/internal/config"
 	"blog/internal/discovery"
@@ -15,9 +14,7 @@ import (
 )
 
 const immutableStaticCachePolicy = "public, max-age=31536000, immutable"
-const defaultStaticManifestPath = "web/assets-build/manifest.json"
-const defaultStaticURLPrefix = "/_assets/"
-const defaultPublicDir = "web/public"
+const blogLiveNavigationCachePolicy = "public, max-age=3600, s-maxage=3600"
 
 func newCustomConfig(
 	cfg config.Config,
@@ -27,10 +24,8 @@ func newCustomConfig(
 	logServerError func(error),
 ) httpserver.CustomConfig {
 	cachePolicies := httpserver.DefaultCachePolicies()
-	if strings.TrimSpace(cfg.CacheLiveNavigation) != "" {
-		cachePolicies.LiveNavigation = strings.TrimSpace(cfg.CacheLiveNavigation)
-	}
 	cachePolicies.Static = immutableStaticCachePolicy
+	cachePolicies.LiveNavigation = blogLiveNavigationCachePolicy
 
 	custom := httpserver.CustomConfig{
 		ExtraRoutes:         buildExtraRoutesMount(siteResolver, i18nConfig, noteService, cachePolicies.HTML),
@@ -38,22 +33,6 @@ func newCustomConfig(
 		CachePolicies:       cachePolicies,
 		LogServerError:      logServerError,
 		EnableResolverDebug: cfg.EnableResolverDebug,
-	}
-
-	if (strings.TrimSpace(cfg.StaticManifestPath) != "" && cfg.StaticManifestPath != defaultStaticManifestPath) ||
-		(strings.TrimSpace(cfg.StaticURLPrefix) != "" && cfg.StaticURLPrefix != defaultStaticURLPrefix) {
-		custom.StaticAssets = &httpserver.StaticAssetsConfig{
-			ManifestPath: cfg.StaticManifestPath,
-			URLPrefix:    cfg.StaticURLPrefix,
-		}
-	}
-
-	if (strings.TrimSpace(cfg.PublicDir) != "" && cfg.PublicDir != defaultPublicDir) ||
-		strings.TrimSpace(cfg.CachePublicFiles) != "" {
-		custom.PublicFiles = &httpserver.PublicFilesConfig{
-			Dir:         cfg.PublicDir,
-			CachePolicy: strings.TrimSpace(cfg.CachePublicFiles),
-		}
 	}
 
 	return custom

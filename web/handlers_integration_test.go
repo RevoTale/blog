@@ -7,7 +7,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"regexp"
+	goruntime "runtime"
 	"strings"
 	"testing"
 	"time"
@@ -366,10 +368,6 @@ type testStaticBundle struct {
 	urlPrefix string
 }
 
-func (bundle testStaticBundle) Hash() string {
-	return bundle.hash
-}
-
 func (bundle testStaticBundle) URL(assetPath string) string {
 	trimmedPath := strings.TrimPrefix(strings.TrimSpace(assetPath), "/")
 	return frameworkstaticassets.Manifest{Hash: bundle.hash}.VersionedURLPrefix(bundle.urlPrefix) + trimmedPath
@@ -379,7 +377,6 @@ type testServerOptions struct {
 	enableImageLoader  bool
 	lovelyEyeScriptURL string
 	lovelyEyeSiteID    string
-	staticURLPrefix    string
 	mountExtraRoutes   func(*http.ServeMux) error
 }
 
@@ -416,12 +413,12 @@ func newTestServerWithOptions(t *testing.T, options testServerOptions) testServe
 func newTestHandler(t *testing.T, options testServerOptions) (http.Handler, testStaticBundle) {
 	t.Helper()
 
-	staticURLPrefix := strings.TrimSpace(options.staticURLPrefix)
-	if staticURLPrefix == "" {
-		staticURLPrefix = "/_assets/"
-	}
+	const staticURLPrefix = "/_assets/"
+	_, currentFile, _, ok := goruntime.Caller(0)
+	require.True(t, ok)
+	t.Chdir(filepath.Dir(filepath.Dir(currentFile)))
 
-	manifestPath := "assets-build/manifest.json"
+	manifestPath := "web/assets-build/manifest.json"
 	manifest, err := frameworkstaticassets.ReadManifest(manifestPath)
 	require.NoError(t, err)
 
@@ -459,14 +456,7 @@ func newTestHandler(t *testing.T, options testServerOptions) (http.Handler, test
 			MainMiddlewares: []func(http.Handler) http.Handler{
 				runtime.WithCanonicalNotesRedirects,
 			},
-			CachePolicies: cachePolicies,
-			StaticAssets: &httpserver.StaticAssetsConfig{
-				ManifestPath: "assets-build/manifest.json",
-				URLPrefix:    staticURLPrefix,
-			},
-			PublicFiles: &httpserver.PublicFilesConfig{
-				Dir: "public",
-			},
+			CachePolicies:  cachePolicies,
 			LogServerError: func(error) {},
 		},
 	})
@@ -1092,27 +1082,6 @@ func TestHandlerNotFoundAndHealth(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, recMissingRoute.Code)
 	missingRouteBody := requireBody(t, recMissingRoute.Body)
 	require.Contains(t, missingRouteBody, "/missing-route")
-}
-
-func TestHTTPServerUsesRuntimeStaticURLPrefix(t *testing.T) {
-	handlerA, bundleA := newTestHandler(t, testServerOptions{staticURLPrefix: "/assets-a/"})
-
-	expectedA := "/assets-a/" + bundleA.Hash() + "/tui.css"
-	recA := performRequest(handlerA, http.MethodGet, "/")
-	bodyA := requireBody(t, recA.Body)
-	require.Contains(t, bodyA, expectedA)
-
-	handlerB, bundleB := newTestHandler(t, testServerOptions{staticURLPrefix: "/assets-b/"})
-
-	expectedB := "/assets-b/" + bundleB.Hash() + "/tui.css"
-
-	recB := performRequest(handlerB, http.MethodGet, "/")
-	bodyB := requireBody(t, recB.Body)
-	require.Contains(t, bodyB, expectedB)
-	require.NotContains(t, bodyB, expectedA)
-
-	recStaticB := performRequest(handlerB, http.MethodGet, expectedB)
-	require.Equal(t, http.StatusOK, recStaticB.Code)
 }
 
 func TestHTTPServerSupportsAppOwnedEndpoints(t *testing.T) {

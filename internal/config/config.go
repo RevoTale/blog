@@ -9,17 +9,11 @@ import (
 type Config struct {
 	ListenAddr string
 
-	StaticManifestPath string
-	StaticURLPrefix    string
-	PublicDir          string
-
 	RootURL string
 
 	LovelyEyeScriptURL string
 	LovelyEyeSiteID    string
 
-	CacheLiveNavigation string
-	CachePublicFiles    string
 	EnableImageLoader   bool
 	EnableResolverDebug bool
 
@@ -30,23 +24,13 @@ type Config struct {
 }
 
 func Load() Config {
-	staticManifestPath := getEnv("BLOG_STATIC_MANIFEST_PATH", "web/assets-build/manifest.json")
-	publicDir := getEnv("BLOG_PUBLIC_DIR", "web/public")
-
 	return Config{
-		ListenAddr:         getEnv("BLOG_LISTEN_ADDR", ":8080"),
-		StaticManifestPath: staticManifestPath,
-		StaticURLPrefix:    getEnv("BLOG_STATIC_URL_PREFIX", "/_assets/"),
-		PublicDir:          publicDir,
-		RootURL:            getEnv("BLOG_ROOT_URL", ""),
+		ListenAddr: getEnv("BLOG_LISTEN_ADDR", ":8080"),
+		RootURL:    getEnv("BLOG_ROOT_URL", ""),
+
 		LovelyEyeScriptURL: strings.TrimSpace(os.Getenv("LOVELY_EYE_SCRIPT_URL")),
 		LovelyEyeSiteID:    strings.TrimSpace(os.Getenv("LOVELY_EYE_SITE_ID")),
-		CacheLiveNavigation: strings.TrimSpace(
-			os.Getenv("BLOG_CACHE_LIVE_NAV"),
-		),
-		CachePublicFiles: strings.TrimSpace(
-			os.Getenv("BLOG_CACHE_PUBLIC_FILES"),
-		),
+
 		EnableImageLoader:   getEnvBool("BLOG_ENABLE_IMAGE_LOADER", false),
 		EnableResolverDebug: getEnvBool("BLOG_ENABLE_RESOLVER_DEBUG", false),
 		GraphQLEndpoint:     getEnv("BLOG_GRAPHQL_ENDPOINT", "http://localhost:3000/api/graphql"),
