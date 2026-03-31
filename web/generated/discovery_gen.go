@@ -2,17 +2,32 @@
 package gen
 
 import (
-	route_conventions "blog/web/routes"
+	route_conventions_root "blog/web/routes"
 	"blog/web/view"
+	"github.com/RevoTale/no-js/framework"
 	"github.com/RevoTale/no-js/framework/discovery"
 )
 
 func DiscoveryBundle() *discovery.Bundle[*runtime.Context] {
 	return &discovery.Bundle[*runtime.Context]{
-		Robots:           route_conventions.Robots,
-		Sitemap:          route_conventions.Sitemap,
-		GenerateSitemaps: route_conventions.GenerateSitemaps,
-		SitemapByID:      route_conventions.SitemapByID,
-		Feed:             route_conventions.Feed,
+		Robots: route_conventions_root.Robots,
+		Sitemaps: []discovery.SitemapRoute[*runtime.Context]{
+			{
+				RoutePattern:     "/",
+				Sitemap:          route_conventions_root.Sitemap,
+				GenerateSitemaps: route_conventions_root.GenerateSitemaps,
+				SitemapByID:      route_conventions_root.SitemapByID,
+			},
+		},
+		Feeds: []discovery.FeedRoute[*runtime.Context]{
+			{
+				RoutePattern: "/",
+				Feed:         route_conventions_root.Feed,
+			},
+		},
 	}
+}
+
+func DiscoveryExactHandlers() []framework.RouteHandler[*runtime.Context] {
+	return discovery.ExactHandlers(DiscoveryBundle())
 }

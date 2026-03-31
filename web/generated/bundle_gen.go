@@ -16,6 +16,7 @@ func Bundle(appContext *runtime.Context) httpserver.AppBundle[*runtime.Context] 
 
 	return httpserver.AppBundle[*runtime.Context]{
 		Context:                       appContext,
+		ExactHandlers:                 DiscoveryExactHandlers(),
 		Handlers:                      Handlers(NewRouteResolvers()),
 		Discovery:                     DiscoveryBundle(),
 		I18n:                          i18nConfig,
