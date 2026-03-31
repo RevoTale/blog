@@ -33,6 +33,13 @@ type Config struct {
 }
 
 func NewContext(cfg Config) (*Context, error) {
+	if cfg.Notes == nil {
+		return nil, fmt.Errorf("notes service is required")
+	}
+	if cfg.SiteResolver == nil {
+		return nil, fmt.Errorf("site resolver is required")
+	}
+
 	i18nConfig, err := frameworki18n.NormalizeConfig(webi18n.Config())
 	if err != nil {
 		return nil, fmt.Errorf("normalize i18n config: %w", err)
@@ -94,6 +101,13 @@ func (ctx *Context) SiteResolver() site.Resolver {
 		return nil
 	}
 	return ctx.siteResolver
+}
+
+func (ctx *Context) Notes() *notes.Service {
+	if ctx == nil {
+		return nil
+	}
+	return ctx.service
 }
 
 func (ctx *Context) LovelyEyeEnabled() bool {

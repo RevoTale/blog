@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"blog/internal/config"
-	"blog/internal/discovery"
 	"blog/internal/imageloader"
 	"blog/internal/notes"
 	"blog/internal/site"
@@ -23,7 +22,6 @@ import (
 	"blog/web/view"
 	"github.com/Khan/genqlient/graphql"
 	"github.com/RevoTale/no-js/framework/httpserver"
-	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	frameworkstaticassets "github.com/RevoTale/no-js/framework/staticassets"
 	"github.com/stretchr/testify/require"
 )
@@ -438,21 +436,10 @@ func newTestHandler(t *testing.T, options testServerOptions) (http.Handler, test
 	cachePolicies := httpserver.DefaultCachePolicies()
 	cachePolicies.Static = "public, max-age=31536000, immutable"
 
-	mountExtraRoutes := defaultTestExtraRoutes(noteService, appContext.I18nConfig())
-	if options.mountExtraRoutes != nil {
-		customMount := options.mountExtraRoutes
-		mountExtraRoutes = func(mux *http.ServeMux) error {
-			if err := defaultTestExtraRoutes(noteService, appContext.I18nConfig())(mux); err != nil {
-				return err
-			}
-			return customMount(mux)
-		}
-	}
-
 	handler, err := httpserver.NewApp(httpserver.Config[*runtime.Context]{
 		App: generated.Bundle(appContext),
 		Custom: httpserver.CustomConfig{
-			ExtraRoutes: mountExtraRoutes,
+			ExtraRoutes: options.mountExtraRoutes,
 			MainMiddlewares: []func(http.Handler) http.Handler{
 				runtime.WithCanonicalNotesRedirects,
 			},
@@ -465,27 +452,6 @@ func newTestHandler(t *testing.T, options testServerOptions) (http.Handler, test
 	return handler, testStaticBundle{
 		hash:      manifest.Hash,
 		urlPrefix: staticURLPrefix,
-	}
-}
-
-func defaultTestExtraRoutes(
-	noteService *notes.Service,
-	i18nConfig frameworki18n.Config,
-) func(*http.ServeMux) error {
-	return func(mux *http.ServeMux) error {
-		if err := discovery.MountFeedAndSitemapEndpoints(mux, discovery.FeedAndSitemapConfig{
-			RootURL:    testRootURL,
-			I18nConfig: i18nConfig,
-			Notes:      noteService,
-		}); err != nil {
-			return err
-		}
-
-		return discovery.MountRobotsEndpoint(
-			mux,
-			testRootURL,
-			httpserver.DefaultCachePolicies().HTML,
-		)
 	}
 }
 

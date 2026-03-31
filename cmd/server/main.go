@@ -15,6 +15,9 @@ import (
 	"github.com/RevoTale/no-js/framework/httpserver"
 )
 
+const immutableStaticCachePolicy = "public, max-age=31536000, immutable"
+const blogLiveNavigationCachePolicy = "public, max-age=3600, s-maxage=3600"
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatalf("server stopped: %v", err)
@@ -49,17 +52,22 @@ func run() error {
 		return fmt.Errorf("build app context: %w", err)
 	}
 
+	cachePolicies := httpserver.DefaultCachePolicies()
+	cachePolicies.Static = immutableStaticCachePolicy
+	cachePolicies.LiveNavigation = blogLiveNavigationCachePolicy
+
 	handler, err := httpserver.NewApp(httpserver.Config[*runtime.Context]{
 		App: generated.Bundle(appContext),
-		Custom: newCustomConfig(
-			cfg,
-			siteResolver,
-			noteService,
-			appContext.I18nConfig(),
-			func(err error) {
+		Custom: httpserver.CustomConfig{
+			MainMiddlewares: []func(http.Handler) http.Handler{
+				runtime.WithCanonicalNotesRedirects,
+			},
+			CachePolicies: cachePolicies,
+			LogServerError: func(err error) {
 				log.Printf("blog server error: %v", err)
 			},
-		),
+			EnableResolverDebug: cfg.EnableResolverDebug,
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("handler setup failed: %w", err)

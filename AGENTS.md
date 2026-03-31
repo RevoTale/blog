@@ -36,6 +36,8 @@ pages from CMS GraphQL data.
 - MUST keep generic framework config separate from app-specific hooks and dependencies.
 - MUST not introduce a broad `blog/web` facade package for server wiring.
 - MUST not treat `web/bootstrap` as a contract term; advanced composition may live in any app-owned package.
+- MUST treat wiring/config contract failures as startup errors; do not hide them with request-time nil fallbacks in
+  route conventions or handlers.
 
 ## Taskfile Workflow Module
 
