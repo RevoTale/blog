@@ -13,10 +13,10 @@ import (
 func (Resolver) MetaGenTagParamSlugPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	params TagParamSlugParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenTagPage(ctx, appCtx, r, params.Slug)
+	return seo.MetaGenTagPage(ctx, appCtx, meta, params.Slug)
 }
 
 func (Resolver) ResolveTagParamSlugPage(

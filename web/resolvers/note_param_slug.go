@@ -13,10 +13,10 @@ import (
 func (Resolver) MetaGenNoteParamSlugPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	params NoteParamSlugParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenNotePage(ctx, appCtx, r, params.Slug)
+	return seo.MetaGenNotePage(ctx, appCtx, meta, params.Slug)
 }
 
 func (Resolver) ResolveNoteParamSlugPage(

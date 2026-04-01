@@ -3,21 +3,23 @@ package runtime
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 
 	"blog/internal/imageloader"
 	"blog/internal/notes"
-	"blog/internal/site"
 	webi18n "blog/web/i18n"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
+	frameworksite "github.com/RevoTale/no-js/framework/site"
 )
 
 var errNotesServiceUnavailable = errors.New("notes service unavailable")
 
 type Context struct {
 	service            *notes.Service
-	siteResolver       site.Resolver
+	siteResolver       frameworksite.Resolver
 	lovelyEyeScriptURL string
 	lovelyEyeSiteID    string
 	i18nConfig         frameworki18n.Config
@@ -26,7 +28,7 @@ type Context struct {
 
 type Config struct {
 	Notes              *notes.Service
-	SiteResolver       site.Resolver
+	SiteResolver       frameworksite.Resolver
 	ImageLoader        imageloader.Loader
 	LovelyEyeScriptURL string
 	LovelyEyeSiteID    string
@@ -89,14 +91,22 @@ func (ctx *Context) T(locale string, key webi18n.Key, data map[string]any) strin
 	return ctx.i18nCatalog.Localize(locale, string(key), data, fallback)
 }
 
-func (ctx *Context) RootURL() string {
-	if ctx == nil || ctx.siteResolver == nil {
-		return ""
+func (ctx *Context) ResolveRoot(r *http.Request) *url.URL {
+	if ctx == nil {
+		return nil
 	}
-	return strings.TrimSpace(ctx.siteResolver.CanonicalURL())
+	return frameworksite.ResolveRoot(ctx.siteResolver, r)
 }
 
-func (ctx *Context) SiteResolver() site.Resolver {
+func (ctx *Context) ResolveRootURL(r *http.Request) string {
+	root := ctx.ResolveRoot(r)
+	if root == nil {
+		return ""
+	}
+	return root.String()
+}
+
+func (ctx *Context) SiteResolver() frameworksite.Resolver {
 	if ctx == nil {
 		return nil
 	}

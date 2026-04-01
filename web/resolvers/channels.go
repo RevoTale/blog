@@ -13,10 +13,10 @@ import (
 func (Resolver) MetaGenChannelsPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	_ ChannelsParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenChannelsPage(ctx, appCtx, r)
+	return seo.MetaGenChannelsPage(ctx, appCtx, meta)
 }
 
 func (Resolver) ResolveChannelsPage(

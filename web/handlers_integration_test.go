@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	goruntime "runtime"
@@ -22,6 +23,7 @@ import (
 	"blog/web/view"
 	"github.com/Khan/genqlient/graphql"
 	"github.com/RevoTale/no-js/framework/httpserver"
+	frameworksite "github.com/RevoTale/no-js/framework/site"
 	frameworkstaticassets "github.com/RevoTale/no-js/framework/staticassets"
 	"github.com/stretchr/testify/require"
 )
@@ -376,6 +378,7 @@ type testServerOptions struct {
 	lovelyEyeScriptURL string
 	lovelyEyeSiteID    string
 	mountExtraRoutes   func(*http.ServeMux) error
+	siteResolver       frameworksite.Resolver
 }
 
 func newTestServer(t *testing.T) testServer {
@@ -420,10 +423,14 @@ func newTestHandler(t *testing.T, options testServerOptions) (http.Handler, test
 	manifest, err := frameworkstaticassets.ReadManifest(manifestPath)
 	require.NoError(t, err)
 
-	siteResolver, err := site.NewResolver(config.Config{RootURL: testRootURL})
-	require.NoError(t, err)
+	siteResolver := options.siteResolver
+	if siteResolver == nil {
+		var err error
+		siteResolver, err = site.NewResolver(config.Config{RootURL: testRootURL})
+		require.NoError(t, err)
+	}
 	imageLoader := imageloader.New(options.enableImageLoader)
-	noteService := notes.NewService(fakeGraphQLClient{}, 12, testRootURL, imageLoader)
+	noteService := notes.NewService(fakeGraphQLClient{}, 12, imageLoader)
 	appContext, err := runtime.NewContext(runtime.Config{
 		Notes:              noteService,
 		SiteResolver:       siteResolver,
@@ -468,6 +475,34 @@ func performRequest(mux http.Handler, method string, path string) *httptest.Resp
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
 	return rec
+}
+
+type requestHostSiteResolver struct {
+	canonicalURL string
+}
+
+func (resolver requestHostSiteResolver) CanonicalURL() string {
+	return strings.TrimSpace(resolver.canonicalURL)
+}
+
+func (resolver requestHostSiteResolver) Resolve(r *http.Request) string {
+	parsed, err := url.Parse(strings.TrimSpace(resolver.canonicalURL))
+	if err != nil {
+		return strings.TrimSpace(resolver.canonicalURL)
+	}
+
+	if r == nil {
+		return parsed.String()
+	}
+
+	if scheme := strings.TrimSpace(r.URL.Scheme); scheme != "" {
+		parsed.Scheme = scheme
+	}
+	if host := strings.TrimSpace(r.Host); host != "" {
+		parsed.Host = host
+	}
+
+	return parsed.String()
 }
 
 func performRequestWithHeaders(
@@ -890,6 +925,36 @@ func TestHandlerSEOMetadataAndHTMXPatchHeaders(t *testing.T) {
 	}
 	require.NoError(t, json.Unmarshal(patchPayloadRaw, &patchPayload))
 	require.NotContains(t, patchPayload.Head, `application/ld+json`)
+}
+
+func TestDynamicRootURLUsesRequestHostAcrossMetadataAndDiscovery(t *testing.T) {
+	testSrv := newTestServerWithOptions(t, testServerOptions{
+		siteResolver: requestHostSiteResolver{canonicalURL: testRootURL},
+	})
+	mux := testSrv.handler
+
+	recNote := performRequest(mux, http.MethodGet, "https://mirror.example/uk/note/hello-world")
+	require.Equal(t, http.StatusOK, recNote.Code)
+	noteBody := requireBody(t, recNote.Body)
+	require.Contains(t, noteBody, `rel="canonical" href="https://mirror.example/blog/notes/uk/note/hello-world"`)
+	require.Contains(t, noteBody, `property="og:url" content="https://mirror.example/blog/notes/uk/note/hello-world"`)
+	require.Contains(t, noteBody, `property="article:author" content="https://mirror.example/blog/notes/uk/author/l-you"`)
+
+	noteDocs := parseJSONLDScripts(t, noteBody)
+	noteDoc := requireJSONLDDocByType(t, noteDocs, "BlogPosting")
+	require.Equal(t, "https://mirror.example/blog/notes/uk/note/hello-world", stringField(t, noteDoc, "url"))
+	publisher := objectField(t, noteDoc, "publisher")
+	require.Equal(t, "https://mirror.example/blog/notes", stringField(t, publisher, "url"))
+
+	recFeed := performRequest(mux, http.MethodGet, "https://mirror.example/feed.xml?locale=uk")
+	require.Equal(t, http.StatusOK, recFeed.Code)
+	feedBody := requireBody(t, recFeed.Body)
+	require.Contains(t, feedBody, "https://mirror.example/blog/notes/uk/note/hello-world")
+
+	recRobots := performRequest(mux, http.MethodGet, "https://mirror.example/robots.txt")
+	require.Equal(t, http.StatusOK, recRobots.Code)
+	robotsBody := requireBody(t, recRobots.Body)
+	require.Contains(t, robotsBody, "Sitemap: https://mirror.example/blog/notes/sitemap-index")
 }
 
 func TestHandlerLovelyEyeAnalyticsRendersWhenConfigured(t *testing.T) {

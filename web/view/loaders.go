@@ -204,7 +204,8 @@ func LoadNotePage(
 			return NotePageView{}, err
 		}
 
-		note, err := service.GetNoteBySlug(runCtx, locale, slug)
+		rootURL := resolvedRootURL(appCtx, r)
+		note, err := service.GetNoteBySlug(runCtx, locale, slug, noteSiteRootURLs(appCtx, rootURL))
 		if err != nil {
 			return NotePageView{}, err
 		}
@@ -213,7 +214,7 @@ func LoadNotePage(
 
 		return NotePageView{
 			Locale:                locale,
-			RootURL:               strings.TrimSpace(appCtx.RootURL()),
+			RootURL:               rootURL,
 			CanonicalURL:          canonicalURLFromRequest(appCtx, r, locale),
 			IncludeStructuredData: shouldIncludeStructuredData(r),
 			Messages:              messages,
@@ -635,11 +636,7 @@ func applyStructuredDataContextForNotesView(
 		return
 	}
 
-	rootURL := ""
-	if appCtx != nil {
-		rootURL = strings.TrimSpace(appCtx.RootURL())
-	}
-	view.RootURL = rootURL
+	view.RootURL = resolvedRootURL(appCtx, r)
 	view.AnalyticsEnabled = appCtx != nil && appCtx.LovelyEyeEnabled()
 	view.CanonicalURL = canonicalURLFromRequest(appCtx, r, locale)
 	view.IncludeStructuredData = shouldIncludeStructuredData(r)
@@ -666,7 +663,7 @@ func canonicalURLFromRequest(appCtx *Context, r *http.Request, locale string) st
 		return ""
 	}
 
-	rootURL := strings.TrimSpace(appCtx.RootURL())
+	rootURL := resolvedRootURL(appCtx, r)
 	if rootURL == "" {
 		return ""
 	}
@@ -693,6 +690,37 @@ func canonicalURLFromRequest(appCtx *Context, r *http.Request, locale string) st
 	}
 
 	return strings.TrimSpace(alternates.Canonical)
+}
+
+func resolvedRootURL(appCtx *Context, r *http.Request) string {
+	if appCtx == nil {
+		return ""
+	}
+	return appCtx.ResolveRootURL(r)
+}
+
+func noteSiteRootURLs(appCtx *Context, resolvedRootURL string) []string {
+	roots := make([]string, 0, 2)
+	seen := make(map[string]struct{}, 2)
+
+	appendRoot := func(value string) {
+		trimmed := strings.TrimSpace(value)
+		if trimmed == "" {
+			return
+		}
+		if _, ok := seen[trimmed]; ok {
+			return
+		}
+		seen[trimmed] = struct{}{}
+		roots = append(roots, trimmed)
+	}
+
+	appendRoot(resolvedRootURL)
+	if appCtx != nil && appCtx.SiteResolver() != nil {
+		appendRoot(appCtx.SiteResolver().CanonicalURL())
+	}
+
+	return roots
 }
 
 func parsePage(value string) int {

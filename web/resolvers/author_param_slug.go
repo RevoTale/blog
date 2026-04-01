@@ -13,7 +13,7 @@ import (
 func (Resolver) MetaGenAuthorParamSlugLayout(
 	context.Context,
 	*runtime.Context,
-	*http.Request,
+	framework.MetadataContext,
 	AuthorParamSlugParams,
 ) (metagen.Metadata, error) {
 	return metagen.Metadata{}, nil
@@ -22,10 +22,10 @@ func (Resolver) MetaGenAuthorParamSlugLayout(
 func (Resolver) MetaGenAuthorParamSlugPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	params AuthorParamSlugParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenAuthorPage(ctx, appCtx, r, params.Slug)
+	return seo.MetaGenAuthorPage(ctx, appCtx, meta, params.Slug)
 }
 
 func (Resolver) ResolveAuthorParamSlugPage(

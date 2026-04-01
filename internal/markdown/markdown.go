@@ -39,6 +39,7 @@ const (
 type Options struct {
 	TranslateLinks map[string]string
 	RootURL        string
+	RootURLs       []string
 
 	CodeCopyLabel   string
 	CodeCopiedLabel string
@@ -231,6 +232,8 @@ func lastGoodBreakIndex(runes []rune) int {
 }
 
 func normalizeLinks(doc ast.Node, opts Options) {
+	currentWebsiteRoots := currentWebsiteRoots(opts)
+
 	ast.WalkFunc(doc, func(node ast.Node, entering bool) ast.WalkStatus {
 		if !entering {
 			return ast.GoToNext
@@ -242,12 +245,36 @@ func normalizeLinks(doc ast.Node, opts Options) {
 		}
 
 		transformedHref := transformLink(string(link.Destination), opts.TranslateLinks)
-		normalizedHref, isCurrentWebsite := normalizeCurrentWebsiteLink(transformedHref, opts.RootURL)
+		normalizedHref, isCurrentWebsite := normalizeCurrentWebsiteLink(transformedHref, currentWebsiteRoots)
 		link.Destination = []byte(normalizedHref)
 		link.AdditionalAttributes = applyLinkAttributes(link.AdditionalAttributes, isCurrentWebsite)
 
 		return ast.GoToNext
 	})
+}
+
+func currentWebsiteRoots(opts Options) []string {
+	roots := make([]string, 0, len(opts.RootURLs)+1)
+	seen := make(map[string]struct{}, len(opts.RootURLs)+1)
+
+	appendRoot := func(value string) {
+		trimmed := strings.TrimSpace(value)
+		if trimmed == "" {
+			return
+		}
+		if _, ok := seen[trimmed]; ok {
+			return
+		}
+		seen[trimmed] = struct{}{}
+		roots = append(roots, trimmed)
+	}
+
+	appendRoot(opts.RootURL)
+	for _, rootURL := range opts.RootURLs {
+		appendRoot(rootURL)
+	}
+
+	return roots
 }
 
 func renderNodeHook(writer io.Writer, node ast.Node, entering bool, opts Options) (ast.WalkStatus, bool) {
@@ -519,28 +546,32 @@ func transformLink(href string, translateLinks map[string]string) string {
 	return href
 }
 
-func normalizeCurrentWebsiteLink(href string, rootURL string) (string, bool) {
-	if rootURL == "" || !strings.HasPrefix(href, rootURL) {
-		return href, false
+func normalizeCurrentWebsiteLink(href string, rootURLs []string) (string, bool) {
+	for _, rootURL := range rootURLs {
+		if !strings.HasPrefix(href, rootURL) {
+			continue
+		}
+
+		parsed, err := url.Parse(href)
+		if err != nil {
+			return href, true
+		}
+
+		normalized := parsed.Path
+		if normalized == "" {
+			normalized = "/"
+		}
+		if parsed.RawQuery != "" {
+			normalized += "?" + parsed.RawQuery
+		}
+		if parsed.Fragment != "" {
+			normalized += "#" + parsed.Fragment
+		}
+
+		return normalized, true
 	}
 
-	parsed, err := url.Parse(href)
-	if err != nil {
-		return href, true
-	}
-
-	normalized := parsed.Path
-	if normalized == "" {
-		normalized = "/"
-	}
-	if parsed.RawQuery != "" {
-		normalized += "?" + parsed.RawQuery
-	}
-	if parsed.Fragment != "" {
-		normalized += "#" + parsed.Fragment
-	}
-
-	return normalized, true
+	return href, false
 }
 
 func applyLinkAttributes(existing []string, isCurrentWebsite bool) []string {

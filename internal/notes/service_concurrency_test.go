@@ -86,7 +86,7 @@ func TestServiceListNotes_StartsIndependentFetchesInParallel(t *testing.T) {
 	t.Parallel()
 
 	client := newParallelProbeClient()
-	service := NewService(client, 12, "https://example.com", imageloader.New(false))
+	service := NewService(client, 12, imageloader.New(false))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()

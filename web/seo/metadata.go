@@ -12,16 +12,15 @@ import (
 	webi18n "blog/web/i18n"
 	"blog/web/view"
 	"github.com/RevoTale/no-js/framework"
-	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	"github.com/RevoTale/no-js/framework/metagen"
 )
 
 func MetaGenRootPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadNotesPage(ctx, appCtx, r, framework.EmptyParams{})
+	view, err := runtime.LoadNotesPage(ctx, appCtx, meta.Request(), framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -42,7 +41,7 @@ func MetaGenRootPage(
 	)
 	return notesListingMetadata(
 		appCtx,
-		r,
+		meta,
 		view,
 		cardTitle,
 		description,
@@ -55,9 +54,9 @@ func MetaGenRootPage(
 func MetaGenTalesPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadNotesTalesPage(ctx, appCtx, r, framework.EmptyParams{})
+	view, err := runtime.LoadNotesTalesPage(ctx, appCtx, meta.Request(), framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -70,7 +69,7 @@ func MetaGenTalesPage(
 	)
 	return notesListingMetadata(
 		appCtx,
-		r,
+		meta,
 		view,
 		view.PageTitle,
 		description,
@@ -83,9 +82,9 @@ func MetaGenTalesPage(
 func MetaGenMicroTalesPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadNotesMicroTalesPage(ctx, appCtx, r, framework.EmptyParams{})
+	view, err := runtime.LoadNotesMicroTalesPage(ctx, appCtx, meta.Request(), framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -98,7 +97,7 @@ func MetaGenMicroTalesPage(
 	)
 	return notesListingMetadata(
 		appCtx,
-		r,
+		meta,
 		view,
 		view.PageTitle,
 		description,
@@ -111,10 +110,10 @@ func MetaGenMicroTalesPage(
 func MetaGenTagPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadTagPage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadTagPage(ctx, appCtx, meta.Request(), framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -129,7 +128,7 @@ func MetaGenTagPage(
 	)
 	return notesListingMetadata(
 		appCtx,
-		r,
+		meta,
 		view,
 		view.PageTitle,
 		description,
@@ -142,9 +141,9 @@ func MetaGenTagPage(
 func MetaGenChannelsPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadChannelsPage(ctx, appCtx, r, framework.EmptyParams{})
+	view, err := runtime.LoadChannelsPage(ctx, appCtx, meta.Request(), framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -157,7 +156,7 @@ func MetaGenChannelsPage(
 	)
 	return notesListingMetadata(
 		appCtx,
-		r,
+		meta,
 		view,
 		view.PageTitle,
 		description,
@@ -170,10 +169,10 @@ func MetaGenChannelsPage(
 func MetaGenAuthorPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadAuthorPage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadAuthorPage(ctx, appCtx, meta.Request(), framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -186,7 +185,7 @@ func MetaGenAuthorPage(
 	if view.ActiveAuthor != nil {
 		authorName = strings.TrimSpace(view.ActiveAuthor.Name)
 		authorSlug = strings.TrimSpace(view.ActiveAuthor.Slug)
-		image = authorAvatarImage(appCtx, view.ActiveAuthor)
+		image = authorAvatarImage(view.RootURL, view.ActiveAuthor)
 	}
 
 	contentTitle := strings.TrimSpace(authorName)
@@ -213,7 +212,7 @@ func MetaGenAuthorPage(
 		description = strings.TrimSpace(view.ActiveAuthor.Bio)
 	}
 
-	alternates, alternatesErr := buildAlternates(appCtx, r, view.LocaleCode(), nil)
+	alternates, alternatesErr := buildAlternates(meta, view.LocaleCode(), nil)
 	if alternatesErr != nil {
 		return metagen.Metadata{}, alternatesErr
 	}
@@ -243,7 +242,7 @@ func MetaGenAuthorPage(
 	if authorName != "" {
 		authors = append(authors, metagen.Author{
 			Name: authorName,
-			URL:  absoluteLocalizedURL(appCtx, view.LocaleCode(), "/author/"+authorSlug),
+			URL:  urlString(meta.LocalizedURL(view.LocaleCode(), "/author/"+authorSlug)),
 		})
 	}
 
@@ -252,7 +251,7 @@ func MetaGenAuthorPage(
 		Description: description,
 		Alternates:  alternates,
 		Robots: notesListingRobots(
-			r,
+			meta.Request(),
 			view.Filter,
 			&metagen.Robots{Index: metagen.Bool(true), Follow: metagen.Bool(true)},
 		),
@@ -267,10 +266,10 @@ func MetaGenAuthorPage(
 func MetaGenNotePage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadNotePage(ctx, appCtx, r, framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadNotePage(ctx, appCtx, meta.Request(), framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
@@ -283,13 +282,13 @@ func MetaGenNotePage(
 	title := titleWithSite(contentTitle, site.Name)
 	description := strings.TrimSpace(view.Note.Description)
 
-	alternates, alternatesErr := buildAlternates(appCtx, r, view.LocaleCode(), nil)
+	alternates, alternatesErr := buildAlternates(meta, view.LocaleCode(), nil)
 	if alternatesErr != nil {
 		return metagen.Metadata{}, alternatesErr
 	}
 	canonicalURL := strings.TrimSpace(alternates.Canonical)
 
-	image := noteImage(appCtx, view.Note.MetaImage, view.Note.Attachment)
+	image := noteImage(view.RootURL, view.Note.MetaImage, view.Note.Attachment)
 	openGraph := &metagen.OpenGraph{
 		Type:        "article",
 		URL:         canonicalURL,
@@ -318,7 +317,7 @@ func MetaGenNotePage(
 		if authorName == "" {
 			continue
 		}
-		authorURL := absoluteLocalizedURL(appCtx, view.LocaleCode(), "/author/"+authorSlug)
+		authorURL := urlString(meta.LocalizedURL(view.LocaleCode(), "/author/"+authorSlug))
 		authors = append(authors, metagen.Author{
 			Name: authorName,
 			URL:  authorURL,
@@ -346,18 +345,21 @@ func MetaGenNotePage(
 		Title:       title,
 		Description: description,
 		Alternates:  alternates,
-		Robots:      robotsWithQueryNoIndex(r, &metagen.Robots{Index: metagen.Bool(true), Follow: metagen.Bool(true)}),
-		OpenGraph:   openGraph,
-		Twitter:     twitter,
-		Authors:     authors,
-		Publisher:   site.Publisher,
-		Pinterest:   &metagen.Pinterest{RichPin: metagen.Bool(true)},
+		Robots: robotsWithQueryNoIndex(meta.Request(), &metagen.Robots{
+			Index:  metagen.Bool(true),
+			Follow: metagen.Bool(true),
+		}),
+		OpenGraph: openGraph,
+		Twitter:   twitter,
+		Authors:   authors,
+		Publisher: site.Publisher,
+		Pinterest: &metagen.Pinterest{RichPin: metagen.Bool(true)},
 	}), nil
 }
 
 func notesListingMetadata(
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	view runtime.NotesPageView,
 	cardTitle string,
 	description string,
@@ -374,16 +376,16 @@ func notesListingMetadata(
 
 	alternateTypes := map[string]string(nil)
 	if includeRSS {
-		alternateTypes = notesRSSAlternateTypes(appCtx, r, view.LocaleCode())
+		alternateTypes = notesRSSAlternateTypes(meta, view.LocaleCode())
 	}
 
-	alternates, err := buildAlternates(appCtx, r, view.LocaleCode(), alternateTypes)
+	alternates, err := buildAlternates(meta, view.LocaleCode(), alternateTypes)
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
 	canonicalURL := strings.TrimSpace(alternates.Canonical)
 
-	image := firstListingImage(appCtx, view.Notes)
+	image := firstListingImage(view.RootURL, view.Notes)
 	openGraph := &metagen.OpenGraph{
 		Type:        strings.TrimSpace(openGraphType),
 		URL:         canonicalURL,
@@ -408,7 +410,7 @@ func notesListingMetadata(
 		Title:       title,
 		Description: description,
 		Alternates:  alternates,
-		Robots:      notesListingRobots(r, view.Filter, robots),
+		Robots:      notesListingRobots(meta.Request(), view.Filter, robots),
 		OpenGraph:   openGraph,
 		Twitter:     twitter,
 		Publisher:   site.Publisher,
@@ -496,7 +498,6 @@ type siteMetadata struct {
 	Name        string
 	Description string
 	Publisher   string
-	RootURL     string
 }
 
 func siteInfo(appCtx *runtime.Context, locale string) siteMetadata {
@@ -510,16 +511,10 @@ func siteInfo(appCtx *runtime.Context, locale string) siteMetadata {
 	)
 	publisher := localizeSEO(appCtx, locale, webi18n.KeySeoPublisherName, "RevoTale", nil)
 
-	rootURL := ""
-	if appCtx != nil {
-		rootURL = strings.TrimSpace(appCtx.RootURL())
-	}
-
 	return siteMetadata{
 		Name:        name,
 		Description: description,
 		Publisher:   publisher,
-		RootURL:     rootURL,
 	}
 }
 
@@ -554,61 +549,30 @@ func titleWithSite(pageTitle string, siteName string) string {
 }
 
 func buildAlternates(
-	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	locale string,
 	alternateTypes map[string]string,
 ) (metagen.Alternates, error) {
-	if appCtx == nil {
-		return metagen.Alternates{}, fmt.Errorf("app context is required")
+	if meta == nil {
+		return metagen.Alternates{}, fmt.Errorf("metadata context is required")
 	}
-
-	rootURL := strings.TrimSpace(appCtx.RootURL())
-	if rootURL == "" {
-		return metagen.Alternates{}, fmt.Errorf("BLOG_ROOT_URL is required for metadata alternates")
-	}
-
-	cfg, err := frameworki18n.NormalizeConfig(appCtx.I18nConfig())
-	if err != nil {
-		return metagen.Alternates{}, fmt.Errorf("normalize i18n config: %w", err)
-	}
-
-	return metagen.BuildAlternates(rootURL, cfg, locale, requestPathWithQuery(r), alternateTypes)
+	return meta.Alternates(locale, alternateTypes)
 }
 
-func requestPathWithQuery(r *http.Request) string {
-	if r == nil || r.URL == nil {
-		return "/"
-	}
-	pathValue := strings.TrimSpace(r.URL.Path)
-	if pathValue == "" {
-		pathValue = "/"
-	}
-	if strings.TrimSpace(r.URL.RawQuery) == "" {
-		return pathValue
-	}
-	return pathValue + "?" + strings.TrimSpace(r.URL.RawQuery)
-}
-
-func notesRSSAlternateTypes(appCtx *runtime.Context, r *http.Request, locale string) map[string]string {
-	if appCtx == nil {
+func notesRSSAlternateTypes(meta framework.MetadataContext, locale string) map[string]string {
+	if meta == nil {
 		return nil
 	}
 
-	rootURL := strings.TrimSpace(appCtx.RootURL())
-	if rootURL == "" {
-		return nil
-	}
-
-	feedURL := joinRootAndPath(rootURL, "/feed.xml")
-	if strings.TrimSpace(feedURL) == "" {
+	feedURL := meta.URL("/feed.xml")
+	if feedURL == nil {
 		return nil
 	}
 
 	query := url.Values{}
 	query.Set("locale", strings.TrimSpace(locale))
-	if r != nil && r.URL != nil {
-		requestQuery := r.URL.Query()
+	if request := meta.Request(); request != nil && request.URL != nil {
+		requestQuery := request.URL.Query()
 		for _, key := range []string{"page", "author", "tag", "type", "q"} {
 			value := strings.TrimSpace(requestQuery.Get(key))
 			if value == "" {
@@ -617,15 +581,16 @@ func notesRSSAlternateTypes(appCtx *runtime.Context, r *http.Request, locale str
 			query.Set(key, value)
 		}
 	}
+	feedURL.RawQuery = query.Encode()
 
 	return map[string]string{
-		"application/rss+xml": feedURL + "?" + query.Encode(),
+		"application/rss+xml": feedURL.String(),
 	}
 }
 
-func firstListingImage(appCtx *runtime.Context, notes []notes.NoteSummary) *metagen.OpenGraphImage {
+func firstListingImage(rootURL string, notes []notes.NoteSummary) *metagen.OpenGraphImage {
 	for _, note := range notes {
-		if image := noteImage(appCtx, note.MetaImage, note.Attachment); image != nil {
+		if image := noteImage(rootURL, note.MetaImage, note.Attachment); image != nil {
 			return image
 		}
 	}
@@ -633,17 +598,17 @@ func firstListingImage(appCtx *runtime.Context, notes []notes.NoteSummary) *meta
 }
 
 func noteImage(
-	appCtx *runtime.Context,
+	rootURL string,
 	metaImage *notes.Attachment,
 	attachment *notes.Attachment,
 ) *metagen.OpenGraphImage {
-	if image := noteAttachmentImage(appCtx, metaImage); image != nil {
+	if image := noteAttachmentImage(rootURL, metaImage); image != nil {
 		return image
 	}
-	return noteAttachmentImage(appCtx, attachment)
+	return noteAttachmentImage(rootURL, attachment)
 }
 
-func noteAttachmentImage(appCtx *runtime.Context, attachment *notes.Attachment) *metagen.OpenGraphImage {
+func noteAttachmentImage(rootURL string, attachment *notes.Attachment) *metagen.OpenGraphImage {
 	if attachment == nil {
 		return nil
 	}
@@ -652,7 +617,7 @@ func noteAttachmentImage(appCtx *runtime.Context, attachment *notes.Attachment) 
 		attachment.Width,
 		attachment.Height,
 	)
-	imageURL := absoluteMediaURL(appCtx, thumbURL)
+	imageURL := absoluteMediaURL(rootURL, thumbURL)
 	if imageURL == "" {
 		return nil
 	}
@@ -664,7 +629,7 @@ func noteAttachmentImage(appCtx *runtime.Context, attachment *notes.Attachment) 
 	}
 }
 
-func authorAvatarImage(appCtx *runtime.Context, author *notes.Author) *metagen.OpenGraphImage {
+func authorAvatarImage(rootURL string, author *notes.Author) *metagen.OpenGraphImage {
 	if author == nil || author.Avatar == nil {
 		return nil
 	}
@@ -673,7 +638,7 @@ func authorAvatarImage(appCtx *runtime.Context, author *notes.Author) *metagen.O
 		author.Avatar.Width,
 		author.Avatar.Height,
 	)
-	imageURL := absoluteMediaURL(appCtx, thumbURL)
+	imageURL := absoluteMediaURL(rootURL, thumbURL)
 	if imageURL == "" {
 		return nil
 	}
@@ -685,7 +650,7 @@ func authorAvatarImage(appCtx *runtime.Context, author *notes.Author) *metagen.O
 	}
 }
 
-func absoluteMediaURL(appCtx *runtime.Context, rawURL string) string {
+func absoluteMediaURL(rootURL string, rawURL string) string {
 	trimmed := strings.TrimSpace(rawURL)
 	if trimmed == "" {
 		return ""
@@ -699,20 +664,7 @@ func absoluteMediaURL(appCtx *runtime.Context, rawURL string) string {
 		return parsed.String()
 	}
 
-	root := ""
-	if appCtx != nil {
-		root = strings.TrimSpace(appCtx.RootURL())
-	}
-	return joinRootAndPath(root, parsed.Path)
-}
-
-func absoluteLocalizedURL(appCtx *runtime.Context, locale string, strippedPath string) string {
-	localizedPath := runtime.LocalizeAppPath(locale, strippedPath)
-	root := ""
-	if appCtx != nil {
-		root = strings.TrimSpace(appCtx.RootURL())
-	}
-	return joinRootAndPath(root, localizedPath)
+	return joinRootAndPath(rootURL, parsed.Path)
 }
 
 func joinRootAndPath(rootURL string, routePath string) string {
@@ -749,4 +701,11 @@ func joinRootAndPath(rootURL string, routePath string) string {
 	parsedRoot.RawQuery = ""
 	parsedRoot.Fragment = ""
 	return parsedRoot.String()
+}
+
+func urlString(value *url.URL) string {
+	if value == nil {
+		return ""
+	}
+	return value.String()
 }

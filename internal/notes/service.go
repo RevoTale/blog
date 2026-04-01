@@ -53,7 +53,6 @@ type ListOptions struct {
 type Service struct {
 	client      genqlientgraphql.Client
 	pageSize    int
-	rootURL     string
 	imageLoader imageloader.Loader
 }
 
@@ -144,7 +143,6 @@ type AuthorPageResult struct {
 func NewService(
 	client genqlientgraphql.Client,
 	pageSize int,
-	rootURL string,
 	imageLoader imageloader.Loader,
 ) *Service {
 	if pageSize < 1 {
@@ -154,7 +152,6 @@ func NewService(
 	return &Service{
 		client:      client,
 		pageSize:    pageSize,
-		rootURL:     strings.TrimSpace(rootURL),
 		imageLoader: imageLoader,
 	}
 }
@@ -712,7 +709,12 @@ func (s *Service) GetAuthorPage(
 	}, nil
 }
 
-func (s *Service) GetNoteBySlug(ctx context.Context, locale string, slug string) (*NoteDetail, error) {
+func (s *Service) GetNoteBySlug(
+	ctx context.Context,
+	locale string,
+	slug string,
+	siteRootURLs []string,
+) (*NoteDetail, error) {
 	response, err := gql.NoteBySlug(
 		ctx,
 		s.client,
@@ -733,7 +735,7 @@ func (s *Service) GetNoteBySlug(ctx context.Context, locale string, slug string)
 	translateLinks := mentionTranslateLinks(mentions)
 	markdownOptions := markdownOptionsForLocale(locale, s.imageLoader)
 	markdownOptions.TranslateLinks = translateLinks
-	markdownOptions.RootURL = s.rootURL
+	markdownOptions.RootURLs = siteRootURLs
 	note := NoteDetail{
 		ID:             doc.Id,
 		Slug:           strOr(doc.Slug, slug),

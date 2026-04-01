@@ -13,10 +13,10 @@ import (
 func (Resolver) MetaGenTalesPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	_ TalesParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenTalesPage(ctx, appCtx, r)
+	return seo.MetaGenTalesPage(ctx, appCtx, meta)
 }
 
 func (Resolver) ResolveTalesPage(

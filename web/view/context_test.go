@@ -38,7 +38,7 @@ func TestNewContextRejectsMissingSiteResolver(t *testing.T) {
 	t.Parallel()
 
 	ctx, err := NewContext(Config{
-		Notes:       notes.NewService(nil, 12, "", imageloader.New(false)),
+		Notes:       notes.NewService(nil, 12, imageloader.New(false)),
 		ImageLoader: imageloader.New(false),
 	})
 
@@ -54,7 +54,7 @@ func TestNewContextAcceptsRequiredDependencies(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx, err := NewContext(Config{
-		Notes:        notes.NewService(nil, 12, "", imageloader.New(false)),
+		Notes:        notes.NewService(nil, 12, imageloader.New(false)),
 		SiteResolver: resolver,
 		ImageLoader:  imageloader.New(false),
 	})

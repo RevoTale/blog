@@ -38,6 +38,16 @@ func TestToHTML_NormalizesSameDomainAbsoluteLinks(t *testing.T) {
 	require.NotContains(t, html, `rel="noopener noreferrer"`)
 }
 
+func TestToHTML_NormalizesSameDomainAbsoluteLinksAcrossConfiguredRoots(t *testing.T) {
+	html := string(ToHTML("[same](https://revotale.com/note/a?x=1#k)", Options{
+		RootURLs: []string{"https://mirror.example", "https://revotale.com"},
+	}))
+
+	require.Contains(t, html, `href="/note/a?x=1#k"`)
+	require.Contains(t, html, `target="_blank"`)
+	require.NotContains(t, html, `rel="noopener noreferrer"`)
+}
+
 func TestToHTML_HighlightsCodeBlocks(t *testing.T) {
 	source := "```go\nfmt.Println(\"hello\")\n```"
 	html := string(ToHTML(source, Options{}))

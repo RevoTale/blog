@@ -13,7 +13,7 @@ import (
 func (Resolver) MetaGenRootLayout(
 	_ context.Context,
 	_ *runtime.Context,
-	_ *http.Request,
+	_ framework.MetadataContext,
 ) (metagen.Metadata, error) {
 	return metagen.Metadata{
 		DangerRawHead: []string{runtime.ChromaStyleTag()},
@@ -23,10 +23,10 @@ func (Resolver) MetaGenRootLayout(
 func (Resolver) MetaGenRootPage(
 	ctx context.Context,
 	appCtx *runtime.Context,
-	r *http.Request,
+	meta framework.MetadataContext,
 	_ RootParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenRootPage(ctx, appCtx, r)
+	return seo.MetaGenRootPage(ctx, appCtx, meta)
 }
 
 func (Resolver) ResolveRootPage(

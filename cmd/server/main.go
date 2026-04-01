@@ -37,7 +37,6 @@ func run() error {
 	noteService := notes.NewService(
 		graphqlClient,
 		cfg.PageSize,
-		siteResolver.CanonicalURL(),
 		imageLoader,
 	)
 
