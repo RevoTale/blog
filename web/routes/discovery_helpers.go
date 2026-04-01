@@ -15,6 +15,7 @@ func resolveDiscoveryRootURL(
 	appCtx := runtime.AppContext()
 	resolver := appCtx.SiteResolver()
 	if resolver == nil {
+		
 		return strings.TrimSpace(appCtx.RootURL())
 	}
 
