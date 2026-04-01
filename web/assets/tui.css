@@ -45,34 +45,34 @@
   --code-copy-button-bg-copied: rgba(35, 165, 89, 0.2);
   --code-copy-button-border: #4a4f63;
   --code-copy-button-text: #d6ddff;
-  --topbar-search-border: #323744;
-  --topbar-search-bg-start: rgba(38, 41, 48, 0.9);
-  --topbar-search-bg-end: rgba(29, 31, 37, 0.96);
-  --topbar-search-shadow-inner: rgba(255, 255, 255, 0.03);
-  --topbar-search-shadow-outer: rgba(6, 8, 12, 0.22);
+  --topbar-search-border: var(--divider);
+  --topbar-search-bg-start: rgba(47, 49, 54, 0.92);
+  --topbar-search-bg-end: rgba(47, 49, 54, 0.92);
+  --topbar-search-shadow-inner: rgba(255, 255, 255, 0.02);
+  --topbar-search-shadow-outer: rgba(0, 0, 0, 0);
   --topbar-search-focus-border: #8ea4ff;
-  --topbar-search-focus-bg-start: rgba(41, 44, 52, 0.95);
-  --topbar-search-focus-bg-end: rgba(31, 34, 41, 0.98);
-  --topbar-search-focus-ring: rgba(142, 164, 255, 0.25);
-  --topbar-search-focus-shadow: rgba(9, 12, 17, 0.48);
-  --topbar-search-placeholder: #959ba7;
-  --topbar-search-submit-border: #343946;
-  --topbar-search-submit-bg-start: rgba(52, 57, 68, 0.5);
-  --topbar-search-submit-bg-end: rgba(41, 45, 54, 0.5);
-  --topbar-search-submit-text: #777f8d;
-  --topbar-search-submit-active-border: #4a5161;
-  --topbar-search-submit-active-bg-start: rgba(75, 83, 99, 0.9);
-  --topbar-search-submit-active-bg-end: rgba(60, 67, 81, 0.95);
-  --topbar-search-submit-hover-bg-start: rgba(87, 96, 114, 0.95);
-  --topbar-search-submit-hover-bg-end: rgba(69, 77, 92, 0.98);
-  --topbar-search-submit-focus-ring: rgba(186, 201, 255, 0.38);
-  --topbar-search-clear-border: #3b4150;
-  --topbar-search-clear-bg-start: rgba(46, 51, 61, 0.82);
-  --topbar-search-clear-bg-end: rgba(35, 39, 47, 0.92);
-  --topbar-search-clear-text: #c0c8d7;
-  --topbar-search-clear-hover-text: #e7ecff;
-  --topbar-search-clear-hover-bg-start: rgba(58, 64, 76, 0.92);
-  --topbar-search-clear-hover-bg-end: rgba(44, 49, 60, 0.98);
+  --topbar-search-focus-bg-start: rgba(56, 58, 64, 0.96);
+  --topbar-search-focus-bg-end: rgba(56, 58, 64, 0.96);
+  --topbar-search-focus-ring: rgba(142, 164, 255, 0.18);
+  --topbar-search-focus-shadow: rgba(0, 0, 0, 0);
+  --topbar-search-placeholder: var(--text-muted);
+  --topbar-search-submit-border: rgba(255, 255, 255, 0.06);
+  --topbar-search-submit-bg-start: rgba(255, 255, 255, 0.02);
+  --topbar-search-submit-bg-end: rgba(255, 255, 255, 0.02);
+  --topbar-search-submit-text: var(--text-muted);
+  --topbar-search-submit-active-border: var(--divider);
+  --topbar-search-submit-active-bg-start: var(--bg-hover-soft);
+  --topbar-search-submit-active-bg-end: var(--bg-hover-soft);
+  --topbar-search-submit-hover-bg-start: var(--bg-hover);
+  --topbar-search-submit-hover-bg-end: var(--bg-hover);
+  --topbar-search-submit-focus-ring: rgba(186, 201, 255, 0.28);
+  --topbar-search-clear-border: rgba(255, 255, 255, 0.06);
+  --topbar-search-clear-bg-start: rgba(255, 255, 255, 0.03);
+  --topbar-search-clear-bg-end: rgba(255, 255, 255, 0.03);
+  --topbar-search-clear-text: var(--text-secondary);
+  --topbar-search-clear-hover-text: var(--text-primary);
+  --topbar-search-clear-hover-bg-start: var(--bg-hover-soft);
+  --topbar-search-clear-hover-bg-end: var(--bg-hover-soft);
   --accent-blurple: #5865f2;
   --accent-green: #23a559;
   --focus-ring: #00b0f4;
@@ -128,34 +128,34 @@
     --code-copy-button-bg-copied: rgba(47, 146, 86, 0.2);
     --code-copy-button-border: #a8b7d2;
     --code-copy-button-text: #3e4c63;
-    --topbar-search-border: #c8d4e8;
-    --topbar-search-bg-start: rgba(255, 255, 255, 0.99);
-    --topbar-search-bg-end: rgba(250, 252, 255, 1);
-    --topbar-search-shadow-inner: rgba(255, 255, 255, 0.85);
-    --topbar-search-shadow-outer: rgba(24, 44, 82, 0.06);
+    --topbar-search-border: var(--divider);
+    --topbar-search-bg-start: rgba(255, 255, 255, 0.92);
+    --topbar-search-bg-end: rgba(255, 255, 255, 0.92);
+    --topbar-search-shadow-inner: rgba(255, 255, 255, 0.72);
+    --topbar-search-shadow-outer: rgba(0, 0, 0, 0);
     --topbar-search-focus-border: #6f88f5;
-    --topbar-search-focus-bg-start: rgba(255, 255, 255, 0.99);
-    --topbar-search-focus-bg-end: rgba(244, 248, 254, 0.99);
-    --topbar-search-focus-ring: rgba(111, 136, 245, 0.24);
-    --topbar-search-focus-shadow: rgba(22, 43, 82, 0.15);
-    --topbar-search-placeholder: #7b889d;
-    --topbar-search-submit-border: #ced9eb;
-    --topbar-search-submit-bg-start: rgba(233, 239, 249, 0.7);
-    --topbar-search-submit-bg-end: rgba(219, 228, 243, 0.72);
-    --topbar-search-submit-text: #6c7990;
-    --topbar-search-submit-active-border: #a8b7d2;
-    --topbar-search-submit-active-bg-start: rgba(222, 231, 244, 0.94);
-    --topbar-search-submit-active-bg-end: rgba(207, 218, 236, 0.98);
-    --topbar-search-submit-hover-bg-start: rgba(232, 238, 248, 0.98);
-    --topbar-search-submit-hover-bg-end: rgba(216, 226, 241, 0.98);
-    --topbar-search-submit-focus-ring: rgba(111, 136, 245, 0.34);
-    --topbar-search-clear-border: #cad5e7;
-    --topbar-search-clear-bg-start: rgba(241, 246, 252, 0.9);
-    --topbar-search-clear-bg-end: rgba(230, 238, 249, 0.94);
-    --topbar-search-clear-text: #52627c;
-    --topbar-search-clear-hover-text: #23364e;
-    --topbar-search-clear-hover-bg-start: rgba(232, 239, 249, 0.98);
-    --topbar-search-clear-hover-bg-end: rgba(219, 229, 242, 0.98);
+    --topbar-search-focus-bg-start: rgba(255, 255, 255, 0.98);
+    --topbar-search-focus-bg-end: rgba(255, 255, 255, 0.98);
+    --topbar-search-focus-ring: rgba(111, 136, 245, 0.18);
+    --topbar-search-focus-shadow: rgba(0, 0, 0, 0);
+    --topbar-search-placeholder: var(--text-muted);
+    --topbar-search-submit-border: rgba(82, 98, 124, 0.12);
+    --topbar-search-submit-bg-start: rgba(82, 98, 124, 0.04);
+    --topbar-search-submit-bg-end: rgba(82, 98, 124, 0.04);
+    --topbar-search-submit-text: var(--text-muted);
+    --topbar-search-submit-active-border: var(--divider);
+    --topbar-search-submit-active-bg-start: var(--bg-chip);
+    --topbar-search-submit-active-bg-end: var(--bg-chip);
+    --topbar-search-submit-hover-bg-start: var(--bg-hover);
+    --topbar-search-submit-hover-bg-end: var(--bg-hover);
+    --topbar-search-submit-focus-ring: rgba(111, 136, 245, 0.28);
+    --topbar-search-clear-border: rgba(82, 98, 124, 0.12);
+    --topbar-search-clear-bg-start: rgba(82, 98, 124, 0.04);
+    --topbar-search-clear-bg-end: rgba(82, 98, 124, 0.04);
+    --topbar-search-clear-text: var(--text-secondary);
+    --topbar-search-clear-hover-text: var(--text-primary);
+    --topbar-search-clear-hover-bg-start: var(--bg-hover-soft);
+    --topbar-search-clear-hover-bg-end: var(--bg-hover-soft);
     --accent-blurple: #5164e9;
     --focus-ring: #2a6fff;
     --border-soft: #d2dceb;
@@ -495,8 +495,8 @@ p + p {
 
 .topbar-search {
   min-width: clamp(220px, 32vw, 360px);
-  min-height: 36px;
-  border-radius: 12px;
+  min-height: 38px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--topbar-search-border);
   background:
     linear-gradient(180deg, var(--topbar-search-bg-start), var(--topbar-search-bg-end));
@@ -524,9 +524,9 @@ p + p {
   border: 0;
   background: transparent;
   color: var(--text-primary);
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   line-height: 1.2;
-  padding: 0 0.72rem;
+  padding: 0 0.82rem;
 }
 
 .topbar-search-input::placeholder {
@@ -538,16 +538,17 @@ p + p {
 }
 
 .topbar-search-submit {
-  min-width: 78px;
+  min-width: 72px;
+  padding: 0 0.78rem;
   border: 0;
   border-left: 1px solid var(--topbar-search-submit-border);
   background:
     linear-gradient(180deg, var(--topbar-search-submit-bg-start), var(--topbar-search-submit-bg-end));
   color: var(--topbar-search-submit-text);
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   cursor: not-allowed;
   pointer-events: none;
   transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
@@ -573,7 +574,8 @@ p + p {
 }
 
 .topbar-search-clear {
-  min-width: 58px;
+  min-width: 54px;
+  padding: 0 0.72rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -581,12 +583,16 @@ p + p {
   background:
     linear-gradient(180deg, var(--topbar-search-clear-bg-start), var(--topbar-search-clear-bg-end));
   color: var(--topbar-search-clear-text);
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   text-decoration: none;
   transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.topbar-search-clear:visited {
+  color: var(--topbar-search-clear-text);
 }
 
 .topbar-search-clear:hover {
@@ -1546,7 +1552,7 @@ p + p {
     flex: 1;
     min-width: 0;
     min-height: 40px;
-    border-radius: 11px;
+    border-radius: var(--radius-md);
   }
 
   .app-shell {
