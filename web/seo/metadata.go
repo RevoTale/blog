@@ -1,7 +1,6 @@
 package seo
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -9,38 +8,23 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	webi18n "blog/web/i18n"
+	i18nkeys "blog/web/generated/i18nkeys"
 	"blog/web/view"
 	"github.com/RevoTale/no-js/framework"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	"github.com/RevoTale/no-js/framework/metagen"
 )
 
 func MetaGenRootPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadNotesPage(ctx, appCtx, meta.Request(), framework.EmptyParams{})
+	view, err := runtime.LoadNotesPage(meta.Context(), meta.App(), meta.Request(), framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	cardTitle := localizeSEO(
-		appCtx,
-		view.LocaleCode(),
-		webi18n.KeySeoRootTitle,
-		"Notes - Quick Coding, Experience, Open Source, SEO & Science Insights",
-		nil,
-	)
-	description := localizeSEO(
-		appCtx,
-		view.LocaleCode(),
-		webi18n.KeySeoRootDescription,
-		"Dive into concise notes packed with actionable tips on coding, web-performance, SEO, "+
-			"AI workflows, book takeaways and more-updated regularly on RevoTale.",
-		nil,
-	)
+	cardTitle := i18nkeys.TSeoRootTitle(meta.App().I18n(meta.Request()))
+	description := i18nkeys.TSeoRootDescription(meta.App().I18n(meta.Request()))
 	return notesListingMetadata(
-		appCtx,
 		meta,
 		view,
 		cardTitle,
@@ -52,23 +36,14 @@ func MetaGenRootPage(
 }
 
 func MetaGenTalesPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadNotesTalesPage(ctx, appCtx, meta.Request(), framework.EmptyParams{})
+	view, err := runtime.LoadNotesTalesPage(meta.Context(), meta.App(), meta.Request(), framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	description := localizeSEO(
-		appCtx,
-		view.LocaleCode(),
-		webi18n.KeySeoTalesDescription,
-		"Read long-form tales from the blog feed.",
-		nil,
-	)
+	description := i18nkeys.TSeoTalesDescription(meta.App().I18n(meta.Request()))
 	return notesListingMetadata(
-		appCtx,
 		meta,
 		view,
 		view.PageTitle,
@@ -80,23 +55,14 @@ func MetaGenTalesPage(
 }
 
 func MetaGenMicroTalesPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadNotesMicroTalesPage(ctx, appCtx, meta.Request(), framework.EmptyParams{})
+	view, err := runtime.LoadNotesMicroTalesPage(meta.Context(), meta.App(), meta.Request(), framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	description := localizeSEO(
-		appCtx,
-		view.LocaleCode(),
-		webi18n.KeySeoMicroTalesDescription,
-		"Read short-form micro-tales from the blog feed.",
-		nil,
-	)
+	description := i18nkeys.TSeoMicroTalesDescription(meta.App().I18n(meta.Request()))
 	return notesListingMetadata(
-		appCtx,
 		meta,
 		view,
 		view.PageTitle,
@@ -108,26 +74,17 @@ func MetaGenMicroTalesPage(
 }
 
 func MetaGenTagPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadTagPage(ctx, appCtx, meta.Request(), framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadTagPage(meta.Context(), meta.App(), meta.Request(), framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	description := localizeSEO(
-		appCtx,
-		view.LocaleCode(),
-		webi18n.KeySeoTagDescription,
-		"Browse notes for this tag.",
-		map[string]any{
-			"Tag": strings.TrimSpace(strings.TrimPrefix(view.PageTitle, "#")),
-		},
-	)
+	description := i18nkeys.TSeoTagDescription(meta.App().I18n(meta.Request()), i18nkeys.SeoTagDescriptionArgs{
+		Tag: strings.TrimSpace(strings.TrimPrefix(view.PageTitle, "#")),
+	})
 	return notesListingMetadata(
-		appCtx,
 		meta,
 		view,
 		view.PageTitle,
@@ -139,23 +96,14 @@ func MetaGenTagPage(
 }
 
 func MetaGenChannelsPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadChannelsPage(ctx, appCtx, meta.Request(), framework.EmptyParams{})
+	view, err := runtime.LoadChannelsPage(meta.Context(), meta.App(), meta.Request(), framework.EmptyParams{})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	description := localizeSEO(
-		appCtx,
-		view.LocaleCode(),
-		webi18n.KeySeoChannelsDescription,
-		"Browse available channels and filters for the blog feed.",
-		nil,
-	)
+	description := i18nkeys.TSeoChannelsDescription(meta.App().I18n(meta.Request()))
 	return notesListingMetadata(
-		appCtx,
 		meta,
 		view,
 		view.PageTitle,
@@ -167,17 +115,15 @@ func MetaGenChannelsPage(
 }
 
 func MetaGenAuthorPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadAuthorPage(ctx, appCtx, meta.Request(), framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadAuthorPage(meta.Context(), meta.App(), meta.Request(), framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
 
-	site := siteInfo(appCtx, view.LocaleCode())
+	site := siteInfo(meta.App().I18n(meta.Request()))
 
 	authorName := ""
 	authorSlug := ""
@@ -199,15 +145,9 @@ func MetaGenAuthorPage(
 	}
 	title := titleWithSite(contentTitle, site.Name)
 
-	description := localizeSEO(
-		appCtx,
-		view.LocaleCode(),
-		webi18n.KeySeoAuthorDescription,
-		"Browse notes by this author.",
-		map[string]any{
-			"Author": strings.TrimSpace(view.PageTitle),
-		},
-	)
+	description := i18nkeys.TSeoAuthorDescription(meta.App().I18n(meta.Request()), i18nkeys.SeoAuthorDescriptionArgs{
+		Author: strings.TrimSpace(view.PageTitle),
+	})
 	if view.ActiveAuthor != nil && strings.TrimSpace(view.ActiveAuthor.Bio) != "" {
 		description = strings.TrimSpace(view.ActiveAuthor.Bio)
 	}
@@ -264,17 +204,15 @@ func MetaGenAuthorPage(
 }
 
 func MetaGenNotePage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	slug string,
 ) (metagen.Metadata, error) {
-	view, err := runtime.LoadNotePage(ctx, appCtx, meta.Request(), framework.SlugParams{Slug: slug})
+	view, err := runtime.LoadNotePage(meta.Context(), meta.App(), meta.Request(), framework.SlugParams{Slug: slug})
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
 
-	site := siteInfo(appCtx, view.LocaleCode())
+	site := siteInfo(meta.App().I18n(meta.Request()))
 	contentTitle := strings.TrimSpace(view.Note.MetaTitle)
 	if contentTitle == "" {
 		contentTitle = strings.TrimSpace(view.Note.Title)
@@ -358,8 +296,7 @@ func MetaGenNotePage(
 }
 
 func notesListingMetadata(
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	view runtime.NotesPageView,
 	cardTitle string,
 	description string,
@@ -367,7 +304,7 @@ func notesListingMetadata(
 	robots *metagen.Robots,
 	includeRSS bool,
 ) (metagen.Metadata, error) {
-	site := siteInfo(appCtx, view.LocaleCode())
+	site := siteInfo(meta.App().I18n(meta.Request()))
 	contentTitle := strings.TrimSpace(cardTitle)
 	if contentTitle == "" {
 		contentTitle = strings.TrimSpace(view.PageTitle)
@@ -500,40 +437,16 @@ type siteMetadata struct {
 	Publisher   string
 }
 
-func siteInfo(appCtx *runtime.Context, locale string) siteMetadata {
-	name := localizeSEO(appCtx, locale, webi18n.KeySeoSiteName, "RevoTale", nil)
-	description := localizeSEO(
-		appCtx,
-		locale,
-		webi18n.KeySeoSiteDescription,
-		"A multilingual note feed with tales and micro-tales.",
-		nil,
-	)
-	publisher := localizeSEO(appCtx, locale, webi18n.KeySeoPublisherName, "RevoTale", nil)
+func siteInfo(i18n frameworki18n.Context[i18nkeys.Key]) siteMetadata {
+	name := strings.TrimSpace(i18nkeys.TSeoSiteName(i18n))
+	description := strings.TrimSpace(i18nkeys.TSeoSiteDescription(i18n))
+	publisher := strings.TrimSpace(i18nkeys.TSeoPublisherName(i18n))
 
 	return siteMetadata{
 		Name:        name,
 		Description: description,
 		Publisher:   publisher,
 	}
-}
-
-func localizeSEO(
-	appCtx *runtime.Context,
-	locale string,
-	key webi18n.Key,
-	fallback string,
-	data map[string]any,
-) string {
-	normalizedKey := webi18n.Key(strings.TrimSpace(string(key)))
-	if appCtx == nil {
-		return strings.TrimSpace(fallback)
-	}
-	value := strings.TrimSpace(appCtx.T(locale, normalizedKey, data))
-	if value == "" || value == string(normalizedKey) {
-		return strings.TrimSpace(fallback)
-	}
-	return value
 }
 
 func titleWithSite(pageTitle string, siteName string) string {
@@ -549,7 +462,7 @@ func titleWithSite(pageTitle string, siteName string) string {
 }
 
 func buildAlternates(
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	locale string,
 	alternateTypes map[string]string,
 ) (metagen.Alternates, error) {
@@ -559,7 +472,7 @@ func buildAlternates(
 	return meta.Alternates(locale, alternateTypes)
 }
 
-func notesRSSAlternateTypes(meta framework.MetadataContext, locale string) map[string]string {
+func notesRSSAlternateTypes(meta framework.MetaContext[*runtime.Context], locale string) map[string]string {
 	if meta == nil {
 		return nil
 	}

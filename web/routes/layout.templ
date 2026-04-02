@@ -4,29 +4,29 @@ import (
 	"blog/internal/techstack"
 	"blog/web/view"
 	"blog/web/components"
-	webi18n "blog/web/i18n"
+	i18nkeys "blog/web/generated/i18nkeys"
 	"github.com/RevoTale/no-js/framework/metagen"
 )
 
 templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Component) {
 	<div class="app-shell">
-		<aside class="server-rail" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaWorkspaceNavigation) }>
-			<a class="server-button is-active" href={ runtime.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaBlogHome) }>
+		<aside class="server-rail" aria-label={ i18nkeys.TLayoutAriaWorkspaceNavigation(view.I18n()) }>
+			<a class="server-button is-active" href={ view.I18n().Path("/") } aria-label={ i18nkeys.TLayoutAriaBlogHome(view.I18n()) }>
 				@components.ImageResponsive("server-logo", runtime.StaticAssetURL("revtale-logo.svg"), "RevTale", "lazy", "28px", 28, 28)
 			</a>
 			<span class="server-divider" aria-hidden="true"></span>
-			<a class="server-button" href={ runtime.LocalizeAppPath(view.LocaleCode(), "/") } aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaNotesChannel) }>#</a>
+			<a class="server-button" href={ view.I18n().Path("/") } aria-label={ i18nkeys.TLayoutAriaNotesChannel(view.I18n()) }>#</a>
 		</aside>
 
 		<div class="workspace">
-			<aside class="channel-panel" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaChannelList) }>
+			<aside class="channel-panel" aria-label={ i18nkeys.TLayoutAriaChannelList(view.I18n()) }>
 				<header class="guild-header">
-					<strong>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutGuildBlog) }</strong>
+					<strong>{ i18nkeys.TLayoutGuildBlog(view.I18n()) }</strong>
 					<span class="guild-presence">
 						<span class="presence-dot" aria-hidden="true"></span>
-						<span class="guild-presence-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutGuildOnline) }</span>
+						<span class="guild-presence-label">{ i18nkeys.TLayoutGuildOnline(view.I18n()) }</span>
 					</span>
-					<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutGuildServer) }</span>
+					<span>{ i18nkeys.TLayoutGuildServer(view.I18n()) }</span>
 				</header>
 
 				<div class="channel-scroll">
@@ -35,9 +35,9 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 			</aside>
 
 			<div class="workspace-main">
-				<header class="topbar" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaChannelHeader) }>
+				<header class="topbar" aria-label={ i18nkeys.TLayoutAriaChannelHeader(view.I18n()) }>
 					<div class="topbar-left">
-						<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutChannelsButton) }</a>
+						<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>{ i18nkeys.TLayoutChannelsButton(view.I18n()) }</a>
 						<div class="topbar-title">
 							if view.SidebarCurrentAuthorSlug() != "" {
 								<span class="channel-marker">&#64;</span>
@@ -47,23 +47,23 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 								<span>{ view.SidebarCurrentTagName() }</span>
 							} else if view.SidebarCurrentType() == "long" {
 								<span class="channel-marker">#</span>
-								<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutTitleTales) }</span>
+								<span>{ i18nkeys.TLayoutTitleTales(view.I18n()) }</span>
 							} else if view.SidebarCurrentType() == "short" {
 								<span class="channel-marker">#</span>
-								<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutTitleMicroTales) }</span>
+								<span>{ i18nkeys.TLayoutTitleMicroTales(view.I18n()) }</span>
 							} else {
 								<span class="channel-marker">#</span>
-								<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutTitleAll) }</span>
+								<span>{ i18nkeys.TLayoutTitleAll(view.I18n()) }</span>
 							}
 						</div>
 						<a
 							class="topbar-rss-link"
 							href={ view.RSSFeedURL() }
-							aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyNotesAriaFeed) }
+							aria-label={ i18nkeys.TNotesAriaFeed(view.I18n()) }
 						>RSS</a>
 					</div>
-					<nav class="topbar-nav" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutAriaUtility) }>
-						<form class="topbar-search" role="search" method="get" action={ runtime.LocalizeAppPath(view.LocaleCode(), "/") }>
+					<nav class="topbar-nav" aria-label={ i18nkeys.TLayoutAriaUtility(view.I18n()) }>
+						<form class="topbar-search" role="search" method="get" action={ view.I18n().Path("/") }>
 							if view.SidebarCurrentAuthorSlug() != "" {
 								<input type="hidden" name="author" value={ view.SidebarCurrentAuthorSlug() }/>
 							}
@@ -79,12 +79,12 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 								type="search"
 								name="q"
 								value={ view.LayoutSearchQuery() }
-								placeholder={ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutSearchPlaceholder) }
+								placeholder={ i18nkeys.TLayoutSearchPlaceholder(view.I18n()) }
 								required
 							/>
-							<button class="topbar-search-submit" type="submit">{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutSearchSubmit) }</button>
+							<button class="topbar-search-submit" type="submit">{ i18nkeys.TLayoutSearchSubmit(view.I18n()) }</button>
 							if view.LayoutSearchQuery() != "" {
-								<a class="topbar-search-clear" href={ runtime.BuildNotesFilterURL(view.LocaleCode(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutSearchClear) }</a>
+								<a class="topbar-search-clear" href={ runtime.BuildNotesFilterURL(view.LocaleCode(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>{ i18nkeys.TLayoutSearchClear(view.I18n()) }</a>
 							}
 						</form>
 					</nav>
@@ -95,8 +95,8 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 
 					<footer class="footer">
 						<div class="footer-locales">
-							<span class="footer-locales-label">Switch Language: </span>
-							for _, localeLink := range runtime.FooterLocaleLinks(meta, view.LocaleCode()) {
+							<span class="footer-locales-label">{ i18nkeys.TLayoutFooterLocaleSwitch(view.I18n()) } </span>
+							for _, localeLink := range view.I18n().LocaleLinks(meta.Alternates.Languages) {
 								if localeLink.Active {
 									<span class="footer-locale-link is-active" aria-current="true">{ localeLink.Label }</span>
 								} else {
@@ -105,17 +105,17 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 							}
 						</div>
 						<p>
-							{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterOpensourcePrefix) }
-							<a href="https://github.com/RevoTale/blog" target="_blank" rel="noopener noreferrer">{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterOpensourceLink) }</a>
+							{ i18nkeys.TLayoutFooterOpensourcePrefix(view.I18n()) }
+							<a href="https://github.com/RevoTale/blog" target="_blank" rel="noopener noreferrer">{ i18nkeys.TLayoutFooterOpensourceLink(view.I18n()) }</a>
 						</p>
 						if view.LovelyEyeEnabled() {
 							<p>
-								{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterAnalyticsPrefix) }
-								<a href="https://github.com/RevoTale/lovely-eye" target="_blank" rel="noopener noreferrer">{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterAnalyticsLink) }</a>
+								{ i18nkeys.TLayoutFooterAnalyticsPrefix(view.I18n()) }
+								<a href="https://github.com/RevoTale/lovely-eye" target="_blank" rel="noopener noreferrer">{ i18nkeys.TLayoutFooterAnalyticsLink(view.I18n()) }</a>
 							</p>
 						}
 						<p>
-							{ runtime.Message(view.MessagesMap(), webi18n.KeyLayoutFooterStackPrefix) }
+							{ i18nkeys.TLayoutFooterStackPrefix(view.I18n()) }
 							for idx, pkg := range techstack.Packages() {
 								if idx > 0 {
 									,

@@ -45,8 +45,8 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 			Page: framework.PageModule[*runtime.Context, RootParams, runtime.NotesPageView]{
 				Pattern:     "/",
 				ParseParams: parseRootParams,
-				MetaGenContext: func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params RootParams) (metagen.Metadata, error) {
-					return resolvers.MetaGenRootPage(ctx, appCtx, meta, params)
+				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params RootParams) (metagen.Metadata, error) {
+					return resolvers.MetaGenRootPage(meta, params)
 				},
 				MetaGenName: "route_resolvers.Resolver.MetaGenRootPage",
 				MetaGenChainNames: []string{
@@ -54,11 +54,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					"route_resolvers.Resolver.MetaGenRootPage",
 				},
 				MetaGenContextChain: []framework.PageMetaGenContext[*runtime.Context, RootParams]{
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, _ RootParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenRootLayout(ctx, appCtx, meta)
+					func(meta framework.MetaContext[*runtime.Context], _ RootParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(meta)
 					},
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params RootParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenRootPage(ctx, appCtx, meta, params)
+					func(meta framework.MetaContext[*runtime.Context], params RootParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootPage(meta, params)
 					},
 				},
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params RootParams) (runtime.NotesPageView, error) {
@@ -93,8 +93,8 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 			Page: framework.PageModule[*runtime.Context, AuthorParamSlugParams, runtime.AuthorPageView]{
 				Pattern:     "/author/[slug]",
 				ParseParams: parseAuthorParamSlugParams,
-				MetaGenContext: func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params AuthorParamSlugParams) (metagen.Metadata, error) {
-					return resolvers.MetaGenAuthorParamSlugPage(ctx, appCtx, meta, params)
+				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params AuthorParamSlugParams) (metagen.Metadata, error) {
+					return resolvers.MetaGenAuthorParamSlugPage(meta, params)
 				},
 				MetaGenName: "route_resolvers.Resolver.MetaGenAuthorParamSlugPage",
 				MetaGenChainNames: []string{
@@ -103,16 +103,16 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					"route_resolvers.Resolver.MetaGenAuthorParamSlugPage",
 				},
 				MetaGenContextChain: []framework.PageMetaGenContext[*runtime.Context, AuthorParamSlugParams]{
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, _ AuthorParamSlugParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenRootLayout(ctx, appCtx, meta)
+					func(meta framework.MetaContext[*runtime.Context], _ AuthorParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(meta)
 					},
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params AuthorParamSlugParams) (metagen.Metadata, error) {
+					func(meta framework.MetaContext[*runtime.Context], params AuthorParamSlugParams) (metagen.Metadata, error) {
 						layoutParams := route_resolvers.AuthorParamSlugParams{}
 						layoutParams.Slug = params.Slug
-						return resolvers.MetaGenAuthorParamSlugLayout(ctx, appCtx, meta, layoutParams)
+						return resolvers.MetaGenAuthorParamSlugLayout(meta, layoutParams)
 					},
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params AuthorParamSlugParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenAuthorParamSlugPage(ctx, appCtx, meta, params)
+					func(meta framework.MetaContext[*runtime.Context], params AuthorParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenAuthorParamSlugPage(meta, params)
 					},
 				},
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params AuthorParamSlugParams) (runtime.AuthorPageView, error) {
@@ -148,8 +148,8 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 			Page: framework.PageModule[*runtime.Context, ChannelsParams, runtime.NotesPageView]{
 				Pattern:     "/channels",
 				ParseParams: parseChannelsParams,
-				MetaGenContext: func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params ChannelsParams) (metagen.Metadata, error) {
-					return resolvers.MetaGenChannelsPage(ctx, appCtx, meta, params)
+				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params ChannelsParams) (metagen.Metadata, error) {
+					return resolvers.MetaGenChannelsPage(meta, params)
 				},
 				MetaGenName: "route_resolvers.Resolver.MetaGenChannelsPage",
 				MetaGenChainNames: []string{
@@ -157,11 +157,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					"route_resolvers.Resolver.MetaGenChannelsPage",
 				},
 				MetaGenContextChain: []framework.PageMetaGenContext[*runtime.Context, ChannelsParams]{
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, _ ChannelsParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenRootLayout(ctx, appCtx, meta)
+					func(meta framework.MetaContext[*runtime.Context], _ ChannelsParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(meta)
 					},
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params ChannelsParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenChannelsPage(ctx, appCtx, meta, params)
+					func(meta framework.MetaContext[*runtime.Context], params ChannelsParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenChannelsPage(meta, params)
 					},
 				},
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params ChannelsParams) (runtime.NotesPageView, error) {
@@ -196,8 +196,8 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 			Page: framework.PageModule[*runtime.Context, MicroTalesParams, runtime.NotesPageView]{
 				Pattern:     "/micro-tales",
 				ParseParams: parseMicroTalesParams,
-				MetaGenContext: func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params MicroTalesParams) (metagen.Metadata, error) {
-					return resolvers.MetaGenMicroTalesPage(ctx, appCtx, meta, params)
+				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params MicroTalesParams) (metagen.Metadata, error) {
+					return resolvers.MetaGenMicroTalesPage(meta, params)
 				},
 				MetaGenName: "route_resolvers.Resolver.MetaGenMicroTalesPage",
 				MetaGenChainNames: []string{
@@ -205,11 +205,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					"route_resolvers.Resolver.MetaGenMicroTalesPage",
 				},
 				MetaGenContextChain: []framework.PageMetaGenContext[*runtime.Context, MicroTalesParams]{
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, _ MicroTalesParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenRootLayout(ctx, appCtx, meta)
+					func(meta framework.MetaContext[*runtime.Context], _ MicroTalesParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(meta)
 					},
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params MicroTalesParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenMicroTalesPage(ctx, appCtx, meta, params)
+					func(meta framework.MetaContext[*runtime.Context], params MicroTalesParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenMicroTalesPage(meta, params)
 					},
 				},
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params MicroTalesParams) (runtime.NotesPageView, error) {
@@ -244,8 +244,8 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 			Page: framework.PageModule[*runtime.Context, NoteParamSlugParams, runtime.NotePageView]{
 				Pattern:     "/note/[slug]",
 				ParseParams: parseNoteParamSlugParams,
-				MetaGenContext: func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params NoteParamSlugParams) (metagen.Metadata, error) {
-					return resolvers.MetaGenNoteParamSlugPage(ctx, appCtx, meta, params)
+				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params NoteParamSlugParams) (metagen.Metadata, error) {
+					return resolvers.MetaGenNoteParamSlugPage(meta, params)
 				},
 				MetaGenName: "route_resolvers.Resolver.MetaGenNoteParamSlugPage",
 				MetaGenChainNames: []string{
@@ -253,11 +253,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					"route_resolvers.Resolver.MetaGenNoteParamSlugPage",
 				},
 				MetaGenContextChain: []framework.PageMetaGenContext[*runtime.Context, NoteParamSlugParams]{
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, _ NoteParamSlugParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenRootLayout(ctx, appCtx, meta)
+					func(meta framework.MetaContext[*runtime.Context], _ NoteParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(meta)
 					},
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params NoteParamSlugParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenNoteParamSlugPage(ctx, appCtx, meta, params)
+					func(meta framework.MetaContext[*runtime.Context], params NoteParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenNoteParamSlugPage(meta, params)
 					},
 				},
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params NoteParamSlugParams) (runtime.NotePageView, error) {
@@ -292,8 +292,8 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 			Page: framework.PageModule[*runtime.Context, TagParamSlugParams, runtime.NotesPageView]{
 				Pattern:     "/tag/[slug]",
 				ParseParams: parseTagParamSlugParams,
-				MetaGenContext: func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params TagParamSlugParams) (metagen.Metadata, error) {
-					return resolvers.MetaGenTagParamSlugPage(ctx, appCtx, meta, params)
+				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params TagParamSlugParams) (metagen.Metadata, error) {
+					return resolvers.MetaGenTagParamSlugPage(meta, params)
 				},
 				MetaGenName: "route_resolvers.Resolver.MetaGenTagParamSlugPage",
 				MetaGenChainNames: []string{
@@ -301,11 +301,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					"route_resolvers.Resolver.MetaGenTagParamSlugPage",
 				},
 				MetaGenContextChain: []framework.PageMetaGenContext[*runtime.Context, TagParamSlugParams]{
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, _ TagParamSlugParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenRootLayout(ctx, appCtx, meta)
+					func(meta framework.MetaContext[*runtime.Context], _ TagParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(meta)
 					},
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params TagParamSlugParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenTagParamSlugPage(ctx, appCtx, meta, params)
+					func(meta framework.MetaContext[*runtime.Context], params TagParamSlugParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenTagParamSlugPage(meta, params)
 					},
 				},
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params TagParamSlugParams) (runtime.NotesPageView, error) {
@@ -340,8 +340,8 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 			Page: framework.PageModule[*runtime.Context, TalesParams, runtime.NotesPageView]{
 				Pattern:     "/tales",
 				ParseParams: parseTalesParams,
-				MetaGenContext: func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params TalesParams) (metagen.Metadata, error) {
-					return resolvers.MetaGenTalesPage(ctx, appCtx, meta, params)
+				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params TalesParams) (metagen.Metadata, error) {
+					return resolvers.MetaGenTalesPage(meta, params)
 				},
 				MetaGenName: "route_resolvers.Resolver.MetaGenTalesPage",
 				MetaGenChainNames: []string{
@@ -349,11 +349,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					"route_resolvers.Resolver.MetaGenTalesPage",
 				},
 				MetaGenContextChain: []framework.PageMetaGenContext[*runtime.Context, TalesParams]{
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, _ TalesParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenRootLayout(ctx, appCtx, meta)
+					func(meta framework.MetaContext[*runtime.Context], _ TalesParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenRootLayout(meta)
 					},
-					func(ctx context.Context, appCtx *runtime.Context, meta framework.MetadataContext, params TalesParams) (metagen.Metadata, error) {
-						return resolvers.MetaGenTalesPage(ctx, appCtx, meta, params)
+					func(meta framework.MetaContext[*runtime.Context], params TalesParams) (metagen.Metadata, error) {
+						return resolvers.MetaGenTalesPage(meta, params)
 					},
 				},
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params TalesParams) (runtime.NotesPageView, error) {

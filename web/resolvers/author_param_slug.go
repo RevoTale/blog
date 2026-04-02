@@ -11,21 +11,18 @@ import (
 )
 
 func (Resolver) MetaGenAuthorParamSlugLayout(
-	context.Context,
-	*runtime.Context,
-	framework.MetadataContext,
-	AuthorParamSlugParams,
+	meta framework.MetaContext[*runtime.Context],
+	_ AuthorParamSlugParams,
 ) (metagen.Metadata, error) {
+	_ = meta
 	return metagen.Metadata{}, nil
 }
 
 func (Resolver) MetaGenAuthorParamSlugPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	params AuthorParamSlugParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenAuthorPage(ctx, appCtx, meta, params.Slug)
+	return seo.MetaGenAuthorPage(meta, params.Slug)
 }
 
 func (Resolver) ResolveAuthorParamSlugPage(

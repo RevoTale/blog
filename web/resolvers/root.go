@@ -10,23 +10,18 @@ import (
 	"github.com/RevoTale/no-js/framework/metagen"
 )
 
-func (Resolver) MetaGenRootLayout(
-	_ context.Context,
-	_ *runtime.Context,
-	_ framework.MetadataContext,
-) (metagen.Metadata, error) {
+func (Resolver) MetaGenRootLayout(meta framework.MetaContext[*runtime.Context]) (metagen.Metadata, error) {
+	_ = meta
 	return metagen.Metadata{
 		DangerRawHead: []string{runtime.ChromaStyleTag()},
 	}, nil
 }
 
 func (Resolver) MetaGenRootPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	_ RootParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenRootPage(ctx, appCtx, meta)
+	return seo.MetaGenRootPage(meta)
 }
 
 func (Resolver) ResolveRootPage(

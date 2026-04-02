@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	webi18n "blog/web/i18n"
+	i18nkeys "blog/web/generated/i18nkeys"
 	"blog/web/view"
 	"github.com/a-h/templ"
 )
@@ -178,12 +178,12 @@ func BuildNotesBlogJSONLD(view runtime.NotesPageView) map[string]any {
 		blogPosts = append(blogPosts, post)
 	}
 
-	name := strings.TrimSpace(runtime.Message(view.MessagesMap(), webi18n.KeySeoNotesJSONLDName))
-	if name == "" || name == string(webi18n.KeySeoNotesJSONLDName) {
+	name := strings.TrimSpace(i18nkeys.TSeoNotesJSONLDName(view.I18n()))
+	if name == "" || name == string(i18nkeys.KeySeoNotesJSONLDName) {
 		name = "Notes"
 	}
-	description := strings.TrimSpace(runtime.Message(view.MessagesMap(), webi18n.KeySeoNotesJSONLDDescription))
-	if description == "" || description == string(webi18n.KeySeoNotesJSONLDDescription) {
+	description := strings.TrimSpace(i18nkeys.TSeoNotesJSONLDDescription(view.I18n()))
+	if description == "" || description == string(i18nkeys.KeySeoNotesJSONLDDescription) {
 		description = "Explore a collection of notes on coding, web performance, SEO, AI workflows, and book takeaways."
 	}
 

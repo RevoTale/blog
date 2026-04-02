@@ -11,12 +11,10 @@ import (
 )
 
 func (Resolver) MetaGenMicroTalesPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	_ MicroTalesParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenMicroTalesPage(ctx, appCtx, meta)
+	return seo.MetaGenMicroTalesPage(meta)
 }
 
 func (Resolver) ResolveMicroTalesPage(

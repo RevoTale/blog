@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	webi18n "blog/web/i18n"
+	i18nkeys "blog/web/generated/i18nkeys"
 	"github.com/RevoTale/no-js/framework"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	"github.com/RevoTale/no-js/framework/metagen"
@@ -31,6 +31,7 @@ func LoadNotesPage(
 		view, err := loadNotesListPage(
 			runCtx,
 			appCtx,
+			r,
 			locale,
 			filter,
 			notes.ListOptions{},
@@ -40,7 +41,7 @@ func LoadNotesPage(
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyRoot)
+		view.EmptyStateMessage = i18nkeys.TEmptyRoot(view.I18n())
 		return view, nil
 	})
 }
@@ -60,6 +61,7 @@ func LoadAuthorPage(
 		view, err := loadNotesListPage(
 			runCtx,
 			appCtx,
+			r,
 			locale,
 			filter,
 			notes.ListOptions{RequireAuthor: true},
@@ -69,7 +71,7 @@ func LoadAuthorPage(
 			return AuthorPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyAuthor)
+		view.EmptyStateMessage = i18nkeys.TEmptyAuthor(view.I18n())
 		return AuthorPageView(view), nil
 	})
 }
@@ -89,6 +91,7 @@ func LoadTagPage(
 		view, err := loadNotesListPage(
 			runCtx,
 			appCtx,
+			r,
 			locale,
 			filter,
 			notes.ListOptions{RequireTag: true},
@@ -98,7 +101,7 @@ func LoadTagPage(
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyTag)
+		view.EmptyStateMessage = i18nkeys.TEmptyTag(view.I18n())
 		return view, nil
 	})
 }
@@ -115,12 +118,12 @@ func LoadNotesTalesPage(
 	filter.Type = notes.NoteTypeLong
 	cacheKey := loaderCacheKey("LoadNotesTalesPage", locale, r)
 	return framework.CachedCall(ctx, cacheKey, func(runCtx context.Context) (NotesPageView, error) {
-		view, err := loadNotesListPage(runCtx, appCtx, locale, filter, notes.ListOptions{}, SidebarModeFiltered)
+		view, err := loadNotesListPage(runCtx, appCtx, r, locale, filter, notes.ListOptions{}, SidebarModeFiltered)
 		if err != nil {
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyTales)
+		view.EmptyStateMessage = i18nkeys.TEmptyTales(view.I18n())
 		return view, nil
 	})
 }
@@ -137,12 +140,12 @@ func LoadNotesMicroTalesPage(
 	filter.Type = notes.NoteTypeShort
 	cacheKey := loaderCacheKey("LoadNotesMicroTalesPage", locale, r)
 	return framework.CachedCall(ctx, cacheKey, func(runCtx context.Context) (NotesPageView, error) {
-		view, err := loadNotesListPage(runCtx, appCtx, locale, filter, notes.ListOptions{}, SidebarModeFiltered)
+		view, err := loadNotesListPage(runCtx, appCtx, r, locale, filter, notes.ListOptions{}, SidebarModeFiltered)
 		if err != nil {
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = Message(view.Messages, webi18n.KeyEmptyMicro)
+		view.EmptyStateMessage = i18nkeys.TEmptyMicro(view.I18n())
 		return view, nil
 	})
 }
@@ -157,13 +160,13 @@ func LoadChannelsPage(
 	filter := listFilterFromQuery(r, notes.ListFilter{})
 	cacheKey := loaderCacheKey("LoadChannelsPage", locale, r)
 	return framework.CachedCall(ctx, cacheKey, func(runCtx context.Context) (NotesPageView, error) {
-		view, err := loadNotesListPage(runCtx, appCtx, locale, filter, notes.ListOptions{}, sidebarModeForFilter(filter))
+		view, err := loadNotesListPage(runCtx, appCtx, r, locale, filter, notes.ListOptions{}, sidebarModeForFilter(filter))
 		if err != nil {
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
 
-		view.PageTitle = Message(view.Messages, webi18n.KeyChannelsPageTitle)
+		view.PageTitle = i18nkeys.TChannelsPageTitle(view.I18n())
 		return view, nil
 	})
 }
@@ -171,6 +174,7 @@ func LoadChannelsPage(
 func loadNotesListPage(
 	ctx context.Context,
 	appCtx *Context,
+	r *http.Request,
 	locale string,
 	filter notes.ListFilter,
 	options notes.ListOptions,
@@ -186,7 +190,7 @@ func loadNotesListPage(
 		return NotesPageView{}, err
 	}
 
-	return newNotesPageView(locale, localizedMessages(appCtx, locale), result, mode), nil
+	return newNotesPageView(locale, appCtx.I18n(r), result, mode), nil
 }
 
 func LoadNotePage(
@@ -209,7 +213,7 @@ func LoadNotePage(
 		if err != nil {
 			return NotePageView{}, err
 		}
-		messages := localizedMessages(appCtx, locale)
+		i18n := appCtx.I18n(r)
 		pageTitle := strings.TrimSpace(note.Title)
 
 		return NotePageView{
@@ -217,7 +221,7 @@ func LoadNotePage(
 			RootURL:               rootURL,
 			CanonicalURL:          canonicalURLFromRequest(appCtx, r, locale),
 			IncludeStructuredData: shouldIncludeStructuredData(r),
-			Messages:              messages,
+			I18nCtx:               i18n,
 			PageTitle:             pageTitle,
 			Note:                  *note,
 			SidebarAuthorItems:    uniqueSortedAuthors(note.Authors),

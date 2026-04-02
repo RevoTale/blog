@@ -11,5 +11,16 @@ func Config() frameworki18n.Config {
 		Locales:       append([]string(nil), Locales...),
 		DefaultLocale: DefaultLocale,
 		PrefixMode:    frameworki18n.PrefixAsNeeded,
+		DisplayLabels: map[string]string{
+			"en": "English",
+			"de": "Deutsch",
+			"uk": "Українська",
+			"hi": "हिंदी",
+			"ru": "Русский",
+			"ja": "日本語",
+			"fr": "Français",
+			"es": "Español",
+		},
+		DisplayOrder: []string{"en", "de", "es", "hi", "uk", "ru", "ja", "fr"},
 	}
 }

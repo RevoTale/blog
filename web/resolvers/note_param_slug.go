@@ -11,12 +11,10 @@ import (
 )
 
 func (Resolver) MetaGenNoteParamSlugPage(
-	ctx context.Context,
-	appCtx *runtime.Context,
-	meta framework.MetadataContext,
+	meta framework.MetaContext[*runtime.Context],
 	params NoteParamSlugParams,
 ) (metagen.Metadata, error) {
-	return seo.MetaGenNotePage(ctx, appCtx, meta, params.Slug)
+	return seo.MetaGenNotePage(meta, params.Slug)
 }
 
 func (Resolver) ResolveNoteParamSlugPage(

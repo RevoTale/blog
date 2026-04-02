@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	webi18n "blog/web/i18n"
+	i18nkeys "blog/web/generated/i18nkeys"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
 type SidebarMode string
@@ -17,7 +18,7 @@ const (
 
 type RootLayoutView interface {
 	LocaleCode() string
-	MessagesMap() map[webi18n.Key]string
+	I18n() frameworki18n.Context[i18nkeys.Key]
 	LayoutPageTitle() string
 	LayoutSearchQuery() string
 	LovelyEyeEnabled() bool
@@ -57,7 +58,7 @@ type NotesPageView struct {
 	RootURL               string
 	CanonicalURL          string
 	IncludeStructuredData bool
-	Messages              map[webi18n.Key]string
+	I18nCtx               frameworki18n.Context[i18nkeys.Key]
 	PageTitle             string
 	Filter                notes.ListFilter
 	SidebarMode           SidebarMode
@@ -81,7 +82,7 @@ type NotePageView struct {
 	RootURL               string
 	CanonicalURL          string
 	IncludeStructuredData bool
-	Messages              map[webi18n.Key]string
+	I18nCtx               frameworki18n.Context[i18nkeys.Key]
 	PageTitle             string
 	Note                  notes.NoteDetail
 	SidebarAuthorItems    []notes.Author
@@ -91,12 +92,12 @@ type NotePageView struct {
 
 func newFallbackView(locale string) RootLayoutView {
 	locale = normalizeLocaleForApp(locale)
-	messages := localizedMessages(nil, locale)
+	i18n := fallbackI18nContext(locale)
 
 	return NotesPageView{
 		Locale:      locale,
-		Messages:    messages,
-		PageTitle:   Message(messages, webi18n.KeyNotfoundPageTitle),
+		I18nCtx:     i18n,
+		PageTitle:   i18nkeys.TNotfoundPageTitle(i18n),
 		SidebarMode: SidebarModeRoot,
 		Filter: notes.ListFilter{
 			Type: notes.NoteTypeAll,
@@ -116,8 +117,8 @@ func (v NotesPageView) LocaleCode() string {
 	return normalizeLocaleForApp(v.Locale)
 }
 
-func (v NotesPageView) MessagesMap() map[webi18n.Key]string {
-	return v.Messages
+func (v NotesPageView) I18n() frameworki18n.Context[i18nkeys.Key] {
+	return v.I18nCtx
 }
 
 func (v NotesPageView) LayoutPageTitle() string {
@@ -244,8 +245,8 @@ func (v NotePageView) LocaleCode() string {
 	return normalizeLocaleForApp(v.Locale)
 }
 
-func (v NotePageView) MessagesMap() map[webi18n.Key]string {
-	return v.Messages
+func (v NotePageView) I18n() frameworki18n.Context[i18nkeys.Key] {
+	return v.I18nCtx
 }
 
 func (v NotePageView) LayoutPageTitle() string {
@@ -326,14 +327,14 @@ func (v NotePageView) SidebarTypeURL(noteType notes.NoteType) string {
 
 func newNotesPageView(
 	locale string,
-	messages map[webi18n.Key]string,
+	i18n frameworki18n.Context[i18nkeys.Key],
 	result notes.NotesListResult,
 	mode SidebarMode,
 ) NotesPageView {
 	view := NotesPageView{
 		Locale:      locale,
-		Messages:    messages,
-		PageTitle:   notesPageTitle(messages, result),
+		I18nCtx:     i18n,
+		PageTitle:   notesPageTitle(i18n, result),
 		Filter:      result.ActiveFilter,
 		SidebarMode: mode,
 		Notes:       result.Notes,
@@ -360,7 +361,7 @@ func newNotesPageView(
 	return view
 }
 
-func notesPageTitle(messages map[webi18n.Key]string, result notes.NotesListResult) string {
+func notesPageTitle(i18n frameworki18n.Context[i18nkeys.Key], result notes.NotesListResult) string {
 	if result.ActiveAuthor != nil {
 		return result.ActiveAuthor.Name
 	}
@@ -368,13 +369,13 @@ func notesPageTitle(messages map[webi18n.Key]string, result notes.NotesListResul
 		return "#" + result.ActiveTag.Title
 	}
 	if result.ActiveFilter.Type == notes.NoteTypeLong {
-		return Message(messages, webi18n.KeyLayoutTitleTales)
+		return i18nkeys.TLayoutTitleTales(i18n)
 	}
 	if result.ActiveFilter.Type == notes.NoteTypeShort {
-		return Message(messages, webi18n.KeyLayoutTitleMicroTales)
+		return i18nkeys.TLayoutTitleMicroTales(i18n)
 	}
 
-	return Message(messages, webi18n.KeyLayoutTitleNotes)
+	return i18nkeys.TLayoutTitleNotes(i18n)
 }
 
 func applyContext(view *NotesPageView) {
@@ -389,19 +390,19 @@ func applyContext(view *NotesPageView) {
 		view.ContextDescription = view.ActiveAuthor.Bio
 	case view.ActiveTag != nil:
 		view.ContextTitle = "#" + view.ActiveTag.Title
-		view.ContextSubtitle = Message(view.Messages, webi18n.KeyContextTagSubtitle)
-		view.ContextDescription = Message(view.Messages, webi18n.KeyContextTagDescription)
+		view.ContextSubtitle = i18nkeys.TContextTagSubtitle(view.I18nCtx)
+		view.ContextDescription = i18nkeys.TContextTagDescription(view.I18nCtx)
 	case view.Filter.Type == notes.NoteTypeLong:
-		view.ContextTitle = Message(view.Messages, webi18n.KeyLayoutTitleTales)
-		view.ContextSubtitle = Message(view.Messages, webi18n.KeyContextTypeSubtitle)
-		view.ContextDescription = Message(view.Messages, webi18n.KeyContextLongDescription)
+		view.ContextTitle = i18nkeys.TLayoutTitleTales(view.I18nCtx)
+		view.ContextSubtitle = i18nkeys.TContextTypeSubtitle(view.I18nCtx)
+		view.ContextDescription = i18nkeys.TContextLongDescription(view.I18nCtx)
 	case view.Filter.Type == notes.NoteTypeShort:
-		view.ContextTitle = Message(view.Messages, webi18n.KeyLayoutTitleMicroTales)
-		view.ContextSubtitle = Message(view.Messages, webi18n.KeyContextTypeSubtitle)
-		view.ContextDescription = Message(view.Messages, webi18n.KeyContextShortDescription)
+		view.ContextTitle = i18nkeys.TLayoutTitleMicroTales(view.I18nCtx)
+		view.ContextSubtitle = i18nkeys.TContextTypeSubtitle(view.I18nCtx)
+		view.ContextDescription = i18nkeys.TContextShortDescription(view.I18nCtx)
 	default:
-		view.ContextTitle = Message(view.Messages, webi18n.KeyLayoutTitleNotes)
-		view.ContextSubtitle = Message(view.Messages, webi18n.KeyContextFeed)
+		view.ContextTitle = i18nkeys.TLayoutTitleNotes(view.I18nCtx)
+		view.ContextSubtitle = i18nkeys.TContextFeed(view.I18nCtx)
 		view.ContextDescription = ""
 	}
 }

@@ -3,10 +3,11 @@ package components
 import (
 	"blog/internal/notes"
 	"blog/web/view"
-	webi18n "blog/web/i18n"
+	i18nkeys "blog/web/generated/i18nkeys"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
-templ NoteCard(locale string, messages map[webi18n.Key]string, note notes.NoteSummary) {
+templ NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) {
 	<article class={ runtime.NoteCardClass(note.Attachment != nil) }>
 		<div class="message-avatar">
 			if runtime.HasFirstAuthorAvatar(note.Authors) {
@@ -19,9 +20,9 @@ templ NoteCard(locale string, messages map[webi18n.Key]string, note notes.NoteSu
 		<div class="message-body">
 			<header class="message-head">
 				if runtime.FirstAuthorSlug(note.Authors) != "" {
-					<a href={ runtime.BuildAuthorURL(locale, runtime.FirstAuthorSlug(note.Authors), 1) } class="message-author">{ runtime.FirstAuthorName(note.Authors) }</a>
+					<a href={ runtime.BuildAuthorURL(i18n.Locale(), runtime.FirstAuthorSlug(note.Authors), 1) } class="message-author">{ runtime.FirstAuthorName(note.Authors) }</a>
 				} else {
-					<span class="message-author">{ runtime.Message(messages, webi18n.KeyNoteUnknownAuthor) }</span>
+					<span class="message-author">{ i18nkeys.TNoteUnknownAuthor(i18n) }</span>
 				}
 				if note.PublishedAt != "" {
 					<span class="message-time">{ note.PublishedAt }</span>
@@ -30,18 +31,18 @@ templ NoteCard(locale string, messages map[webi18n.Key]string, note notes.NoteSu
 
 			if note.Title != "" {
 				<h2 class="note-title">
-					<a class="message-title-link" href={ runtime.LocalizeAppPath(locale, "/note/" + note.Slug) }>{ note.Title }</a>
+					<a class="message-title-link" href={ i18n.Path("/note/" + note.Slug) }>{ note.Title }</a>
 				</h2>
 			}
 
 			if note.Excerpt != "" {
-				<a class="message-content message-content-link" href={ runtime.LocalizeAppPath(locale, "/note/" + note.Slug) }>{ note.Excerpt }</a>
+				<a class="message-content message-content-link" href={ i18n.Path("/note/" + note.Slug) }>{ note.Excerpt }</a>
 			}
 
 			if len(note.Tags) > 0 {
 				<ul class="reaction-row">
 					for _, tag := range note.Tags {
-						<li><a class="tag" href={ runtime.BuildTagURL(locale, tag.Name) }>{ "#" + tag.Title }</a></li>
+						<li><a class="tag" href={ runtime.BuildTagURL(i18n.Locale(), tag.Name) }>{ "#" + tag.Title }</a></li>
 					}
 				</ul>
 			}
@@ -53,16 +54,16 @@ templ NoteCard(locale string, messages map[webi18n.Key]string, note notes.NoteSu
 					if note.Attachment.Width > 0 && note.Attachment.Height > 0 {
 						@ImageResponsive("attachment-image", note.Attachment.URL, runtime.AttachmentAltText(note.Attachment.Alt, note.Title), "lazy", "(max-width: 768px) 100vw, 672px", note.Attachment.Width, note.Attachment.Height)
 					} else {
-						<span class="attachment-file">{ runtime.Message(messages, webi18n.KeyNoteAttachmentLabelPrefix) }: { runtime.AttachmentLabel(note.Attachment.Filename) }</span>
+						<span class="attachment-file">{ i18nkeys.TNoteAttachmentLabelPrefix(i18n) }: { runtime.AttachmentLabel(note.Attachment.Filename) }</span>
 					}
 				</a>
 			</div>
 		}
 
 		<footer class="note-card-footer">
-			<a class="note-open-link" href={ runtime.LocalizeAppPath(locale, "/note/" + note.Slug) }>
+			<a class="note-open-link" href={ i18n.Path("/note/" + note.Slug) }>
 				<span class="note-open-badge" aria-hidden="true"></span>
-				<span>{ runtime.Message(messages, webi18n.KeyNoteOpenFull) }</span>
+				<span>{ i18nkeys.TNoteOpenFull(i18n) }</span>
 			</a>
 		</footer>
 	</article>

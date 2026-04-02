@@ -2,7 +2,7 @@ package components
 
 import (
 	"blog/web/view"
-	webi18n "blog/web/i18n"
+	i18nkeys "blog/web/generated/i18nkeys"
 	"strconv"
 )
 
@@ -10,8 +10,8 @@ templ NotesFeed(view runtime.NotesPageView, emptyMessage string) {
 	<section class="context-panel">
 		<h1>{ view.ContextTitle }</h1>
 		if view.ContextSubtitle != "" {
-			if view.ContextSubtitle == runtime.Message(view.MessagesMap(), webi18n.KeyContextFeed) {
-				<p class="muted">{ view.ContextSubtitle } · { runtime.Message(view.MessagesMap(), webi18n.KeyPagerPage) } { strconv.Itoa(view.Pagination.Page) }</p>
+			if view.ContextSubtitle == i18nkeys.TContextFeed(view.I18n()) {
+				<p class="muted">{ view.ContextSubtitle } · { i18nkeys.TPagerPage(view.I18n()) } { strconv.Itoa(view.Pagination.Page) }</p>
 			} else {
 				<p class="muted">{ view.ContextSubtitle }</p>
 			}
@@ -21,10 +21,10 @@ templ NotesFeed(view runtime.NotesPageView, emptyMessage string) {
 		}
 	</section>
 
-	<section class="message-list" aria-label={ runtime.Message(view.MessagesMap(), webi18n.KeyNotesAriaFeed) }>
+	<section class="message-list" aria-label={ i18nkeys.TNotesAriaFeed(view.I18n()) }>
 		if len(view.Notes) > 0 {
 			for _, note := range view.Notes {
-				@NoteCard(view.LocaleCode(), view.MessagesMap(), note)
+				@NoteCard(view.I18n(), note)
 			}
 		} else {
 			<article class="panel empty-state">
@@ -34,7 +34,7 @@ templ NotesFeed(view runtime.NotesPageView, emptyMessage string) {
 	</section>
 
 	<section class="feed-toolbar">
-		<p class="muted">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerPage) } { strconv.Itoa(view.Pagination.Page) } / { strconv.Itoa(view.Pagination.TotalPages) }</p>
+		<p class="muted">{ i18nkeys.TPagerPage(view.I18n()) } { strconv.Itoa(view.Pagination.Page) } / { strconv.Itoa(view.Pagination.TotalPages) }</p>
 		<div class="pager-controls">
 			if view.Pagination.HasPrev {
 				<a
@@ -45,9 +45,9 @@ templ NotesFeed(view runtime.NotesPageView, emptyMessage string) {
 					hx-select="#notes-content"
 					hx-swap="outerHTML"
 					hx-push-url={ view.Pagination.FirstURL }
-				>{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerFirst) }</a>
+				>{ i18nkeys.TPagerFirst(view.I18n()) }</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerFirst) }</span>
+				<span class="pager-link" aria-disabled="true">{ i18nkeys.TPagerFirst(view.I18n()) }</span>
 			}
 			if view.Pagination.HasPrev {
 				<a
@@ -58,9 +58,9 @@ templ NotesFeed(view runtime.NotesPageView, emptyMessage string) {
 					hx-select="#notes-content"
 					hx-swap="outerHTML"
 					hx-push-url={ view.Pagination.PrevURL }
-				>{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerPrev) }</a>
+				>{ i18nkeys.TPagerPrev(view.I18n()) }</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerPrev) }</span>
+				<span class="pager-link" aria-disabled="true">{ i18nkeys.TPagerPrev(view.I18n()) }</span>
 			}
 			if view.Pagination.HasNext {
 				<a
@@ -71,9 +71,9 @@ templ NotesFeed(view runtime.NotesPageView, emptyMessage string) {
 					hx-select="#notes-content"
 					hx-swap="outerHTML"
 					hx-push-url={ view.Pagination.NextURL }
-				>{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerNext) }</a>
+				>{ i18nkeys.TPagerNext(view.I18n()) }</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerNext) }</span>
+				<span class="pager-link" aria-disabled="true">{ i18nkeys.TPagerNext(view.I18n()) }</span>
 			}
 			if view.Pagination.HasNext {
 				<a
@@ -84,14 +84,14 @@ templ NotesFeed(view runtime.NotesPageView, emptyMessage string) {
 					hx-select="#notes-content"
 					hx-swap="outerHTML"
 					hx-push-url={ view.Pagination.LastURL }
-				>{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerLast) }</a>
+				>{ i18nkeys.TPagerLast(view.I18n()) }</a>
 			} else {
-				<span class="pager-link" aria-disabled="true">{ runtime.Message(view.MessagesMap(), webi18n.KeyPagerLast) }</span>
+				<span class="pager-link" aria-disabled="true">{ i18nkeys.TPagerLast(view.I18n()) }</span>
 			}
 		</div>
 	</section>
 
 	<section class="composer" aria-disabled="true">
-		<p>{ runtime.Message(view.MessagesMap(), webi18n.KeyComposerReadOnly) }</p>
+		<p>{ i18nkeys.TComposerReadOnly(view.I18n()) }</p>
 	</section>
 }

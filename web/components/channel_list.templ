@@ -2,26 +2,26 @@ package components
 
 import (
 	"blog/web/view"
-	webi18n "blog/web/i18n"
+	i18nkeys "blog/web/generated/i18nkeys"
 )
 
 templ ChannelList(view runtime.RootLayoutView) {
-	<p class="channel-panel-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionChannels) }</p>
+	<p class="channel-panel-label">{ i18nkeys.TChannelSectionChannels(view.I18n()) }</p>
 	<a class={ runtime.ChannelLinkClass(runtime.SidebarAllActive(view)) } href={ view.SidebarAllURL() }>
 		<span class="channel-prefix">#</span>
-		<span>{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelAll) }</span>
+		<span>{ i18nkeys.TChannelAll(view.I18n()) }</span>
 	</a>
 
-	<p class="channel-panel-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionNoteType) }</p>
+	<p class="channel-panel-label">{ i18nkeys.TChannelSectionNoteType(view.I18n()) }</p>
 	if view.SidebarCurrentType() != "all" {
-		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyTypeURL() }># { runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
+		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyTypeURL() }># { i18nkeys.TChannelAny(view.I18n()) }</a>
 	}
-	<a class={ runtime.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelTales) }</a>
-	<a class={ runtime.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelMicroTales) }</a>
+	<a class={ runtime.ChannelLinkClass(view.SidebarCurrentType() == "long") } href={ view.SidebarTypeURL("long") }>{ i18nkeys.TChannelTales(view.I18n()) }</a>
+	<a class={ runtime.ChannelLinkClass(view.SidebarCurrentType() == "short") } href={ view.SidebarTypeURL("short") }>{ i18nkeys.TChannelMicroTales(view.I18n()) }</a>
 
-	<p class="channel-panel-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionAuthors) }</p>
+	<p class="channel-panel-label">{ i18nkeys.TChannelSectionAuthors(view.I18n()) }</p>
 	if view.SidebarCurrentAuthorSlug() != "" {
-		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyAuthorURL() }># { runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
+		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyAuthorURL() }># { i18nkeys.TChannelAny(view.I18n()) }</a>
 	}
 	for _, author := range view.SidebarAuthors() {
 		<a class={ runtime.ChannelLinkClass(view.SidebarCurrentAuthorSlug() == author.Slug) } href={ view.SidebarAuthorURL(author.Slug) }>
@@ -29,9 +29,9 @@ templ ChannelList(view runtime.RootLayoutView) {
 		</a>
 	}
 
-	<p class="channel-panel-label">{ runtime.Message(view.MessagesMap(), webi18n.KeyChannelSectionTags) }</p>
+	<p class="channel-panel-label">{ i18nkeys.TChannelSectionTags(view.I18n()) }</p>
 	if view.SidebarCurrentTagName() != "" {
-		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyTagURL() }># { runtime.Message(view.MessagesMap(), webi18n.KeyChannelAny) }</a>
+		<a class={ runtime.ChannelLinkClass(false) } href={ view.SidebarAnyTagURL() }># { i18nkeys.TChannelAny(view.I18n()) }</a>
 	}
 	for _, tag := range view.SidebarTags() {
 		<a class={ runtime.ChannelLinkClass(view.SidebarCurrentTagName() == tag.Name) } href={ view.SidebarTagURL(tag.Name) }>

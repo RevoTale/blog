@@ -2,7 +2,7 @@ package appsrc
 
 import "blog/web/view"
 import "blog/web/components"
-import webi18n "blog/web/i18n"
+import i18nkeys "blog/web/generated/i18nkeys"
 import "blog/web/seo"
 
 templ Page(view runtime.NotePageView) {
@@ -11,9 +11,9 @@ templ Page(view runtime.NotePageView) {
 	}
 	<article class="panel note-detail">
 		<header class="note-detail-header">
-			<a class="back-link" href={ runtime.LocalizeAppPath(view.LocaleCode(), "/") }>{ runtime.Message(view.MessagesMap(), webi18n.KeyNoteBack) }</a>
+			<a class="back-link" href={ view.I18n().Path("/") }>{ i18nkeys.TNoteBack(view.I18n()) }</a>
 			if view.Note.PublishedAt != "" {
-				<p class="muted">{ runtime.Message(view.MessagesMap(), webi18n.KeyNotePublishedPrefix) } { view.Note.PublishedAt }</p>
+				<p class="muted">{ i18nkeys.TNotePublishedPrefix(view.I18n()) } { view.Note.PublishedAt }</p>
 			}
 		</header>
 
@@ -51,12 +51,12 @@ templ Page(view runtime.NotePageView) {
 
 		if view.Note.Attachment != nil {
 			<section class="attachment-block attachment-detail">
-				<p class="muted">{ runtime.Message(view.MessagesMap(), webi18n.KeyNoteFeaturedAttachment) }</p>
+				<p class="muted">{ i18nkeys.TNoteFeaturedAttachment(view.I18n()) }</p>
 				<a class="attachment-link" href={ view.Note.Attachment.URL } target="_blank" rel="noopener noreferrer">
 					if view.Note.Attachment.Width > 0 && view.Note.Attachment.Height > 0 {
 						@components.ImageResponsive("attachment-image", view.Note.Attachment.URL, runtime.AttachmentAltText(view.Note.Attachment.Alt, view.Note.Title), "lazy", "(max-width: 768px) 100vw, 672px", view.Note.Attachment.Width, view.Note.Attachment.Height)
 					} else {
-						<span class="attachment-file">{ runtime.Message(view.MessagesMap(), webi18n.KeyNoteAttachmentLabelPrefix) }: { runtime.AttachmentLabel(view.Note.Attachment.Filename) }</span>
+						<span class="attachment-file">{ i18nkeys.TNoteAttachmentLabelPrefix(view.I18n()) }: { runtime.AttachmentLabel(view.Note.Attachment.Filename) }</span>
 					}
 				</a>
 			</section>

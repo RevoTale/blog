@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	webi18n "blog/web/i18n"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
@@ -34,7 +35,14 @@ func WithCanonicalNotesRedirects(next http.Handler) http.Handler {
 }
 
 func canonicalNotesRequestDetails(r *http.Request) (string, string) {
-	cfg, _ := routingConfigValue.Load().(frameworki18n.Config)
+	cfg, err := frameworki18n.NormalizeConfig(webi18n.Config())
+	if err != nil {
+		cfg = frameworki18n.Config{
+			Locales:       []string{"en"},
+			DefaultLocale: "en",
+			PrefixMode:    frameworki18n.PrefixAsNeeded,
+		}
+	}
 	if r == nil || r.URL == nil {
 		return cfg.DefaultLocale, "/"
 	}

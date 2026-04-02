@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,7 +11,9 @@ import (
 
 	"blog/internal/imageloader"
 	"blog/internal/notes"
+	i18nkeys "blog/web/generated/i18nkeys"
 	webi18n "blog/web/i18n"
+	"github.com/RevoTale/no-js/framework"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	frameworksite "github.com/RevoTale/no-js/framework/site"
 )
@@ -24,6 +27,7 @@ type Context struct {
 	lovelyEyeSiteID    string
 	i18nConfig         frameworki18n.Config
 	i18nCatalog        *frameworki18n.Catalog
+	i18nRuntime        *frameworki18n.Runtime[i18nkeys.Key]
 }
 
 type Config struct {
@@ -50,9 +54,12 @@ func NewContext(cfg Config) (*Context, error) {
 	if err != nil {
 		return nil, fmt.Errorf("load i18n catalog: %w", err)
 	}
+	i18nRuntime, err := frameworki18n.NewRuntime(i18nConfig, i18nCatalog, i18nkeys.DefaultMessages)
+	if err != nil {
+		return nil, fmt.Errorf("build i18n runtime: %w", err)
+	}
 
 	Initialize(BootstrapConfig{
-		LocalizationConfig: i18nConfig,
 		ImageLoader:        cfg.ImageLoader,
 		LovelyEyeScriptURL: cfg.LovelyEyeScriptURL,
 		LovelyEyeSiteID:    cfg.LovelyEyeSiteID,
@@ -65,6 +72,7 @@ func NewContext(cfg Config) (*Context, error) {
 		lovelyEyeSiteID:    strings.TrimSpace(cfg.LovelyEyeSiteID),
 		i18nConfig:         i18nConfig,
 		i18nCatalog:        i18nCatalog,
+		i18nRuntime:        i18nRuntime,
 	}, nil
 }
 
@@ -83,12 +91,11 @@ func (ctx *Context) LocalizedPath(locale string, strippedPath string) string {
 	return frameworki18n.LocalizePath(ctx.i18nConfig, locale, strippedPath)
 }
 
-func (ctx *Context) T(locale string, key webi18n.Key, data map[string]any) string {
-	fallback := strings.TrimSpace(webi18n.DefaultMessages[key])
-	if ctx == nil || ctx.i18nCatalog == nil {
-		return fallback
+func (ctx *Context) T(locale string, key i18nkeys.Key, data map[string]any) string {
+	if ctx == nil || ctx.i18nRuntime == nil {
+		return strings.TrimSpace(i18nkeys.DefaultMessages[key])
 	}
-	return ctx.i18nCatalog.Localize(locale, string(key), data, fallback)
+	return ctx.i18nRuntime.Localize(ctx.LocaleFromRequest(locale), key, data)
 }
 
 func (ctx *Context) ResolveRoot(r *http.Request) *url.URL {
@@ -146,4 +153,18 @@ func (ctx *Context) I18nConfig() frameworki18n.Config {
 		return frameworki18n.Config{}
 	}
 	return ctx.i18nConfig
+}
+
+func (ctx *Context) I18n(r *http.Request) frameworki18n.Context[i18nkeys.Key] {
+	if ctx == nil || ctx.i18nRuntime == nil {
+		return nil
+	}
+	return ctx.i18nRuntime.Context(r, ctx.ResolveRoot(r))
+}
+
+func (ctx *Context) MetaContext(reqCtx context.Context, r *http.Request) framework.MetaContext[*Context] {
+	if ctx == nil {
+		return nil
+	}
+	return framework.NewMetaContext(reqCtx, ctx, r)
 }
