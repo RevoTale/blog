@@ -42,7 +42,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
       - name: Build and push Docker image
-        uses: revotale/docker-multi-arch-release-action@v1.3.0
+        uses: revotale/docker-multi-arch-release-action@v1.4.0
         with:
           context: .
           registry: ghcr.io
