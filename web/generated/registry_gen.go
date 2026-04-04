@@ -424,7 +424,7 @@ func NotFoundPage(appCtx *runtime.Context, r *http.Request, notFound framework.N
 	}
 	switch routeID {
 	default:
-		component := r_not_found_root.Page(view, pathValue)
+		component := r_not_found_root.NotFound(view, pathValue)
 		component = r_layout_root.Layout(meta, view, component)
 		return r_root_root.RootLayout(meta, notFound.Locale, component)
 	}
