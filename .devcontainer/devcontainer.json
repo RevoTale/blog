@@ -21,5 +21,13 @@
   "features": {
     "ghcr.io/devcontainers-extra/features/go-task:1": {}
   },
-  "remoteUser": "vscode"
+  "postCreateCommand": "go install github.com/a-h/templ/cmd/templ@v0.3.1001",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "a-h.templ"
+      ]
+    }
+  }
 }
