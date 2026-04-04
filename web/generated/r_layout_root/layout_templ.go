@@ -12,7 +12,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"blog/internal/techstack"
 	"blog/web/components"
-	i18nkeys "blog/web/generated/i18nkeys"
+	i18n "blog/web/generated/i18n"
 	"blog/web/view"
 	"github.com/RevoTale/no-js/framework/metagen"
 )
@@ -43,9 +43,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutAriaWorkspaceNavigation(view.I18n()))
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutAriaWorkspaceNavigation(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 14, Col: 94}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 14, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -69,9 +69,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutAriaBlogHome(view.I18n()))
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutAriaBlogHome(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 15, Col: 123}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 15, Col: 119}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -103,9 +103,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutAriaNotesChannel(view.I18n()))
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutAriaNotesChannel(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 19, Col: 117}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 19, Col: 113}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -116,9 +116,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutAriaChannelList(view.I18n()))
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutAriaChannelList(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 23, Col: 89}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 23, Col: 85}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -129,9 +129,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutGuildBlog(view.I18n()))
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutGuildBlog(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 25, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 25, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -142,9 +142,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
-		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutGuildOnline(view.I18n()))
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutGuildOnline(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 28, Col: 83}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 28, Col: 79}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -155,9 +155,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutGuildServer(view.I18n()))
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutGuildServer(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 30, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 30, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
@@ -176,9 +176,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
-		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutAriaChannelHeader(view.I18n()))
+		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutAriaChannelHeader(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 39, Col: 86}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 39, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -202,9 +202,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var13 string
-		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutChannelsButton(view.I18n()))
+		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutChannelsButton(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 41, Col: 120}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 41, Col: 116}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
@@ -256,9 +256,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var16 string
-			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutTitleTales(view.I18n()))
+			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutTitleTales(view.I18n()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 51, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 51, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -274,9 +274,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutTitleMicroTales(view.I18n()))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutTitleMicroTales(view.I18n()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 54, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 54, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -292,9 +292,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
-			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutTitleAll(view.I18n()))
+			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutTitleAll(view.I18n()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 57, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 57, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -323,9 +323,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var20 string
-		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TNotesAriaFeed(view.I18n()))
+		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TNotesAriaFeed(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 63, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 63, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -336,9 +336,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var21 string
-		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutAriaUtility(view.I18n()))
+		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutAriaUtility(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 66, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 66, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -436,9 +436,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var27 string
-		templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutSearchPlaceholder(view.I18n()))
+		templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutSearchPlaceholder(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 83, Col: 68}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 83, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 		if templ_7745c5c3_Err != nil {
@@ -449,9 +449,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var28 string
-		templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutSearchSubmit(view.I18n()))
+		templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutSearchSubmit(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 86, Col: 101}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 86, Col: 97}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 		if templ_7745c5c3_Err != nil {
@@ -467,9 +467,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var29 templ.SafeURL
-			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildNotesFilterURL(view.LocaleCode(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), ""))
+			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildNotesFilterURL(view.I18n(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), ""))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 88, Col: 189}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 88, Col: 183}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
@@ -480,9 +480,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var30 string
-			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutSearchClear(view.I18n()))
+			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutSearchClear(view.I18n()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 88, Col: 234}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 88, Col: 224}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 			if templ_7745c5c3_Err != nil {
@@ -506,9 +506,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var31 string
-		templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutFooterLocaleSwitch(view.I18n()))
+		templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutFooterLocaleSwitch(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 99, Col: 91}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 99, Col: 87}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 		if templ_7745c5c3_Err != nil {
@@ -588,9 +588,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var36 string
-		templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutFooterOpensourcePrefix(view.I18n()))
+		templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutFooterOpensourcePrefix(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 109, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 109, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 		if templ_7745c5c3_Err != nil {
@@ -601,9 +601,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var37 string
-		templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutFooterOpensourceLink(view.I18n()))
+		templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutFooterOpensourceLink(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 110, Col: 143}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 110, Col: 139}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 		if templ_7745c5c3_Err != nil {
@@ -619,9 +619,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var38 string
-			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutFooterAnalyticsPrefix(view.I18n()))
+			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutFooterAnalyticsPrefix(view.I18n()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 114, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 114, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 			if templ_7745c5c3_Err != nil {
@@ -632,9 +632,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var39 string
-			templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutFooterAnalyticsLink(view.I18n()))
+			templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutFooterAnalyticsLink(view.I18n()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 115, Col: 149}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 115, Col: 145}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 			if templ_7745c5c3_Err != nil {
@@ -650,9 +650,9 @@ func Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Comp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var40 string
-		templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TLayoutFooterStackPrefix(view.I18n()))
+		templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TLayoutFooterStackPrefix(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 119, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_layout_root/layout.templ`, Line: 119, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 		if templ_7745c5c3_Err != nil {

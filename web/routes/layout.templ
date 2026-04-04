@@ -4,29 +4,29 @@ import (
 	"blog/internal/techstack"
 	"blog/web/view"
 	"blog/web/components"
-	i18nkeys "blog/web/generated/i18nkeys"
+	i18n "blog/web/generated/i18n"
 	"github.com/RevoTale/no-js/framework/metagen"
 )
 
 templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Component) {
 	<div class="app-shell">
-		<aside class="server-rail" aria-label={ i18nkeys.TLayoutAriaWorkspaceNavigation(view.I18n()) }>
-			<a class="server-button is-active" href={ view.I18n().Path("/") } aria-label={ i18nkeys.TLayoutAriaBlogHome(view.I18n()) }>
+		<aside class="server-rail" aria-label={ i18n.TLayoutAriaWorkspaceNavigation(view.I18n()) }>
+			<a class="server-button is-active" href={ view.I18n().Path("/") } aria-label={ i18n.TLayoutAriaBlogHome(view.I18n()) }>
 				@components.ImageResponsive("server-logo", runtime.StaticAssetURL("revtale-logo.svg"), "RevTale", "lazy", "28px", 28, 28)
 			</a>
 			<span class="server-divider" aria-hidden="true"></span>
-			<a class="server-button" href={ view.I18n().Path("/") } aria-label={ i18nkeys.TLayoutAriaNotesChannel(view.I18n()) }>#</a>
+			<a class="server-button" href={ view.I18n().Path("/") } aria-label={ i18n.TLayoutAriaNotesChannel(view.I18n()) }>#</a>
 		</aside>
 
 		<div class="workspace">
-			<aside class="channel-panel" aria-label={ i18nkeys.TLayoutAriaChannelList(view.I18n()) }>
+			<aside class="channel-panel" aria-label={ i18n.TLayoutAriaChannelList(view.I18n()) }>
 				<header class="guild-header">
-					<strong>{ i18nkeys.TLayoutGuildBlog(view.I18n()) }</strong>
+					<strong>{ i18n.TLayoutGuildBlog(view.I18n()) }</strong>
 					<span class="guild-presence">
 						<span class="presence-dot" aria-hidden="true"></span>
-						<span class="guild-presence-label">{ i18nkeys.TLayoutGuildOnline(view.I18n()) }</span>
+						<span class="guild-presence-label">{ i18n.TLayoutGuildOnline(view.I18n()) }</span>
 					</span>
-					<span>{ i18nkeys.TLayoutGuildServer(view.I18n()) }</span>
+					<span>{ i18n.TLayoutGuildServer(view.I18n()) }</span>
 				</header>
 
 				<div class="channel-scroll">
@@ -35,9 +35,9 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 			</aside>
 
 			<div class="workspace-main">
-				<header class="topbar" aria-label={ i18nkeys.TLayoutAriaChannelHeader(view.I18n()) }>
+				<header class="topbar" aria-label={ i18n.TLayoutAriaChannelHeader(view.I18n()) }>
 					<div class="topbar-left">
-						<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>{ i18nkeys.TLayoutChannelsButton(view.I18n()) }</a>
+						<a class="mobile-channels-button" href={ view.SidebarChannelsURL() }>{ i18n.TLayoutChannelsButton(view.I18n()) }</a>
 						<div class="topbar-title">
 							if view.SidebarCurrentAuthorSlug() != "" {
 								<span class="channel-marker">&#64;</span>
@@ -47,22 +47,22 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 								<span>{ view.SidebarCurrentTagName() }</span>
 							} else if view.SidebarCurrentType() == "long" {
 								<span class="channel-marker">#</span>
-								<span>{ i18nkeys.TLayoutTitleTales(view.I18n()) }</span>
+								<span>{ i18n.TLayoutTitleTales(view.I18n()) }</span>
 							} else if view.SidebarCurrentType() == "short" {
 								<span class="channel-marker">#</span>
-								<span>{ i18nkeys.TLayoutTitleMicroTales(view.I18n()) }</span>
+								<span>{ i18n.TLayoutTitleMicroTales(view.I18n()) }</span>
 							} else {
 								<span class="channel-marker">#</span>
-								<span>{ i18nkeys.TLayoutTitleAll(view.I18n()) }</span>
+								<span>{ i18n.TLayoutTitleAll(view.I18n()) }</span>
 							}
 						</div>
 						<a
 							class="topbar-rss-link"
 							href={ view.RSSFeedURL() }
-							aria-label={ i18nkeys.TNotesAriaFeed(view.I18n()) }
+							aria-label={ i18n.TNotesAriaFeed(view.I18n()) }
 						>RSS</a>
 					</div>
-					<nav class="topbar-nav" aria-label={ i18nkeys.TLayoutAriaUtility(view.I18n()) }>
+					<nav class="topbar-nav" aria-label={ i18n.TLayoutAriaUtility(view.I18n()) }>
 						<form class="topbar-search" role="search" method="get" action={ view.I18n().Path("/") }>
 							if view.SidebarCurrentAuthorSlug() != "" {
 								<input type="hidden" name="author" value={ view.SidebarCurrentAuthorSlug() }/>
@@ -79,12 +79,12 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 								type="search"
 								name="q"
 								value={ view.LayoutSearchQuery() }
-								placeholder={ i18nkeys.TLayoutSearchPlaceholder(view.I18n()) }
+								placeholder={ i18n.TLayoutSearchPlaceholder(view.I18n()) }
 								required
 							/>
-							<button class="topbar-search-submit" type="submit">{ i18nkeys.TLayoutSearchSubmit(view.I18n()) }</button>
+							<button class="topbar-search-submit" type="submit">{ i18n.TLayoutSearchSubmit(view.I18n()) }</button>
 							if view.LayoutSearchQuery() != "" {
-								<a class="topbar-search-clear" href={ runtime.BuildNotesFilterURL(view.LocaleCode(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>{ i18nkeys.TLayoutSearchClear(view.I18n()) }</a>
+								<a class="topbar-search-clear" href={ runtime.BuildNotesFilterURL(view.I18n(), 1, view.SidebarCurrentAuthorSlug(), view.SidebarCurrentTagName(), view.SidebarCurrentType(), "") }>{ i18n.TLayoutSearchClear(view.I18n()) }</a>
 							}
 						</form>
 					</nav>
@@ -95,7 +95,7 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 
 					<footer class="footer">
 						<div class="footer-locales">
-							<span class="footer-locales-label">{ i18nkeys.TLayoutFooterLocaleSwitch(view.I18n()) } </span>
+							<span class="footer-locales-label">{ i18n.TLayoutFooterLocaleSwitch(view.I18n()) } </span>
 							for _, localeLink := range view.I18n().LocaleLinks(meta.Alternates.Languages) {
 								if localeLink.Active {
 									<span class="footer-locale-link is-active" aria-current="true">{ localeLink.Label }</span>
@@ -105,17 +105,17 @@ templ Layout(meta metagen.Metadata, view runtime.RootLayoutView, child templ.Com
 							}
 						</div>
 						<p>
-							{ i18nkeys.TLayoutFooterOpensourcePrefix(view.I18n()) }
-							<a href="https://github.com/RevoTale/blog" target="_blank" rel="noopener noreferrer">{ i18nkeys.TLayoutFooterOpensourceLink(view.I18n()) }</a>
+							{ i18n.TLayoutFooterOpensourcePrefix(view.I18n()) }
+							<a href="https://github.com/RevoTale/blog" target="_blank" rel="noopener noreferrer">{ i18n.TLayoutFooterOpensourceLink(view.I18n()) }</a>
 						</p>
 						if view.LovelyEyeEnabled() {
 							<p>
-								{ i18nkeys.TLayoutFooterAnalyticsPrefix(view.I18n()) }
-								<a href="https://github.com/RevoTale/lovely-eye" target="_blank" rel="noopener noreferrer">{ i18nkeys.TLayoutFooterAnalyticsLink(view.I18n()) }</a>
+								{ i18n.TLayoutFooterAnalyticsPrefix(view.I18n()) }
+								<a href="https://github.com/RevoTale/lovely-eye" target="_blank" rel="noopener noreferrer">{ i18n.TLayoutFooterAnalyticsLink(view.I18n()) }</a>
 							</p>
 						}
 						<p>
-							{ i18nkeys.TLayoutFooterStackPrefix(view.I18n()) }
+							{ i18n.TLayoutFooterStackPrefix(view.I18n()) }
 							for idx, pkg := range techstack.Packages() {
 								if idx > 0 {
 									,

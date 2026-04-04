@@ -2,7 +2,7 @@ package appsrc
 
 import "blog/web/view"
 import "blog/web/components"
-import i18nkeys "blog/web/generated/i18nkeys"
+import i18n "blog/web/generated/i18n"
 import "blog/web/seo"
 
 templ Page(view runtime.NotePageView) {
@@ -11,9 +11,9 @@ templ Page(view runtime.NotePageView) {
 	}
 	<article class="panel note-detail">
 		<header class="note-detail-header">
-			<a class="back-link" href={ view.I18n().Path("/") }>{ i18nkeys.TNoteBack(view.I18n()) }</a>
+			<a class="back-link" href={ view.I18n().Path("/") }>{ i18n.TNoteBack(view.I18n()) }</a>
 			if view.Note.PublishedAt != "" {
-				<p class="muted">{ i18nkeys.TNotePublishedPrefix(view.I18n()) } { view.Note.PublishedAt }</p>
+				<p class="muted">{ i18n.TNotePublishedPrefix(view.I18n()) } { view.Note.PublishedAt }</p>
 			}
 		</header>
 
@@ -24,7 +24,7 @@ templ Page(view runtime.NotePageView) {
 			if len(view.Note.Authors) > 0 {
 				<section class="author-row">
 					for _, author := range view.Note.Authors {
-						<a href={ runtime.BuildAuthorURL(view.LocaleCode(), author.Slug, 1) } class="author-pill">
+						<a href={ runtime.BuildAuthorURL(view.I18n(), author.Slug, 1) } class="author-pill">
 							if author.Avatar != nil {
 								@components.ImageResponsive("author-avatar", author.Avatar.URL, author.Avatar.Alt, "lazy", "24px", 24, 24)
 							} else {
@@ -40,7 +40,7 @@ templ Page(view runtime.NotePageView) {
 		if len(view.Note.Tags) > 0 {
 			<ul class="reaction-row">
 				for _, tag := range view.Note.Tags {
-					<li><a class="tag" href={ runtime.BuildTagURL(view.LocaleCode(), tag.Name) }>{ "#" + tag.Title }</a></li>
+					<li><a class="tag" href={ runtime.BuildTagURL(view.I18n(), tag.Name) }>{ "#" + tag.Title }</a></li>
 				}
 			</ul>
 		}
@@ -51,12 +51,12 @@ templ Page(view runtime.NotePageView) {
 
 		if view.Note.Attachment != nil {
 			<section class="attachment-block attachment-detail">
-				<p class="muted">{ i18nkeys.TNoteFeaturedAttachment(view.I18n()) }</p>
+				<p class="muted">{ i18n.TNoteFeaturedAttachment(view.I18n()) }</p>
 				<a class="attachment-link" href={ view.Note.Attachment.URL } target="_blank" rel="noopener noreferrer">
 					if view.Note.Attachment.Width > 0 && view.Note.Attachment.Height > 0 {
 						@components.ImageResponsive("attachment-image", view.Note.Attachment.URL, runtime.AttachmentAltText(view.Note.Attachment.Alt, view.Note.Title), "lazy", "(max-width: 768px) 100vw, 672px", view.Note.Attachment.Width, view.Note.Attachment.Height)
 					} else {
-						<span class="attachment-file">{ i18nkeys.TNoteAttachmentLabelPrefix(view.I18n()) }: { runtime.AttachmentLabel(view.Note.Attachment.Filename) }</span>
+						<span class="attachment-file">{ i18n.TNoteAttachmentLabelPrefix(view.I18n()) }: { runtime.AttachmentLabel(view.Note.Attachment.Filename) }</span>
 					}
 				</a>
 			</section>

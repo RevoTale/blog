@@ -34,7 +34,7 @@ func Feed(
 
 	return blogdiscovery.BuildFeedDocument(
 		resolveDiscoveryRootURL(runtime, r),
-		appCtx.I18nConfig(),
+		resolveDiscoveryI18nConfig(runtime),
 		locale,
 		listResult.Notes,
 	), nil

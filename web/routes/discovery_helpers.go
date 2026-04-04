@@ -5,12 +5,26 @@ import (
 
 	runtimeview "blog/web/view"
 	"github.com/RevoTale/no-js/framework"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
 func resolveDiscoveryRootURL(
 	runtime framework.RuntimeContext[*runtimeview.Context],
 	r *http.Request,
 ) string {
-	appCtx := runtime.AppContext()
-	return appCtx.ResolveRootURL(r)
+	root := runtime.ResolveRoot(r)
+	if root == nil {
+		return ""
+	}
+	return root.String()
+}
+
+func resolveDiscoveryI18nConfig(
+	runtime framework.RuntimeContext[*runtimeview.Context],
+) frameworki18n.Config {
+	i18n := runtime.I18n()
+	if i18n == nil {
+		return frameworki18n.Config{}
+	}
+	return i18n.Config()
 }

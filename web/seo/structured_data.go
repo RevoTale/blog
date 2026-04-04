@@ -8,8 +8,9 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	i18nkeys "blog/web/generated/i18nkeys"
+	i18n "blog/web/generated/i18n"
 	"blog/web/view"
+	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	"github.com/a-h/templ"
 )
 
@@ -76,7 +77,7 @@ func BuildNoteJSONLD(view runtime.NotePageView) map[string]any {
 	if canonicalURL == "" {
 		canonicalURL = absoluteLocalizedURLForRoot(
 			view.RootURL,
-			view.LocaleCode(),
+			view.I18n(),
 			"/note/"+strings.TrimSpace(view.Note.Slug),
 		)
 	}
@@ -92,7 +93,7 @@ func BuildNoteJSONLD(view runtime.NotePageView) map[string]any {
 			"@context": "https://schema.org",
 			"@type":    "Person",
 			"name":     name,
-			"url":      absoluteLocalizedURLForRoot(view.RootURL, view.LocaleCode(), "/author/"+strings.TrimSpace(author.Slug)),
+			"url":      absoluteLocalizedURLForRoot(view.RootURL, view.I18n(), "/author/"+strings.TrimSpace(author.Slug)),
 		}
 		if image := authorAvatarImageObject(view.RootURL, author.Avatar); image != nil {
 			person["image"] = image
@@ -121,7 +122,7 @@ func BuildNoteJSONLD(view runtime.NotePageView) map[string]any {
 	if image := pickNoteImageObject(view.RootURL, view.Note.MetaImage, view.Note.Attachment); image != nil {
 		doc["image"] = image
 	}
-	if mentions := structuredDataMentions(view.RootURL, view.LocaleCode(), view.Note.Mentions); len(mentions) > 0 {
+	if mentions := structuredDataMentions(view.RootURL, view.I18n(), view.Note.Mentions); len(mentions) > 0 {
 		doc["mentions"] = mentions
 	}
 
@@ -131,12 +132,12 @@ func BuildNoteJSONLD(view runtime.NotePageView) map[string]any {
 func BuildNotesBlogJSONLD(view runtime.NotesPageView) map[string]any {
 	canonicalURL := strings.TrimSpace(view.CanonicalURL)
 	if canonicalURL == "" {
-		canonicalURL = absoluteLocalizedURLForRoot(view.RootURL, view.LocaleCode(), "/")
+		canonicalURL = absoluteLocalizedURLForRoot(view.RootURL, view.I18n(), "/")
 	}
 
 	blogPosts := make([]map[string]any, 0, len(view.Notes))
 	for _, note := range view.Notes {
-		noteURL := absoluteLocalizedURLForRoot(view.RootURL, view.LocaleCode(), "/note/"+strings.TrimSpace(note.Slug))
+		noteURL := absoluteLocalizedURLForRoot(view.RootURL, view.I18n(), "/note/"+strings.TrimSpace(note.Slug))
 		authors := make([]map[string]any, 0, len(note.Authors))
 		for _, author := range note.Authors {
 			name := strings.TrimSpace(author.Name)
@@ -147,7 +148,7 @@ func BuildNotesBlogJSONLD(view runtime.NotesPageView) map[string]any {
 				"@context": "https://schema.org",
 				"@type":    "Person",
 				"name":     name,
-				"url":      absoluteLocalizedURLForRoot(view.RootURL, view.LocaleCode(), "/author/"+strings.TrimSpace(author.Slug)),
+				"url":      absoluteLocalizedURLForRoot(view.RootURL, view.I18n(), "/author/"+strings.TrimSpace(author.Slug)),
 			})
 		}
 
@@ -172,18 +173,18 @@ func BuildNotesBlogJSONLD(view runtime.NotesPageView) map[string]any {
 		if image := pickNoteImageObject(view.RootURL, note.MetaImage, note.Attachment); image != nil {
 			post["image"] = image
 		}
-		if mentions := structuredDataMentions(view.RootURL, view.LocaleCode(), note.Mentions); len(mentions) > 0 {
+		if mentions := structuredDataMentions(view.RootURL, view.I18n(), note.Mentions); len(mentions) > 0 {
 			post["mentions"] = mentions
 		}
 		blogPosts = append(blogPosts, post)
 	}
 
-	name := strings.TrimSpace(i18nkeys.TSeoNotesJSONLDName(view.I18n()))
-	if name == "" || name == string(i18nkeys.KeySeoNotesJSONLDName) {
+	name := strings.TrimSpace(i18n.TSeoNotesJSONLDName(view.I18n()))
+	if name == "" || name == string(i18n.SeoNotesJSONLDName) {
 		name = "Notes"
 	}
-	description := strings.TrimSpace(i18nkeys.TSeoNotesJSONLDDescription(view.I18n()))
-	if description == "" || description == string(i18nkeys.KeySeoNotesJSONLDDescription) {
+	description := strings.TrimSpace(i18n.TSeoNotesJSONLDDescription(view.I18n()))
+	if description == "" || description == string(i18n.SeoNotesJSONLDDescription) {
 		description = "Explore a collection of notes on coding, web performance, SEO, AI workflows, and book takeaways."
 	}
 
@@ -275,14 +276,18 @@ func attachmentToImageObject(rootURL string, attachment *notes.Attachment) map[s
 	return image
 }
 
-func structuredDataMentions(rootURL string, locale string, mentions []notes.NoteMention) []map[string]any {
+func structuredDataMentions(
+	rootURL string,
+	i18n frameworki18n.Context[i18n.Key],
+	mentions []notes.NoteMention,
+) []map[string]any {
 	if len(mentions) == 0 {
 		return nil
 	}
 
 	out := make([]map[string]any, 0, len(mentions))
 	for _, mention := range mentions {
-		target := absoluteMentionURL(rootURL, locale, mention.URL)
+		target := absoluteMentionURL(rootURL, i18n, mention.URL)
 		if target == "" {
 			continue
 		}
@@ -291,7 +296,7 @@ func structuredDataMentions(rootURL string, locale string, mentions []notes.Note
 	return out
 }
 
-func absoluteMentionURL(rootURL string, locale string, rawURL string) string {
+func absoluteMentionURL(rootURL string, i18n frameworki18n.Context[i18n.Key], rawURL string) string {
 	trimmed := strings.TrimSpace(rawURL)
 	if trimmed == "" {
 		return ""
@@ -307,7 +312,7 @@ func absoluteMentionURL(rootURL string, locale string, rawURL string) string {
 
 	localizedPath := parsed.Path
 	if strings.TrimSpace(localizedPath) != "" {
-		localizedPath = runtime.LocalizeAppPath(locale, localizedPath)
+		localizedPath = localizeStructuredDataPath(i18n, localizedPath)
 	}
 	return joinRootAndPath(rootURL, localizedPath)
 }
@@ -328,14 +333,29 @@ func absoluteMediaURLForRoot(rootURL string, rawURL string) string {
 	return joinRootAndPath(rootURL, parsed.Path)
 }
 
-func absoluteLocalizedURLForRoot(rootURL string, locale string, strippedPath string) string {
-	localizedPath := runtime.LocalizeAppPath(locale, strippedPath)
+func absoluteLocalizedURLForRoot(
+	rootURL string,
+	i18n frameworki18n.Context[i18n.Key],
+	strippedPath string,
+) string {
+	localizedPath := localizeStructuredDataPath(i18n, strippedPath)
 	return joinRootAndPath(rootURL, localizedPath)
+}
+
+func localizeStructuredDataPath(
+	i18n frameworki18n.Context[i18n.Key],
+	strippedPath string,
+) string {
+	normalized := frameworki18n.NormalizePath(strippedPath)
+	if i18n == nil {
+		return normalized
+	}
+	return i18n.Path(normalized)
 }
 
 func authorCanonicalURL(view runtime.AuthorPageView, authorSlug string) string {
 	if canonical := strings.TrimSpace(view.CanonicalURL); canonical != "" {
 		return canonical
 	}
-	return absoluteLocalizedURLForRoot(view.RootURL, view.LocaleCode(), "/author/"+strings.TrimSpace(authorSlug))
+	return absoluteLocalizedURLForRoot(view.RootURL, view.I18n(), "/author/"+strings.TrimSpace(authorSlug))
 }

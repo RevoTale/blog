@@ -67,12 +67,15 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				LoadName:   "route_resolvers.Resolver.ResolveRootPage",
 				Render:     r_page_root.Page,
 				RootLayout: r_root_root.RootLayout,
-				ErrorPage: func(locale string, path string) templ.Component {
-					pathValue := strings.TrimSpace(path)
-					if pathValue == "" {
-						pathValue = "/"
+				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
+					pathValue := "/"
+					if r != nil && r.URL != nil {
+						pathValue = strings.TrimSpace(r.URL.Path)
+						if pathValue == "" {
+							pathValue = "/"
+						}
 					}
-					view := runtime.NewErrorView(locale)
+					view := runtime.NewErrorView(appCtx.I18n(r))
 					meta := metagen.Metadata{
 						Title: view.LayoutPageTitle(),
 						Robots: &metagen.Robots{
@@ -121,12 +124,15 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				LoadName:   "route_resolvers.Resolver.ResolveAuthorParamSlugPage",
 				Render:     r_page_author_param_slug.Page,
 				RootLayout: r_root_root.RootLayout,
-				ErrorPage: func(locale string, path string) templ.Component {
-					pathValue := strings.TrimSpace(path)
-					if pathValue == "" {
-						pathValue = "/"
+				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
+					pathValue := "/"
+					if r != nil && r.URL != nil {
+						pathValue = strings.TrimSpace(r.URL.Path)
+						if pathValue == "" {
+							pathValue = "/"
+						}
 					}
-					view := runtime.NewErrorView(locale)
+					view := runtime.NewErrorView(appCtx.I18n(r))
 					meta := metagen.Metadata{
 						Title: view.LayoutPageTitle(),
 						Robots: &metagen.Robots{
@@ -170,12 +176,15 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				LoadName:   "route_resolvers.Resolver.ResolveChannelsPage",
 				Render:     r_page_channels.Page,
 				RootLayout: r_root_root.RootLayout,
-				ErrorPage: func(locale string, path string) templ.Component {
-					pathValue := strings.TrimSpace(path)
-					if pathValue == "" {
-						pathValue = "/"
+				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
+					pathValue := "/"
+					if r != nil && r.URL != nil {
+						pathValue = strings.TrimSpace(r.URL.Path)
+						if pathValue == "" {
+							pathValue = "/"
+						}
 					}
-					view := runtime.NewErrorView(locale)
+					view := runtime.NewErrorView(appCtx.I18n(r))
 					meta := metagen.Metadata{
 						Title: view.LayoutPageTitle(),
 						Robots: &metagen.Robots{
@@ -218,12 +227,15 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				LoadName:   "route_resolvers.Resolver.ResolveMicroTalesPage",
 				Render:     r_page_micro_tales.Page,
 				RootLayout: r_root_root.RootLayout,
-				ErrorPage: func(locale string, path string) templ.Component {
-					pathValue := strings.TrimSpace(path)
-					if pathValue == "" {
-						pathValue = "/"
+				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
+					pathValue := "/"
+					if r != nil && r.URL != nil {
+						pathValue = strings.TrimSpace(r.URL.Path)
+						if pathValue == "" {
+							pathValue = "/"
+						}
 					}
-					view := runtime.NewErrorView(locale)
+					view := runtime.NewErrorView(appCtx.I18n(r))
 					meta := metagen.Metadata{
 						Title: view.LayoutPageTitle(),
 						Robots: &metagen.Robots{
@@ -266,12 +278,15 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				LoadName:   "route_resolvers.Resolver.ResolveNoteParamSlugPage",
 				Render:     r_page_note_param_slug.Page,
 				RootLayout: r_root_root.RootLayout,
-				ErrorPage: func(locale string, path string) templ.Component {
-					pathValue := strings.TrimSpace(path)
-					if pathValue == "" {
-						pathValue = "/"
+				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
+					pathValue := "/"
+					if r != nil && r.URL != nil {
+						pathValue = strings.TrimSpace(r.URL.Path)
+						if pathValue == "" {
+							pathValue = "/"
+						}
 					}
-					view := runtime.NewErrorView(locale)
+					view := runtime.NewErrorView(appCtx.I18n(r))
 					meta := metagen.Metadata{
 						Title: view.LayoutPageTitle(),
 						Robots: &metagen.Robots{
@@ -314,12 +329,15 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				LoadName:   "route_resolvers.Resolver.ResolveTagParamSlugPage",
 				Render:     r_page_tag_param_slug.Page,
 				RootLayout: r_root_root.RootLayout,
-				ErrorPage: func(locale string, path string) templ.Component {
-					pathValue := strings.TrimSpace(path)
-					if pathValue == "" {
-						pathValue = "/"
+				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
+					pathValue := "/"
+					if r != nil && r.URL != nil {
+						pathValue = strings.TrimSpace(r.URL.Path)
+						if pathValue == "" {
+							pathValue = "/"
+						}
 					}
-					view := runtime.NewErrorView(locale)
+					view := runtime.NewErrorView(appCtx.I18n(r))
 					meta := metagen.Metadata{
 						Title: view.LayoutPageTitle(),
 						Robots: &metagen.Robots{
@@ -362,12 +380,15 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				LoadName:   "route_resolvers.Resolver.ResolveTalesPage",
 				Render:     r_page_tales.Page,
 				RootLayout: r_root_root.RootLayout,
-				ErrorPage: func(locale string, path string) templ.Component {
-					pathValue := strings.TrimSpace(path)
-					if pathValue == "" {
-						pathValue = "/"
+				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
+					pathValue := "/"
+					if r != nil && r.URL != nil {
+						pathValue = strings.TrimSpace(r.URL.Path)
+						if pathValue == "" {
+							pathValue = "/"
+						}
 					}
-					view := runtime.NewErrorView(locale)
+					view := runtime.NewErrorView(appCtx.I18n(r))
 					meta := metagen.Metadata{
 						Title: view.LayoutPageTitle(),
 						Robots: &metagen.Robots{
@@ -387,13 +408,13 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 	}
 }
 
-func NotFoundPage(notFound framework.NotFoundContext) templ.Component {
+func NotFoundPage(appCtx *runtime.Context, r *http.Request, notFound framework.NotFoundContext) templ.Component {
 	pathValue := strings.TrimSpace(notFound.RequestPath)
 	if pathValue == "" {
 		pathValue = "/"
 	}
 	routeID := nearestNotFoundRouteID(notFound)
-	view := runtime.NewNotFoundView(notFound.Locale)
+	view := runtime.NewNotFoundView(appCtx.I18n(r))
 	meta := metagen.Metadata{
 		Title: view.LayoutPageTitle(),
 		Robots: &metagen.Robots{

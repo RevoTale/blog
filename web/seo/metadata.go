@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	i18nkeys "blog/web/generated/i18nkeys"
+	i18n "blog/web/generated/i18n"
 	"blog/web/view"
 	"github.com/RevoTale/no-js/framework"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
@@ -22,8 +22,8 @@ func MetaGenRootPage(
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	cardTitle := i18nkeys.TSeoRootTitle(meta.App().I18n(meta.Request()))
-	description := i18nkeys.TSeoRootDescription(meta.App().I18n(meta.Request()))
+	cardTitle := i18n.TSeoRootTitle(meta.App().I18n(meta.Request()))
+	description := i18n.TSeoRootDescription(meta.App().I18n(meta.Request()))
 	return notesListingMetadata(
 		meta,
 		view,
@@ -42,7 +42,7 @@ func MetaGenTalesPage(
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	description := i18nkeys.TSeoTalesDescription(meta.App().I18n(meta.Request()))
+	description := i18n.TSeoTalesDescription(meta.App().I18n(meta.Request()))
 	return notesListingMetadata(
 		meta,
 		view,
@@ -61,7 +61,7 @@ func MetaGenMicroTalesPage(
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	description := i18nkeys.TSeoMicroTalesDescription(meta.App().I18n(meta.Request()))
+	description := i18n.TSeoMicroTalesDescription(meta.App().I18n(meta.Request()))
 	return notesListingMetadata(
 		meta,
 		view,
@@ -81,7 +81,7 @@ func MetaGenTagPage(
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	description := i18nkeys.TSeoTagDescription(meta.App().I18n(meta.Request()), i18nkeys.SeoTagDescriptionArgs{
+	description := i18n.TSeoTagDescription(meta.App().I18n(meta.Request()), i18n.SeoTagDescriptionArgs{
 		Tag: strings.TrimSpace(strings.TrimPrefix(view.PageTitle, "#")),
 	})
 	return notesListingMetadata(
@@ -102,7 +102,7 @@ func MetaGenChannelsPage(
 	if err != nil {
 		return metagen.Metadata{}, err
 	}
-	description := i18nkeys.TSeoChannelsDescription(meta.App().I18n(meta.Request()))
+	description := i18n.TSeoChannelsDescription(meta.App().I18n(meta.Request()))
 	return notesListingMetadata(
 		meta,
 		view,
@@ -145,7 +145,7 @@ func MetaGenAuthorPage(
 	}
 	title := titleWithSite(contentTitle, site.Name)
 
-	description := i18nkeys.TSeoAuthorDescription(meta.App().I18n(meta.Request()), i18nkeys.SeoAuthorDescriptionArgs{
+	description := i18n.TSeoAuthorDescription(meta.App().I18n(meta.Request()), i18n.SeoAuthorDescriptionArgs{
 		Author: strings.TrimSpace(view.PageTitle),
 	})
 	if view.ActiveAuthor != nil && strings.TrimSpace(view.ActiveAuthor.Bio) != "" {
@@ -437,10 +437,10 @@ type siteMetadata struct {
 	Publisher   string
 }
 
-func siteInfo(i18n frameworki18n.Context[i18nkeys.Key]) siteMetadata {
-	name := strings.TrimSpace(i18nkeys.TSeoSiteName(i18n))
-	description := strings.TrimSpace(i18nkeys.TSeoSiteDescription(i18n))
-	publisher := strings.TrimSpace(i18nkeys.TSeoPublisherName(i18n))
+func siteInfo(i18nCtx frameworki18n.Context[i18n.Key]) siteMetadata {
+	name := strings.TrimSpace(i18n.TSeoSiteName(i18nCtx))
+	description := strings.TrimSpace(i18n.TSeoSiteDescription(i18nCtx))
+	publisher := strings.TrimSpace(i18n.TSeoPublisherName(i18nCtx))
 
 	return siteMetadata{
 		Name:        name,

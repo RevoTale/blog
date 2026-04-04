@@ -18,8 +18,9 @@ func WithCanonicalNotesRedirects(next http.Handler) http.Handler {
 			return
 		}
 
-		locale, strippedPath := canonicalNotesRequestDetails(r)
-		target, ok := CanonicalNotesRedirectURL(locale, strippedPath, r.URL.Query())
+		cfg := canonicalNotesConfig()
+		locale, strippedPath := canonicalNotesRequestDetails(r, cfg)
+		target, ok := CanonicalNotesRedirectURL(cfg, locale, strippedPath, r.URL.Query())
 		if !ok {
 			next.ServeHTTP(w, r)
 			return
@@ -34,15 +35,20 @@ func WithCanonicalNotesRedirects(next http.Handler) http.Handler {
 	})
 }
 
-func canonicalNotesRequestDetails(r *http.Request) (string, string) {
+func canonicalNotesConfig() frameworki18n.Config {
 	cfg, err := frameworki18n.NormalizeConfig(webi18n.Config())
-	if err != nil {
-		cfg = frameworki18n.Config{
-			Locales:       []string{"en"},
-			DefaultLocale: "en",
-			PrefixMode:    frameworki18n.PrefixAsNeeded,
-		}
+	if err == nil {
+		return cfg
 	}
+
+	return frameworki18n.Config{
+		Locales:       []string{"en"},
+		DefaultLocale: "en",
+		PrefixMode:    frameworki18n.PrefixAsNeeded,
+	}
+}
+
+func canonicalNotesRequestDetails(r *http.Request, cfg frameworki18n.Config) (string, string) {
 	if r == nil || r.URL == nil {
 		return cfg.DefaultLocale, "/"
 	}

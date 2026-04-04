@@ -21,7 +21,7 @@ tasks:
       - |
         set -euo pipefail
         templ_files="$(find web -type f -name '*_templ.go' | sort)"
-        git diff --exit-code -- go.mod go.sum internal/cmsgraphql/generated.go internal/techstack/generated.go web/resolvers/generated.go web/generated/registry_gen.go web/generated/discovery_gen.go web/generated/bundle_gen.go $templ_files
+        git diff --exit-code -- go.mod go.sum internal/cmsgraphql/generated.go internal/techstack/generated.go web/resolvers/generated.go web/generated/registry_gen.go web/generated/discovery_gen.go web/generated/bundle_gen.go web/generated/i18n/keys_gen.go web/generated/i18n/messages/bundle_gen.go $templ_files
 
   go:fmt:
     desc: Format Go sources

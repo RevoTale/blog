@@ -5,7 +5,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	i18nkeys "blog/web/generated/i18nkeys"
+	generatedi18n "blog/web/generated/i18n"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +17,7 @@ type localeEntry struct {
 func TestValidateMessageKeyParityPassesForMatchingKeySets(t *testing.T) {
 	t.Parallel()
 
-	payload := buildLocalePayload(t, keysToStrings(i18nkeys.AllKeys))
+	payload := buildLocalePayload(t, keysToStrings(generatedi18n.Keys))
 	filesystem := fstest.MapFS{
 		"messages/active.en.json": &fstest.MapFile{Data: payload},
 		"messages/active.de.json": &fstest.MapFile{Data: payload},
@@ -33,7 +33,7 @@ func TestValidateMessageKeyParityPassesForMatchingKeySets(t *testing.T) {
 func TestValidateMessageKeyParityRejectsMissingKey(t *testing.T) {
 	t.Parallel()
 
-	keys := keysToStrings(i18nkeys.AllKeys)
+	keys := keysToStrings(generatedi18n.Keys)
 	payload := buildLocalePayload(t, keys[1:])
 	filesystem := fstest.MapFS{
 		"messages/active.en.json": &fstest.MapFile{Data: payload},
@@ -47,7 +47,7 @@ func TestValidateMessageKeyParityRejectsMissingKey(t *testing.T) {
 func TestValidateMessageKeyParityRejectsExtraKey(t *testing.T) {
 	t.Parallel()
 
-	keys := keysToStrings(i18nkeys.AllKeys)
+	keys := keysToStrings(generatedi18n.Keys)
 	keys = append(keys, "extra.invalidKey")
 	payload := buildLocalePayload(t, keys)
 	filesystem := fstest.MapFS{
@@ -62,7 +62,7 @@ func TestValidateMessageKeyParityRejectsExtraKey(t *testing.T) {
 func TestValidateMessageKeyParityRejectsDuplicateIDs(t *testing.T) {
 	t.Parallel()
 
-	keys := keysToStrings(i18nkeys.AllKeys)
+	keys := keysToStrings(generatedi18n.Keys)
 	entries := []localeEntry{
 		{ID: keys[0], Translation: "first"},
 		{ID: keys[0], Translation: "second"},
@@ -94,7 +94,7 @@ func buildLocalePayload(t *testing.T, keys []string) []byte {
 	return payload
 }
 
-func keysToStrings(keys []i18nkeys.Key) []string {
+func keysToStrings(keys []generatedi18n.Key) []string {
 	out := make([]string, 0, len(keys))
 	for _, key := range keys {
 		out = append(out, string(key))

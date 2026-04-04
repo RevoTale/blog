@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "blog/web/view"
 import "blog/web/components"
-import i18nkeys "blog/web/generated/i18nkeys"
+import i18n "blog/web/generated/i18n"
 import "blog/web/seo"
 
 func Page(view runtime.NotePageView) templ.Component {
@@ -59,9 +59,9 @@ func Page(view runtime.NotePageView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TNoteBack(view.I18n()))
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TNoteBack(view.I18n()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 15, Col: 88}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 15, Col: 84}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -77,9 +77,9 @@ func Page(view runtime.NotePageView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TNotePublishedPrefix(view.I18n()))
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TNotePublishedPrefix(view.I18n()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 17, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 17, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -92,7 +92,7 @@ func Page(view runtime.NotePageView) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(view.Note.PublishedAt)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 17, Col: 91}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 17, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -137,9 +137,9 @@ func Page(view runtime.NotePageView) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 templ.SafeURL
-				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildAuthorURL(view.LocaleCode(), author.Slug, 1))
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildAuthorURL(view.I18n(), author.Slug, 1))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 28, Col: 73}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 28, Col: 67}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -198,9 +198,9 @@ func Page(view runtime.NotePageView) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var9 templ.SafeURL
-				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildTagURL(view.LocaleCode(), tag.Name))
+				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildTagURL(view.I18n(), tag.Name))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 44, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 44, Col: 73}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -213,7 +213,7 @@ func Page(view runtime.NotePageView) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("#" + tag.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 44, Col: 99}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 44, Col: 93}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -247,9 +247,9 @@ func Page(view runtime.NotePageView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TNoteFeaturedAttachment(view.I18n()))
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TNoteFeaturedAttachment(view.I18n()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 55, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 55, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -283,9 +283,9 @@ func Page(view runtime.NotePageView) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var13 string
-				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TNoteAttachmentLabelPrefix(view.I18n()))
+				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TNoteAttachmentLabelPrefix(view.I18n()))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 60, Col: 86}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 60, Col: 82}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -298,7 +298,7 @@ func Page(view runtime.NotePageView) templ.Component {
 				var templ_7745c5c3_Var14 string
 				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.AttachmentLabel(view.Note.Attachment.Filename))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 60, Col: 146}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `generated/r_page_note_param_slug/page.templ`, Line: 60, Col: 142}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 				if templ_7745c5c3_Err != nil {

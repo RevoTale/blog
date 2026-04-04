@@ -4,15 +4,15 @@ package r_page_channels
 import (
 	"blog/web/view"
 	"blog/web/components"
-	i18nkeys "blog/web/generated/i18nkeys"
+	i18n "blog/web/generated/i18n"
 )
 
 templ Page(view runtime.NotesPageView) {
 	<section class="channels-page">
 		<header class="channels-page-header channels-desktop-hint">
-			<h1>{ i18nkeys.TChannelsPageTitle(view.I18n()) }</h1>
-			<p class="muted">{ i18nkeys.TChannelsPageHint(view.I18n()) }</p>
-			<a class="back-link channels-back-button" href={ runtime.BuildNotesFilterURL(view.LocaleCode(), 1, view.Filter.AuthorSlug, view.Filter.TagName, view.Filter.Type, view.Filter.Query) }>{ i18nkeys.TChannelsPageBack(view.I18n()) }</a>
+			<h1>{ i18n.TChannelsPageTitle(view.I18n()) }</h1>
+			<p class="muted">{ i18n.TChannelsPageHint(view.I18n()) }</p>
+			<a class="back-link channels-back-button" href={ runtime.BuildNotesFilterURL(view.I18n(), 1, view.Filter.AuthorSlug, view.Filter.TagName, view.Filter.Type, view.Filter.Query) }>{ i18n.TChannelsPageBack(view.I18n()) }</a>
 		</header>
 
 		<section class="channel-panel-standalone channels-mobile-panel">

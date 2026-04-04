@@ -9,12 +9,12 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"blog/internal/notes"
-	i18nkeys "blog/web/generated/i18nkeys"
+	i18n "blog/web/generated/i18n"
 	"blog/web/view"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 )
 
-func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) templ.Component {
+func NoteCard(i18nCtx frameworki18n.Context[i18n.Key], note notes.NoteSummary) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -78,9 +78,9 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 templ.SafeURL
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildAuthorURL(i18n.Locale(), runtime.FirstAuthorSlug(note.Authors), 1))
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildAuthorURL(i18nCtx, runtime.FirstAuthorSlug(note.Authors), 1))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 23, Col: 94}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 23, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -93,7 +93,7 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.FirstAuthorName(note.Authors))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 23, Col: 159}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 23, Col: 153}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -109,9 +109,9 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TNoteUnknownAuthor(i18n))
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TNoteUnknownAuthor(i18nCtx))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 25, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 25, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -151,9 +151,9 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 templ.SafeURL
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(i18n.Path("/note/" + note.Slug))
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(i18nCtx.Path("/note/" + note.Slug))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 34, Col: 73}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 34, Col: 76}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -166,7 +166,7 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(note.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 34, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 34, Col: 91}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -183,9 +183,9 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 templ.SafeURL
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinURLErrs(i18n.Path("/note/" + note.Slug))
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinURLErrs(i18nCtx.Path("/note/" + note.Slug))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 39, Col: 90}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 39, Col: 93}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -198,7 +198,7 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(note.Excerpt)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 39, Col: 107}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 39, Col: 110}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -220,9 +220,9 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var12 templ.SafeURL
-				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildTagURL(i18n.Locale(), tag.Name))
+				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinURLErrs(runtime.BuildTagURL(i18nCtx, tag.Name))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 45, Col: 76}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 45, Col: 70}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -235,7 +235,7 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 				var templ_7745c5c3_Var13 string
 				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs("#" + tag.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 45, Col: 96}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 45, Col: 90}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -284,9 +284,9 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var15 string
-				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TNoteAttachmentLabelPrefix(i18n))
+				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TNoteAttachmentLabelPrefix(i18nCtx))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 57, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 57, Col: 78}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 				if templ_7745c5c3_Err != nil {
@@ -299,7 +299,7 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 				var templ_7745c5c3_Var16 string
 				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(runtime.AttachmentLabel(note.Attachment.Filename))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 57, Col: 134}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 57, Col: 133}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
@@ -320,9 +320,9 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var17 templ.SafeURL
-		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinURLErrs(i18n.Path("/note/" + note.Slug))
+		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinURLErrs(i18nCtx.Path("/note/" + note.Slug))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 64, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 64, Col: 70}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -333,9 +333,9 @@ func NoteCard(i18n frameworki18n.Context[i18nkeys.Key], note notes.NoteSummary) 
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var18 string
-		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(i18nkeys.TNoteOpenFull(i18n))
+		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(i18n.TNoteOpenFull(i18nCtx))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 66, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/note_card.templ`, Line: 66, Col: 39}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {

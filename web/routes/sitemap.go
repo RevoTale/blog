@@ -14,8 +14,7 @@ func Sitemap(
 	runtime framework.RuntimeContext[*runtimeview.Context],
 	r *http.Request,
 ) ([]frameworkdiscovery.SitemapEntry, error) {
-	appCtx := runtime.AppContext()
-	return blogdiscovery.BuildRootSitemapEntries(resolveDiscoveryRootURL(runtime, r), appCtx.I18nConfig())
+	return blogdiscovery.BuildRootSitemapEntries(resolveDiscoveryRootURL(runtime, r), resolveDiscoveryI18nConfig(runtime))
 }
 
 func GenerateSitemaps(
@@ -31,7 +30,7 @@ func GenerateSitemaps(
 	return blogdiscovery.BuildSitemapIDs(
 		r.Context(),
 		resolveDiscoveryRootURL(runtime, r),
-		appCtx.I18nConfig(),
+		resolveDiscoveryI18nConfig(runtime),
 		service,
 		0,
 		0,
@@ -52,7 +51,7 @@ func SitemapByID(
 	return blogdiscovery.BuildSitemapEntriesByID(
 		r.Context(),
 		resolveDiscoveryRootURL(runtime, r),
-		appCtx.I18nConfig(),
+		resolveDiscoveryI18nConfig(runtime),
 		service,
 		id,
 		0,

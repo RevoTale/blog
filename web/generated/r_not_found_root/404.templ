@@ -3,22 +3,22 @@ package r_not_found_root
 
 import (
 	"blog/web/view"
-	i18nkeys "blog/web/generated/i18nkeys"
+	i18n "blog/web/generated/i18n"
 )
 
 templ Page(view runtime.RootLayoutView, path string) {
 	<section class="not-found-page">
 		<article class="not-found-card panel">
-			<p class="not-found-kicker">{ i18nkeys.TNotfoundKicker(view.I18n()) }</p>
-			<h1 class="not-found-title">{ i18nkeys.TNotfoundTitle(view.I18n()) }</h1>
+			<p class="not-found-kicker">{ i18n.TNotfoundKicker(view.I18n()) }</p>
+			<h1 class="not-found-title">{ i18n.TNotfoundTitle(view.I18n()) }</h1>
 			<p class="not-found-summary">
-				{ i18nkeys.TNotfoundSummaryPrefix(view.I18n()) }
+				{ i18n.TNotfoundSummaryPrefix(view.I18n()) }
 				<code class="not-found-path">{ path }</code>
-				{ i18nkeys.TNotfoundSummarySuffix(view.I18n()) }
+				{ i18n.TNotfoundSummarySuffix(view.I18n()) }
 			</p>
 			<div class="not-found-actions">
-				<a class="channels-back-button" href={ view.I18n().Path("/") }>{ i18nkeys.TNotfoundBack(view.I18n()) }</a>
-				<a class="channels-back-button not-found-alt-action" href={ view.I18n().Path("/channels") }>{ i18nkeys.TNotfoundOpenChannels(view.I18n()) }</a>
+				<a class="channels-back-button" href={ view.I18n().Path("/") }>{ i18n.TNotfoundBack(view.I18n()) }</a>
+				<a class="channels-back-button not-found-alt-action" href={ view.I18n().Path("/channels") }>{ i18n.TNotfoundOpenChannels(view.I18n()) }</a>
 			</div>
 		</article>
 	</section>

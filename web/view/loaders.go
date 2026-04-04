@@ -8,7 +8,8 @@ import (
 	"strings"
 
 	"blog/internal/notes"
-	i18nkeys "blog/web/generated/i18nkeys"
+	i18n "blog/web/generated/i18n"
+	messages "blog/web/generated/i18n/messages"
 	"github.com/RevoTale/no-js/framework"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
 	"github.com/RevoTale/no-js/framework/metagen"
@@ -41,7 +42,7 @@ func LoadNotesPage(
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = i18nkeys.TEmptyRoot(view.I18n())
+		view.EmptyStateMessage = i18n.TEmptyRoot(view.I18n())
 		return view, nil
 	})
 }
@@ -71,7 +72,7 @@ func LoadAuthorPage(
 			return AuthorPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = i18nkeys.TEmptyAuthor(view.I18n())
+		view.EmptyStateMessage = i18n.TEmptyAuthor(view.I18n())
 		return AuthorPageView(view), nil
 	})
 }
@@ -101,7 +102,7 @@ func LoadTagPage(
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = i18nkeys.TEmptyTag(view.I18n())
+		view.EmptyStateMessage = i18n.TEmptyTag(view.I18n())
 		return view, nil
 	})
 }
@@ -123,7 +124,7 @@ func LoadNotesTalesPage(
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = i18nkeys.TEmptyTales(view.I18n())
+		view.EmptyStateMessage = i18n.TEmptyTales(view.I18n())
 		return view, nil
 	})
 }
@@ -145,7 +146,7 @@ func LoadNotesMicroTalesPage(
 			return NotesPageView{}, err
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
-		view.EmptyStateMessage = i18nkeys.TEmptyMicro(view.I18n())
+		view.EmptyStateMessage = i18n.TEmptyMicro(view.I18n())
 		return view, nil
 	})
 }
@@ -166,7 +167,7 @@ func LoadChannelsPage(
 		}
 		applyStructuredDataContextForNotesView(&view, appCtx, r, locale)
 
-		view.PageTitle = i18nkeys.TChannelsPageTitle(view.I18n())
+		view.PageTitle = i18n.TChannelsPageTitle(view.I18n())
 		return view, nil
 	})
 }
@@ -288,7 +289,7 @@ func BuildRSSFeedURL(
 	authorSlug = strings.TrimSpace(authorSlug)
 	tagName = strings.TrimSpace(tagName)
 	searchQuery = strings.TrimSpace(searchQuery)
-	locale = normalizeLocaleForApp(locale)
+	locale = normalizeLocaleCode(locale)
 
 	q := make(url.Values)
 	q.Set("locale", locale)
@@ -312,7 +313,55 @@ func BuildRSSFeedURL(
 }
 
 func BuildNotesFilterURL(
+	i18n frameworki18n.Context[i18n.Key],
+	page int,
+	authorSlug string,
+	tagName string,
+	noteType notes.NoteType,
+	searchQuery string,
+) string {
+	return buildNotesFilterURLWithLocalizer(
+		func(strippedPath string) string {
+			return localizePath(i18n, strippedPath)
+		},
+		func(strippedPath string, query url.Values) string {
+			return buildLocalizedPathWithQuery(i18n, strippedPath, query)
+		},
+		page,
+		authorSlug,
+		tagName,
+		noteType,
+		searchQuery,
+	)
+}
+
+func buildNotesFilterURLForConfig(
+	cfg frameworki18n.Config,
 	locale string,
+	page int,
+	authorSlug string,
+	tagName string,
+	noteType notes.NoteType,
+	searchQuery string,
+) string {
+	return buildNotesFilterURLWithLocalizer(
+		func(strippedPath string) string {
+			return localizePathForConfig(cfg, locale, strippedPath)
+		},
+		func(strippedPath string, query url.Values) string {
+			return buildLocalizedPathWithConfigAndQuery(cfg, locale, strippedPath, query)
+		},
+		page,
+		authorSlug,
+		tagName,
+		noteType,
+		searchQuery,
+	)
+}
+
+func buildNotesFilterURLWithLocalizer(
+	localize func(strippedPath string) string,
+	localizeWithQuery func(strippedPath string, query url.Values) string,
 	page int,
 	authorSlug string,
 	tagName string,
@@ -331,12 +380,12 @@ func BuildNotesFilterURL(
 	canonicalPath := canonicalNotesListingPath(authorSlug, tagName, noteType)
 	if canonicalPath != "" && searchQuery == "" {
 		if page == 1 {
-			return LocalizeAppPath(locale, canonicalPath)
+			return localize(canonicalPath)
 		}
 
 		q := make(url.Values)
 		q.Set("page", strconv.Itoa(page))
-		return buildLocalizedPathWithQuery(locale, canonicalPath, q)
+		return localizeWithQuery(canonicalPath, q)
 	}
 
 	q := make(url.Values)
@@ -356,15 +405,19 @@ func BuildNotesFilterURL(
 		q.Set("q", searchQuery)
 	}
 
-	encoded := q.Encode()
-	if encoded == "" {
-		return LocalizeAppPath(locale, "/")
+	if q.Encode() == "" {
+		return localize("/")
 	}
 
-	return buildLocalizedPathWithQuery(locale, "/", q)
+	return localizeWithQuery("/", q)
 }
 
-func CanonicalNotesRedirectURL(locale string, strippedPath string, query url.Values) (string, bool) {
+func CanonicalNotesRedirectURL(
+	cfg frameworki18n.Config,
+	locale string,
+	strippedPath string,
+	query url.Values,
+) (string, bool) {
 	if !queryContainsOnlyCanonicalNotesParams(query) {
 		return "", false
 	}
@@ -380,11 +433,11 @@ func CanonicalNotesRedirectURL(locale string, strippedPath string, query url.Val
 		return "", false
 	}
 
-	return BuildNotesFilterURL(locale, filter.Page, filter.AuthorSlug, filter.TagName, filter.Type, ""), true
+	return buildNotesFilterURLForConfig(cfg, locale, filter.Page, filter.AuthorSlug, filter.TagName, filter.Type, ""), true
 }
 
 func BuildChannelsURL(
-	locale string,
+	i18n frameworki18n.Context[i18n.Key],
 	authorSlug string,
 	tagName string,
 	noteType notes.NoteType,
@@ -409,18 +462,17 @@ func BuildChannelsURL(
 		q.Set("q", searchQuery)
 	}
 
-	encoded := q.Encode()
-	if encoded == "" {
-		return LocalizeAppPath(locale, "/channels")
+	if q.Encode() == "" {
+		return localizePath(i18n, "/channels")
 	}
 
-	return buildLocalizedPathWithQuery(locale, "/channels", q)
+	return buildLocalizedPathWithQuery(i18n, "/channels", q)
 }
 
-func BuildAuthorURL(locale string, slug string, page int) string {
+func BuildAuthorURL(i18n frameworki18n.Context[i18n.Key], slug string, page int) string {
 	slug = strings.TrimSpace(slug)
 	if slug == "" {
-		return LocalizeAppPath(locale, "/")
+		return localizePath(i18n, "/")
 	}
 
 	if page < 1 {
@@ -428,12 +480,12 @@ func BuildAuthorURL(locale string, slug string, page int) string {
 	}
 
 	if page == 1 {
-		return LocalizeAppPath(locale, "/author/"+slug)
+		return localizePath(i18n, "/author/"+slug)
 	}
 
 	q := make(url.Values)
 	q.Set("page", strconv.Itoa(page))
-	return buildLocalizedPathWithQuery(locale, "/author/"+slug, q)
+	return buildLocalizedPathWithQuery(i18n, "/author/"+slug, q)
 }
 
 func BuildHTMXNavigationURL(pageURL string) string {
@@ -448,16 +500,21 @@ func BuildHTMXNavigationURL(pageURL string) string {
 	return canonicalPath + "?" + encoded
 }
 
-func BuildTagURL(locale string, tagSlug string) string {
+func BuildTagURL(i18n frameworki18n.Context[i18n.Key], tagSlug string) string {
 	tagSlug = strings.TrimSpace(tagSlug)
 	if tagSlug == "" {
-		return LocalizeAppPath(locale, "/")
+		return localizePath(i18n, "/")
 	}
 
-	return LocalizeAppPath(locale, "/tag/"+tagSlug)
+	return localizePath(i18n, "/tag/"+tagSlug)
 }
 
-func BuildTalesURL(locale string, page int, authorSlug string, tagName string) string {
+func BuildTalesURL(
+	i18n frameworki18n.Context[i18n.Key],
+	page int,
+	authorSlug string,
+	tagName string,
+) string {
 	if page < 1 {
 		page = 1
 	}
@@ -473,15 +530,19 @@ func BuildTalesURL(locale string, page int, authorSlug string, tagName string) s
 		q.Set("tag", strings.TrimSpace(tagName))
 	}
 
-	encoded := q.Encode()
-	if encoded == "" {
-		return LocalizeAppPath(locale, "/tales")
+	if q.Encode() == "" {
+		return localizePath(i18n, "/tales")
 	}
 
-	return buildLocalizedPathWithQuery(locale, "/tales", q)
+	return buildLocalizedPathWithQuery(i18n, "/tales", q)
 }
 
-func BuildMicroTalesURL(locale string, page int, authorSlug string, tagName string) string {
+func BuildMicroTalesURL(
+	i18n frameworki18n.Context[i18n.Key],
+	page int,
+	authorSlug string,
+	tagName string,
+) string {
 	if page < 1 {
 		page = 1
 	}
@@ -497,12 +558,11 @@ func BuildMicroTalesURL(locale string, page int, authorSlug string, tagName stri
 		q.Set("tag", strings.TrimSpace(tagName))
 	}
 
-	encoded := q.Encode()
-	if encoded == "" {
-		return LocalizeAppPath(locale, "/micro-tales")
+	if q.Encode() == "" {
+		return localizePath(i18n, "/micro-tales")
 	}
 
-	return buildLocalizedPathWithQuery(locale, "/micro-tales", q)
+	return buildLocalizedPathWithQuery(i18n, "/micro-tales", q)
 }
 
 func canonicalNotesListingPath(authorSlug string, tagName string, noteType notes.NoteType) string {
@@ -672,7 +732,7 @@ func canonicalURLFromRequest(appCtx *Context, r *http.Request, locale string) st
 		return ""
 	}
 
-	cfg, err := frameworki18n.NormalizeConfig(appCtx.I18nConfig())
+	cfg, err := frameworki18n.NormalizeConfig(messages.Config())
 	if err != nil {
 		return ""
 	}
@@ -700,7 +760,11 @@ func resolvedRootURL(appCtx *Context, r *http.Request) string {
 	if appCtx == nil {
 		return ""
 	}
-	return appCtx.ResolveRootURL(r)
+	root := appCtx.ResolveRoot(r)
+	if root == nil {
+		return ""
+	}
+	return root.String()
 }
 
 func noteSiteRootURLs(appCtx *Context, resolvedRootURL string) []string {
@@ -720,8 +784,8 @@ func noteSiteRootURLs(appCtx *Context, resolvedRootURL string) []string {
 	}
 
 	appendRoot(resolvedRootURL)
-	if appCtx != nil && appCtx.SiteResolver() != nil {
-		appendRoot(appCtx.SiteResolver().CanonicalURL())
+	if appCtx != nil && appCtx.siteResolver != nil {
+		appendRoot(appCtx.siteResolver.CanonicalURL())
 	}
 
 	return roots
@@ -741,18 +805,9 @@ func localeFromRequest(appCtx *Context, r *http.Request) string {
 		requestLocale = frameworki18n.LocaleFromContext(r.Context())
 	}
 	if appCtx == nil {
-		return normalizeLocaleForApp(requestLocale)
+		return normalizeLocaleCode(requestLocale)
 	}
 	return appCtx.LocaleFromRequest(requestLocale)
-}
-
-func buildLocalizedPathWithQuery(locale string, strippedPath string, query url.Values) string {
-	localizedPath := LocalizeAppPath(locale, strippedPath)
-	encoded := query.Encode()
-	if strings.TrimSpace(encoded) == "" {
-		return localizedPath
-	}
-	return localizedPath + "?" + encoded
 }
 
 func sidebarModeForFilter(filter notes.ListFilter) SidebarMode {

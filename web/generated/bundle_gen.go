@@ -2,6 +2,7 @@
 package gen
 
 import (
+	messages "blog/web/generated/i18n/messages"
 	"blog/web/view"
 	"github.com/RevoTale/no-js/framework/httpserver"
 	"github.com/RevoTale/no-js/framework/i18n"
@@ -9,8 +10,8 @@ import (
 
 func Bundle(appContext *runtime.Context) httpserver.AppBundle[*runtime.Context] {
 	var i18nConfig *i18n.Config
-	if appContext != nil {
-		cfg := appContext.I18nConfig()
+	cfg := messages.Config()
+	if len(cfg.Locales) > 0 {
 		i18nConfig = &cfg
 	}
 
@@ -20,6 +21,7 @@ func Bundle(appContext *runtime.Context) httpserver.AppBundle[*runtime.Context] 
 		Handlers:                      Handlers(NewRouteResolvers()),
 		Discovery:                     DiscoveryBundle(),
 		I18n:                          i18nConfig,
+		ResolveRoot:                   appContext.ResolveRoot,
 		NotFoundPage:                  NotFoundPage,
 		OnStaticAssetBasePathResolved: runtime.SetStaticAssetBasePath,
 	}
