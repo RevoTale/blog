@@ -43,6 +43,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 	return []framework.RouteHandler[*runtime.Context]{
 		framework.PageOnlyRouteHandler[*runtime.Context, RootParams, runtime.NotesPageView]{
 			Page: framework.PageModule[*runtime.Context, RootParams, runtime.NotesPageView]{
+				RouteID:     "",
 				Pattern:     "/",
 				ParseParams: parseRootParams,
 				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params RootParams) (metagen.Metadata, error) {
@@ -64,7 +65,10 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params RootParams) (runtime.NotesPageView, error) {
 					return resolvers.ResolveRootPage(ctx, appCtx, r, params)
 				},
-				LoadName:   "route_resolvers.Resolver.ResolveRootPage",
+				LoadName: "route_resolvers.Resolver.ResolveRootPage",
+				Compose: func(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params RootParams, partial bool) (templ.Component, error) {
+					return composeRootPage(ctx, runtime, r, meta, view, params, partial, resolvers)
+				},
 				Render:     r_page_root.Page,
 				RootLayout: r_root_root.RootLayout,
 				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
@@ -87,14 +91,12 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					component = r_layout_root.Layout(meta, view, component)
 					return component
 				},
-				Layouts: []framework.LayoutRenderer[runtime.NotesPageView]{
-					wrapRootWithRootLayout,
-				},
 			},
 		},
 		framework.PageOnlyRouteHandler[*runtime.Context, AuthorParamSlugParams, runtime.AuthorPageView]{
 			Page: framework.PageModule[*runtime.Context, AuthorParamSlugParams, runtime.AuthorPageView]{
-				Pattern:     "/author/[slug]",
+				RouteID:     "author/_param__slug",
+				Pattern:     "/author/_param__slug",
 				ParseParams: parseAuthorParamSlugParams,
 				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params AuthorParamSlugParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenAuthorParamSlugPage(meta, params)
@@ -121,7 +123,10 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params AuthorParamSlugParams) (runtime.AuthorPageView, error) {
 					return resolvers.ResolveAuthorParamSlugPage(ctx, appCtx, r, params)
 				},
-				LoadName:   "route_resolvers.Resolver.ResolveAuthorParamSlugPage",
+				LoadName: "route_resolvers.Resolver.ResolveAuthorParamSlugPage",
+				Compose: func(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.AuthorPageView, params AuthorParamSlugParams, partial bool) (templ.Component, error) {
+					return composeAuthorParamSlugPage(ctx, runtime, r, meta, view, params, partial, resolvers)
+				},
 				Render:     r_page_author_param_slug.Page,
 				RootLayout: r_root_root.RootLayout,
 				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
@@ -144,14 +149,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					component = r_layout_root.Layout(meta, view, component)
 					return component
 				},
-				Layouts: []framework.LayoutRenderer[runtime.AuthorPageView]{
-					wrapAuthorParamSlugWithRootLayout,
-					wrapAuthorParamSlugWithAuthorParamSlugLayout,
-				},
 			},
 		},
 		framework.PageOnlyRouteHandler[*runtime.Context, ChannelsParams, runtime.NotesPageView]{
 			Page: framework.PageModule[*runtime.Context, ChannelsParams, runtime.NotesPageView]{
+				RouteID:     "channels",
 				Pattern:     "/channels",
 				ParseParams: parseChannelsParams,
 				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params ChannelsParams) (metagen.Metadata, error) {
@@ -173,7 +175,10 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params ChannelsParams) (runtime.NotesPageView, error) {
 					return resolvers.ResolveChannelsPage(ctx, appCtx, r, params)
 				},
-				LoadName:   "route_resolvers.Resolver.ResolveChannelsPage",
+				LoadName: "route_resolvers.Resolver.ResolveChannelsPage",
+				Compose: func(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params ChannelsParams, partial bool) (templ.Component, error) {
+					return composeChannelsPage(ctx, runtime, r, meta, view, params, partial, resolvers)
+				},
 				Render:     r_page_channels.Page,
 				RootLayout: r_root_root.RootLayout,
 				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
@@ -196,13 +201,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					component = r_layout_root.Layout(meta, view, component)
 					return component
 				},
-				Layouts: []framework.LayoutRenderer[runtime.NotesPageView]{
-					wrapChannelsWithRootLayout,
-				},
 			},
 		},
 		framework.PageOnlyRouteHandler[*runtime.Context, MicroTalesParams, runtime.NotesPageView]{
 			Page: framework.PageModule[*runtime.Context, MicroTalesParams, runtime.NotesPageView]{
+				RouteID:     "micro-tales",
 				Pattern:     "/micro-tales",
 				ParseParams: parseMicroTalesParams,
 				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params MicroTalesParams) (metagen.Metadata, error) {
@@ -224,7 +227,10 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params MicroTalesParams) (runtime.NotesPageView, error) {
 					return resolvers.ResolveMicroTalesPage(ctx, appCtx, r, params)
 				},
-				LoadName:   "route_resolvers.Resolver.ResolveMicroTalesPage",
+				LoadName: "route_resolvers.Resolver.ResolveMicroTalesPage",
+				Compose: func(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params MicroTalesParams, partial bool) (templ.Component, error) {
+					return composeMicroTalesPage(ctx, runtime, r, meta, view, params, partial, resolvers)
+				},
 				Render:     r_page_micro_tales.Page,
 				RootLayout: r_root_root.RootLayout,
 				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
@@ -247,14 +253,12 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					component = r_layout_root.Layout(meta, view, component)
 					return component
 				},
-				Layouts: []framework.LayoutRenderer[runtime.NotesPageView]{
-					wrapMicroTalesWithRootLayout,
-				},
 			},
 		},
 		framework.PageOnlyRouteHandler[*runtime.Context, NoteParamSlugParams, runtime.NotePageView]{
 			Page: framework.PageModule[*runtime.Context, NoteParamSlugParams, runtime.NotePageView]{
-				Pattern:     "/note/[slug]",
+				RouteID:     "note/_param__slug",
+				Pattern:     "/note/_param__slug",
 				ParseParams: parseNoteParamSlugParams,
 				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params NoteParamSlugParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenNoteParamSlugPage(meta, params)
@@ -275,7 +279,10 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params NoteParamSlugParams) (runtime.NotePageView, error) {
 					return resolvers.ResolveNoteParamSlugPage(ctx, appCtx, r, params)
 				},
-				LoadName:   "route_resolvers.Resolver.ResolveNoteParamSlugPage",
+				LoadName: "route_resolvers.Resolver.ResolveNoteParamSlugPage",
+				Compose: func(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotePageView, params NoteParamSlugParams, partial bool) (templ.Component, error) {
+					return composeNoteParamSlugPage(ctx, runtime, r, meta, view, params, partial, resolvers)
+				},
 				Render:     r_page_note_param_slug.Page,
 				RootLayout: r_root_root.RootLayout,
 				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
@@ -298,14 +305,12 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					component = r_layout_root.Layout(meta, view, component)
 					return component
 				},
-				Layouts: []framework.LayoutRenderer[runtime.NotePageView]{
-					wrapNoteParamSlugWithRootLayout,
-				},
 			},
 		},
 		framework.PageOnlyRouteHandler[*runtime.Context, TagParamSlugParams, runtime.NotesPageView]{
 			Page: framework.PageModule[*runtime.Context, TagParamSlugParams, runtime.NotesPageView]{
-				Pattern:     "/tag/[slug]",
+				RouteID:     "tag/_param__slug",
+				Pattern:     "/tag/_param__slug",
 				ParseParams: parseTagParamSlugParams,
 				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params TagParamSlugParams) (metagen.Metadata, error) {
 					return resolvers.MetaGenTagParamSlugPage(meta, params)
@@ -326,7 +331,10 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params TagParamSlugParams) (runtime.NotesPageView, error) {
 					return resolvers.ResolveTagParamSlugPage(ctx, appCtx, r, params)
 				},
-				LoadName:   "route_resolvers.Resolver.ResolveTagParamSlugPage",
+				LoadName: "route_resolvers.Resolver.ResolveTagParamSlugPage",
+				Compose: func(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params TagParamSlugParams, partial bool) (templ.Component, error) {
+					return composeTagParamSlugPage(ctx, runtime, r, meta, view, params, partial, resolvers)
+				},
 				Render:     r_page_tag_param_slug.Page,
 				RootLayout: r_root_root.RootLayout,
 				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
@@ -349,13 +357,11 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					component = r_layout_root.Layout(meta, view, component)
 					return component
 				},
-				Layouts: []framework.LayoutRenderer[runtime.NotesPageView]{
-					wrapTagParamSlugWithRootLayout,
-				},
 			},
 		},
 		framework.PageOnlyRouteHandler[*runtime.Context, TalesParams, runtime.NotesPageView]{
 			Page: framework.PageModule[*runtime.Context, TalesParams, runtime.NotesPageView]{
+				RouteID:     "tales",
 				Pattern:     "/tales",
 				ParseParams: parseTalesParams,
 				MetaGenContext: func(meta framework.MetaContext[*runtime.Context], params TalesParams) (metagen.Metadata, error) {
@@ -377,7 +383,10 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 				Load: func(ctx context.Context, appCtx *runtime.Context, r *http.Request, params TalesParams) (runtime.NotesPageView, error) {
 					return resolvers.ResolveTalesPage(ctx, appCtx, r, params)
 				},
-				LoadName:   "route_resolvers.Resolver.ResolveTalesPage",
+				LoadName: "route_resolvers.Resolver.ResolveTalesPage",
+				Compose: func(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params TalesParams, partial bool) (templ.Component, error) {
+					return composeTalesPage(ctx, runtime, r, meta, view, params, partial, resolvers)
+				},
 				Render:     r_page_tales.Page,
 				RootLayout: r_root_root.RootLayout,
 				ErrorPage: func(appCtx *runtime.Context, r *http.Request) templ.Component {
@@ -399,9 +408,6 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 					component := r_error_root.Error(view, pathValue)
 					component = r_layout_root.Layout(meta, view, component)
 					return component
-				},
-				Layouts: []framework.LayoutRenderer[runtime.NotesPageView]{
-					wrapTalesWithRootLayout,
 				},
 			},
 		},
@@ -431,6 +437,11 @@ func NotFoundPage(appCtx *runtime.Context, r *http.Request, notFound framework.N
 }
 
 func nearestNotFoundRouteID(notFound framework.NotFoundContext) string {
+	for _, candidate := range routeAncestry(notFound.MatchedRouteID) {
+		if routeID, ok := resolveNotFoundCandidateRouteID(candidate); ok {
+			return routeID
+		}
+	}
 	for _, candidate := range candidateRouteIDsFromPattern(notFound.MatchedRoutePattern) {
 		if routeID, ok := resolveNotFoundCandidateRouteID(candidate); ok {
 			return routeID
@@ -520,16 +531,16 @@ func parseRootParams(requestPath string) (RootParams, bool) {
 }
 
 func parseAuthorParamSlugParams(requestPath string) (AuthorParamSlugParams, bool) {
-	params, ok := router.MatchPathPattern("/author/[slug]", requestPath)
+	params, ok := router.MatchPathPattern("/author/_param__slug", requestPath)
 	if !ok {
 		return AuthorParamSlugParams{}, false
 	}
 	out := AuthorParamSlugParams{}
-	SlugValue := strings.TrimSpace(params["slug"])
-	if !router.IsValidSlug(SlugValue) {
+	SlugValue, exists := params["slug"]
+	if !exists || len(SlugValue) == 0 {
 		return AuthorParamSlugParams{}, false
 	}
-	out.Slug = SlugValue
+	out.Slug = strings.TrimSpace(SlugValue[0])
 	return out, true
 }
 
@@ -550,30 +561,30 @@ func parseMicroTalesParams(requestPath string) (MicroTalesParams, bool) {
 }
 
 func parseNoteParamSlugParams(requestPath string) (NoteParamSlugParams, bool) {
-	params, ok := router.MatchPathPattern("/note/[slug]", requestPath)
+	params, ok := router.MatchPathPattern("/note/_param__slug", requestPath)
 	if !ok {
 		return NoteParamSlugParams{}, false
 	}
 	out := NoteParamSlugParams{}
-	SlugValue := strings.TrimSpace(params["slug"])
-	if !router.IsValidSlug(SlugValue) {
+	SlugValue, exists := params["slug"]
+	if !exists || len(SlugValue) == 0 {
 		return NoteParamSlugParams{}, false
 	}
-	out.Slug = SlugValue
+	out.Slug = strings.TrimSpace(SlugValue[0])
 	return out, true
 }
 
 func parseTagParamSlugParams(requestPath string) (TagParamSlugParams, bool) {
-	params, ok := router.MatchPathPattern("/tag/[slug]", requestPath)
+	params, ok := router.MatchPathPattern("/tag/_param__slug", requestPath)
 	if !ok {
 		return TagParamSlugParams{}, false
 	}
 	out := TagParamSlugParams{}
-	SlugValue := strings.TrimSpace(params["slug"])
-	if !router.IsValidSlug(SlugValue) {
+	SlugValue, exists := params["slug"]
+	if !exists || len(SlugValue) == 0 {
 		return TagParamSlugParams{}, false
 	}
-	out.Slug = SlugValue
+	out.Slug = strings.TrimSpace(SlugValue[0])
 	return out, true
 }
 
@@ -585,34 +596,73 @@ func parseTalesParams(requestPath string) (TalesParams, bool) {
 	return TalesParams{}, true
 }
 
-func wrapAuthorParamSlugWithAuthorParamSlugLayout(meta metagen.Metadata, view runtime.AuthorPageView, child templ.Component) templ.Component {
-	return r_layout_author_param_slug.Layout(view, child)
+func composeRootPage(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params RootParams, partial bool, resolvers RouteResolvers) (templ.Component, error) {
+	_ = params
+	component := r_page_root.Page(view)
+	if partial {
+		return component, nil
+	}
+	component = r_layout_root.Layout(meta, view, component)
+	return component, nil
 }
 
-func wrapAuthorParamSlugWithRootLayout(meta metagen.Metadata, view runtime.AuthorPageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(meta, view, child)
+func composeAuthorParamSlugPage(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.AuthorPageView, params AuthorParamSlugParams, partial bool, resolvers RouteResolvers) (templ.Component, error) {
+	_ = params
+	component := r_page_author_param_slug.Page(view)
+	if partial {
+		return component, nil
+	}
+	component = r_layout_author_param_slug.Layout(view, component)
+	component = r_layout_root.Layout(meta, view, component)
+	return component, nil
 }
 
-func wrapChannelsWithRootLayout(meta metagen.Metadata, view runtime.NotesPageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(meta, view, child)
+func composeChannelsPage(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params ChannelsParams, partial bool, resolvers RouteResolvers) (templ.Component, error) {
+	_ = params
+	component := r_page_channels.Page(view)
+	if partial {
+		return component, nil
+	}
+	component = r_layout_root.Layout(meta, view, component)
+	return component, nil
 }
 
-func wrapMicroTalesWithRootLayout(meta metagen.Metadata, view runtime.NotesPageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(meta, view, child)
+func composeMicroTalesPage(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params MicroTalesParams, partial bool, resolvers RouteResolvers) (templ.Component, error) {
+	_ = params
+	component := r_page_micro_tales.Page(view)
+	if partial {
+		return component, nil
+	}
+	component = r_layout_root.Layout(meta, view, component)
+	return component, nil
 }
 
-func wrapNoteParamSlugWithRootLayout(meta metagen.Metadata, view runtime.NotePageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(meta, view, child)
+func composeNoteParamSlugPage(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotePageView, params NoteParamSlugParams, partial bool, resolvers RouteResolvers) (templ.Component, error) {
+	_ = params
+	component := r_page_note_param_slug.Page(view)
+	if partial {
+		return component, nil
+	}
+	component = r_layout_root.Layout(meta, view, component)
+	return component, nil
 }
 
-func wrapRootWithRootLayout(meta metagen.Metadata, view runtime.NotesPageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(meta, view, child)
+func composeTagParamSlugPage(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params TagParamSlugParams, partial bool, resolvers RouteResolvers) (templ.Component, error) {
+	_ = params
+	component := r_page_tag_param_slug.Page(view)
+	if partial {
+		return component, nil
+	}
+	component = r_layout_root.Layout(meta, view, component)
+	return component, nil
 }
 
-func wrapTagParamSlugWithRootLayout(meta metagen.Metadata, view runtime.NotesPageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(meta, view, child)
-}
-
-func wrapTalesWithRootLayout(meta metagen.Metadata, view runtime.NotesPageView, child templ.Component) templ.Component {
-	return r_layout_root.Layout(meta, view, child)
+func composeTalesPage(ctx context.Context, runtime framework.RuntimeContext[*runtime.Context], r *http.Request, meta metagen.Metadata, view runtime.NotesPageView, params TalesParams, partial bool, resolvers RouteResolvers) (templ.Component, error) {
+	_ = params
+	component := r_page_tales.Page(view)
+	if partial {
+		return component, nil
+	}
+	component = r_layout_root.Layout(meta, view, component)
+	return component, nil
 }
