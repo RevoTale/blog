@@ -954,7 +954,7 @@ func TestDynamicRootURLUsesRequestHostAcrossMetadataAndDiscovery(t *testing.T) {
 	recRobots := performRequest(mux, http.MethodGet, "https://mirror.example/robots.txt")
 	require.Equal(t, http.StatusOK, recRobots.Code)
 	robotsBody := requireBody(t, recRobots.Body)
-	require.Contains(t, robotsBody, "Sitemap: https://mirror.example/blog/notes/sitemap-index")
+	require.Contains(t, robotsBody, "Sitemap: https://mirror.example/blog/notes/sitemap-index.xml")
 }
 
 func TestHandlerLovelyEyeAnalyticsRendersWhenConfigured(t *testing.T) {
@@ -1126,7 +1126,7 @@ func TestHTTPServerSupportsAppOwnedEndpoints(t *testing.T) {
 	require.Contains(t, feedBody, "<rss")
 	require.Contains(t, feedBody, "Hello World")
 
-	recSitemap := performRequest(mux, http.MethodGet, "/sitemap-index")
+	recSitemap := performRequest(mux, http.MethodGet, "/sitemap-index.xml")
 	require.Equal(t, http.StatusOK, recSitemap.Code)
 	require.Contains(t, recSitemap.Header().Get("Content-Type"), "application/xml")
 	sitemapBody := requireBody(t, recSitemap.Body)
@@ -1138,7 +1138,7 @@ func TestHTTPServerSupportsAppOwnedEndpoints(t *testing.T) {
 	require.Contains(t, recRobots.Header().Get("Content-Type"), "text/plain")
 	robotsBody := requireBody(t, recRobots.Body)
 	require.Contains(t, robotsBody, "User-agent: *")
-	require.Contains(t, robotsBody, "Sitemap: https://revotale.com/blog/notes/sitemap-index")
+	require.Contains(t, robotsBody, "Sitemap: https://revotale.com/blog/notes/sitemap-index.xml")
 }
 
 func TestHTTPServerExtraRoutesHookAllowsManualRoutes(t *testing.T) {

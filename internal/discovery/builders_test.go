@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/url"
 	"testing"
-	"time"
 
 	"blog/internal/notes"
 	frameworki18n "github.com/RevoTale/no-js/framework/i18n"
@@ -18,7 +17,7 @@ func TestBuildRobotsIncludesSitemap(t *testing.T) {
 	require.Len(t, document.Rules, 1)
 	require.Equal(t, "*", document.Rules[0].UserAgent)
 	require.Equal(t, []string{"/"}, document.Rules[0].Allow)
-	require.Equal(t, []string{"https://revotale.com/blog/notes/sitemap-index"}, document.Sitemaps)
+	require.Equal(t, []string{"https://revotale.com/blog/notes/sitemap-index.xml"}, document.Sitemaps)
 }
 
 func TestFeedListFilterFromQuery(t *testing.T) {
@@ -119,20 +118,19 @@ func TestBuildSitemapIDsAndEntriesByID(t *testing.T) {
 		PrefixMode:    frameworki18n.PrefixAsNeeded,
 	}
 
-	ids, err := BuildSitemapIDs(context.Background(), "https://revotale.com/blog/notes", i18nConfig, service, 1, 1)
+	ids, err := BuildSitemapIDs(context.Background(), i18nConfig, service, 1, 1)
 	require.NoError(t, err)
-	require.Len(t, ids, 1+2+2+2)
-	require.Equal(t, "root", ids[0].ID)
-	require.Equal(t, "https://revotale.com/blog/notes/sitemap.xml", ids[0].Location)
-	require.Equal(t, "note:0", ids[1].ID)
-	require.Equal(t, "/note/sitemap/0.xml", ids[1].Path)
+	require.Len(t, ids, 2+2+2)
+	require.Equal(t, "note-0", ids[0].ID)
+	require.Empty(t, ids[0].Location)
+	require.Equal(t, "note-1", ids[1].ID)
 
 	noteEntries, err := BuildSitemapEntriesByID(
 		context.Background(),
 		"https://revotale.com/blog/notes",
 		i18nConfig,
 		service,
-		"note:0",
+		"note-0",
 		1,
 		1,
 	)
@@ -148,7 +146,7 @@ func TestBuildSitemapIDsAndEntriesByID(t *testing.T) {
 		"https://revotale.com/blog/notes",
 		i18nConfig,
 		service,
-		"author:0",
+		"author-0",
 		1,
 		1,
 	)
@@ -158,21 +156,6 @@ func TestBuildSitemapIDsAndEntriesByID(t *testing.T) {
 	require.NotNil(t, authorEntries[0].Priority)
 	require.Equal(t, 1.0, *authorEntries[0].Priority)
 
-	rootEntries, err := BuildSitemapEntriesByID(
-		context.Background(),
-		"https://revotale.com/blog/notes",
-		i18nConfig,
-		service,
-		"root",
-		1,
-		1,
-	)
-	require.NoError(t, err)
-	require.Len(t, rootEntries, 4)
-	for _, entry := range rootEntries {
-		require.NotNil(t, entry.LastModified)
-		require.WithinDuration(t, time.Now().UTC(), entry.LastModified.UTC(), time.Minute)
-	}
 }
 
 type stubNotesLister struct {

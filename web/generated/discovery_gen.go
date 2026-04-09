@@ -16,7 +16,7 @@ func DiscoveryBundle() *discovery.Bundle[*runtime.Context] {
 				RoutePattern:     "/",
 				Sitemap:          route_conventions_root.Sitemap,
 				GenerateSitemaps: route_conventions_root.GenerateSitemaps,
-				SitemapByID:      route_conventions_root.SitemapByID,
+				SitemapChunk:     route_conventions_root.SitemapChunk,
 			},
 		},
 		Feeds: []discovery.FeedRoute[*runtime.Context]{

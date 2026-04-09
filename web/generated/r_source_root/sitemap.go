@@ -30,7 +30,6 @@ func GenerateSitemaps(
 
 	return blogdiscovery.BuildSitemapIDs(
 		r.Context(),
-		resolveDiscoveryRootURL(runtime, r),
 		resolveDiscoveryI18nConfig(runtime),
 		service,
 		0,
@@ -38,7 +37,7 @@ func GenerateSitemaps(
 	)
 }
 
-func SitemapByID(
+func SitemapChunk(
 	runtime framework.RuntimeContext[*runtimeview.Context],
 	r *http.Request,
 	id string,

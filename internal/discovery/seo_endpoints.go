@@ -14,17 +14,12 @@ import (
 )
 
 const rssEndpointPath = "/feed.xml"
-const sitemapPath = "/sitemap.xml"
-const sitemapIndexPath = "/sitemap-index"
+const sitemapIndexPath = "/sitemap-index.xml"
 
 const routePathRoot = "/"
 const routePathChannels = "/channels"
 const routePathTales = "/tales"
 const routePathMicroTales = "/micro-tales"
-
-const noteSitemapPrefix = "/note/sitemap/"
-const authorSitemapPrefix = "/author/sitemap/"
-const tagSitemapPrefix = "/notes/sitemap/"
 
 const routePathNote = "/note/"
 const routePathAuthor = "/author/"
@@ -39,7 +34,6 @@ const queryParamAuthor = "author"
 const queryParamTag = "tag"
 const queryParamType = "type"
 const queryParamSearch = "q"
-const xmlExtension = ".xml"
 
 type notesLister interface {
 	ListNotes(

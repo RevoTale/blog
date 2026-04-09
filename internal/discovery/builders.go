@@ -133,7 +133,6 @@ func BuildRootSitemapEntries(
 
 func BuildSitemapIDs(
 	ctx context.Context,
-	rootURL string,
 	i18nConfig frameworki18n.Config,
 	service notesLister,
 	authorsPageSize int,
@@ -160,21 +159,18 @@ func BuildSitemapIDs(
 		return nil, err
 	}
 
-	ids := []frameworkdiscovery.SitemapID{
-		{
-			ID:       "root",
-			Path:     sitemapPath,
-			Location: joinRootAndPath(rootURL, sitemapPath),
-		},
-	}
+	capacity := max(baseResult.TotalPages, 0) +
+		pageCount(len(baseResult.Authors), authorsPageSize) +
+		pageCount(len(baseResult.Tags), tagsPageSize)
+	ids := make([]frameworkdiscovery.SitemapID, 0, capacity)
 	for i := 0; i < max(baseResult.TotalPages, 0); i++ {
-		appendSitemapID(&ids, rootURL, "note", fmt.Sprintf("%s%d%s", noteSitemapPrefix, i, xmlExtension), i)
+		appendSitemapID(&ids, "note", i)
 	}
 	for i := 0; i < pageCount(len(baseResult.Authors), authorsPageSize); i++ {
-		appendSitemapID(&ids, rootURL, "author", fmt.Sprintf("%s%d%s", authorSitemapPrefix, i, xmlExtension), i)
+		appendSitemapID(&ids, "author", i)
 	}
 	for i := 0; i < pageCount(len(baseResult.Tags), tagsPageSize); i++ {
-		appendSitemapID(&ids, rootURL, "tag", fmt.Sprintf("%s%d%s", tagSitemapPrefix, i, xmlExtension), i)
+		appendSitemapID(&ids, "tag", i)
 	}
 
 	return ids, nil
@@ -195,8 +191,6 @@ func BuildSitemapEntriesByID(
 	}
 
 	switch kind {
-	case "root":
-		return BuildRootSitemapEntries(rootURL, i18nConfig)
 	case "note":
 		return buildNoteSitemapEntries(ctx, rootURL, i18nConfig, service, chunkID)
 	case "author":
@@ -353,23 +347,22 @@ func buildTagSitemapEntries(
 	return entries, nil
 }
 
-func appendSitemapID(ids *[]frameworkdiscovery.SitemapID, rootURL string, kind string, pathValue string, chunkID int) {
-	*ids = append(*ids, frameworkdiscovery.SitemapID{
-		ID:       fmt.Sprintf("%s:%d", kind, chunkID),
-		Path:     pathValue,
-		Location: joinRootAndPath(rootURL, pathValue),
-	})
+func appendSitemapID(ids *[]frameworkdiscovery.SitemapID, kind string, chunkID int) {
+	*ids = append(*ids, frameworkdiscovery.SitemapID{ID: formatGeneratedSitemapID(kind, chunkID)})
+}
+
+func formatGeneratedSitemapID(kind string, chunkID int) string {
+	return fmt.Sprintf("%s-%d", strings.TrimSpace(kind), chunkID)
 }
 
 func parseGeneratedSitemapID(raw string) (string, int, bool) {
 	trimmed := strings.TrimSpace(raw)
-	if trimmed == "root" {
-		return "root", 0, true
-	}
-
-	kind, chunk, ok := strings.Cut(trimmed, ":")
+	kind, chunk, ok := strings.Cut(trimmed, "-")
 	if !ok {
-		return "", 0, false
+		kind, chunk, ok = strings.Cut(trimmed, ":")
+		if !ok {
+			return "", 0, false
+		}
 	}
 	parsed, err := strconv.Atoi(strings.TrimSpace(chunk))
 	if err != nil || parsed < 0 {
