@@ -9,7 +9,7 @@ COPY . .
 
 # Build hashed + minified static assets during image build.
 RUN GOCACHE=/tmp/go-cache GOMODCACHE=/go/pkg/mod \
-    go run github.com/RevoTale/no-js/cmd/no-js gen assets -root .
+    go tool no-js gen assets -root .
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -trimpath \

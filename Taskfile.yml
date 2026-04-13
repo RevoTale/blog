@@ -9,7 +9,7 @@ tasks:
   go:gen:
     desc: Run Go code generation
     cmds:
-      - go run github.com/RevoTale/no-js/cmd/no-js gen assets -root .
+      - go tool no-js gen assets -root .
       - go generate ./internal/cmsgraphql
       - go generate ./web
       - go run ./cmd/techstackgen -in go.mod -out internal/techstack/generated.go
@@ -28,7 +28,7 @@ tasks:
     cmds:
       - |
         set -euo pipefail
-        files="$(find . -type f -name '*.go' -not -path './vendor/*' -not -path './no-js/*')"
+        files="$(find . -type f -name '*.go' -not -path './vendor/*')"
         if [ -n "$files" ]; then
           gofmt -w $files
         fi
