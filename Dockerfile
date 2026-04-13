@@ -13,7 +13,7 @@ RUN GOCACHE=/tmp/go-cache GOMODCACHE=/go/pkg/mod \
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -trimpath \
-    -ldflags='-s -w' -o /out/blog .
+    -ldflags='-s -w' -o /out/blog ./cmd/server
 
 FROM gcr.io/distroless/static-debian12 AS runtime
 
