@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.0.0](https://github.com/RevoTale/blog/compare/v0.7.1...v1.0.0) (2026-04-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* no-js now defaults to web/* paths, build-time packages moved under internal/, generated server bootstrap was removed, and blog packages moved from internal/web/ to web/*.
+
+### Features
+
+* `no-js` support for the neste fedd and sitemaps. Fix the bug with wrong routes priorirty ([41dbdee](https://github.com/RevoTale/blog/commit/41dbdeed0c234741c299f2d5d5952f1dcb1532ec))
+* adopt strict web/* app layout across blog and no-js ([58ffa03](https://github.com/RevoTale/blog/commit/58ffa0335d03cdc2d34419f36968014a7846ec42))
+* exctract frameowkr: refactor to import the framework from external project and delete frameowkr sub package ([f934987](https://github.com/RevoTale/blog/commit/f934987f5986c3a069c13b9220d8d18a4dbae084))
+* **framework:** add request-scoped metadata context for URL composition ([8c0f7f9](https://github.com/RevoTale/blog/commit/8c0f7f921a1a3c78301ac30e2649dff871b441c6))
+* generate the latest graphql schema supporting developing outside of internal RevoTale infrastructure ([4ad2cfa](https://github.com/RevoTale/blog/commit/4ad2cfaa9fd56b1ba0f28fb48a6e8cfc724e0d8d))
+* refacotring to move more responsiblity, and simplify the config of the end app. Excracting the https://github.com/RevoTale/blog internals to the framwork core. Slow and hard process ([04a6974](https://github.com/RevoTale/blog/commit/04a6974678f9842c48d5dc9a01f6a2917577cfd8))
+* refactor the framwork to separate the runtime and bundling modules ([bb338c6](https://github.com/RevoTale/blog/commit/bb338c65f354bc397d9767b792f03f0f9d0e1dde))
+* remove `no-js` as a git submdoule, and refactor the usage of `no-js` command from direct to via `go tool` ([bf96e44](https://github.com/RevoTale/blog/commit/bf96e44c86316e44fc7237d5c3b040d223c039cd))
+* **router:** add reserved app-router namespaces, slots, and route.go handlers ([43ee5d6](https://github.com/RevoTale/blog/commit/43ee5d6252498331c80b498efa885baa5e1ea617))
+* search bar matching the other design ([f2b7c3d](https://github.com/RevoTale/blog/commit/f2b7c3da5aff995a6e2fca07cbb33784b3cef876))
+* use the v1 of `no-js` framwork ([881839b](https://github.com/RevoTale/blog/commit/881839bdc2810180743c0763256ec32ceb86a9b8))
+
+
+### Bug Fixes
+
+* broken devcontainer ([3715880](https://github.com/RevoTale/blog/commit/371588050d406903516a4d916072c092d59527b8))
+* **discovery:** stop generating sitemap IDs on unrelated requests ([6e91bb1](https://github.com/RevoTale/blog/commit/6e91bb10c956740e6e02f69b46839cefd08811a6))
+* ds store ignore ([04b4052](https://github.com/RevoTale/blog/commit/04b4052a675bd1aa332a43a33f32bc4bab4cd45e))
+* installation of the templ in devcontainer ([b89dacc](https://github.com/RevoTale/blog/commit/b89dacc8dc4f821652619d23b455e45d05ad5410))
+* no-js web framewokr path after axtraction iunto the separate project ([16fb740](https://github.com/RevoTale/blog/commit/16fb740304285b9371cfab11c8e0c05d4a61fa2a))
+* proper devcontainer setup ([6df2d91](https://github.com/RevoTale/blog/commit/6df2d916add7b184bc93fbdf3eb027e6f363d0ad))
+* **routes:** rename 404 template component to NotFound ([f9ede77](https://github.com/RevoTale/blog/commit/f9ede7718ded0628ffd65d951b364eeac1112027))
+* wrong path to server bin ([fabd9a2](https://github.com/RevoTale/blog/commit/fabd9a2e7f527d9b982d803bf89243212829c84d))
+
 ## [0.7.1](https://github.com/RevoTale/blog/compare/v0.7.0...v0.7.1) (2026-03-21)
 
 
