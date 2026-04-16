@@ -107,7 +107,7 @@ services:
     restart: unless-stopped
 
   proxy:
-    image: nginx:1.29-alpine
+    image: nginx:1.30-alpine
     depends_on:
       devcontainer:
         condition: service_started
