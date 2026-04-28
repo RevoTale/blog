@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/RevoTale/blog/compare/v1.0.0...v1.0.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* **deps:** update github.com/gomarkdown/markdown digest to 7d523f7 ([5219af9](https://github.com/RevoTale/blog/commit/5219af9b00d6ec0d9d3369d19427c02a30234e51))
+* **deps:** update github.com/gomarkdown/markdown digest to 7d523f7 ([8000be5](https://github.com/RevoTale/blog/commit/8000be5c588da757616d02572b869cb70bde73ff))
+
 ## [1.0.0](https://github.com/RevoTale/blog/compare/v0.7.1...v1.0.0) (2026-04-13)
 
 
