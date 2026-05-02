@@ -4,9 +4,9 @@ go 1.25.0
 
 require (
 	github.com/Khan/genqlient v0.8.1
-	github.com/RevoTale/no-js v1.0.0
+	github.com/RevoTale/no-js v1.3.0
 	github.com/a-h/templ v0.3.1001
-	github.com/alecthomas/chroma/v2 v2.23.1
+	github.com/alecthomas/chroma/v2 v2.24.1
 	github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/mod v0.35.0
@@ -22,7 +22,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dlclark/regexp2 v1.11.5 // indirect
+	github.com/dlclark/regexp2 v1.12.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/suessflorian/gqlfetch v0.7.0
