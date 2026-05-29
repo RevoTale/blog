@@ -1,3 +1,3 @@
 package gql
 
-//go:generate env GOTOOLCHAIN=go1.24.6 go run github.com/Khan/genqlient@v0.8.1 genqlient.yaml
+//go:generate env GOTOOLCHAIN=go1.26.3 go tool genqlient genqlient.yaml

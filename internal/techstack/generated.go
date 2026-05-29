@@ -12,12 +12,9 @@ var packages = []Package{
 	{Name: "github.com/RevoTale/no-js", URL: "https://pkg.go.dev/github.com/RevoTale/no-js"},
 	{Name: "github.com/a-h/templ", URL: "https://pkg.go.dev/github.com/a-h/templ"},
 	{Name: "github.com/alecthomas/chroma/v2", URL: "https://pkg.go.dev/github.com/alecthomas/chroma/v2"},
-	{Name: "github.com/evanw/esbuild", URL: "https://pkg.go.dev/github.com/evanw/esbuild"},
 	{Name: "github.com/gomarkdown/markdown", URL: "https://pkg.go.dev/github.com/gomarkdown/markdown"},
-	{Name: "github.com/nicksnyder/go-i18n/v2", URL: "https://pkg.go.dev/github.com/nicksnyder/go-i18n/v2"},
 	{Name: "github.com/stretchr/testify", URL: "https://pkg.go.dev/github.com/stretchr/testify"},
 	{Name: "golang.org/x/mod", URL: "https://pkg.go.dev/golang.org/x/mod"},
-	{Name: "golang.org/x/text", URL: "https://pkg.go.dev/golang.org/x/text"},
 	{Name: "github.com/suessflorian/gqlfetch", URL: "https://pkg.go.dev/github.com/suessflorian/gqlfetch"},
 }
 
