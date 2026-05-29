@@ -1,6 +1,7 @@
 version: "3"
 
 env:
+  GOTOOLCHAIN: auto
   GOCACHE: /tmp/go-cache
   GOMODCACHE: /tmp/go-modcache
   GOLANGCI_LINT_CACHE: /tmp/golangci-lint-cache

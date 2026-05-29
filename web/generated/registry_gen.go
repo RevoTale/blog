@@ -87,6 +87,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 							Follow: metagen.Bool(false),
 						},
 					}
+					meta = metagen.MergeManagedStylesheets(r.Context(), meta)
 					component := r_error_root.Error(view, pathValue)
 					component = r_layout_root.Layout(meta, view, component)
 					return component
@@ -145,6 +146,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 							Follow: metagen.Bool(false),
 						},
 					}
+					meta = metagen.MergeManagedStylesheets(r.Context(), meta)
 					component := r_error_root.Error(view, pathValue)
 					component = r_layout_root.Layout(meta, view, component)
 					return component
@@ -197,6 +199,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 							Follow: metagen.Bool(false),
 						},
 					}
+					meta = metagen.MergeManagedStylesheets(r.Context(), meta)
 					component := r_error_root.Error(view, pathValue)
 					component = r_layout_root.Layout(meta, view, component)
 					return component
@@ -249,6 +252,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 							Follow: metagen.Bool(false),
 						},
 					}
+					meta = metagen.MergeManagedStylesheets(r.Context(), meta)
 					component := r_error_root.Error(view, pathValue)
 					component = r_layout_root.Layout(meta, view, component)
 					return component
@@ -301,6 +305,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 							Follow: metagen.Bool(false),
 						},
 					}
+					meta = metagen.MergeManagedStylesheets(r.Context(), meta)
 					component := r_error_root.Error(view, pathValue)
 					component = r_layout_root.Layout(meta, view, component)
 					return component
@@ -353,6 +358,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 							Follow: metagen.Bool(false),
 						},
 					}
+					meta = metagen.MergeManagedStylesheets(r.Context(), meta)
 					component := r_error_root.Error(view, pathValue)
 					component = r_layout_root.Layout(meta, view, component)
 					return component
@@ -405,6 +411,7 @@ func Handlers(resolvers RouteResolvers) []framework.RouteHandler[*runtime.Contex
 							Follow: metagen.Bool(false),
 						},
 					}
+					meta = metagen.MergeManagedStylesheets(r.Context(), meta)
 					component := r_error_root.Error(view, pathValue)
 					component = r_layout_root.Layout(meta, view, component)
 					return component
@@ -428,6 +435,7 @@ func NotFoundPage(appCtx *runtime.Context, r *http.Request, notFound framework.N
 			Follow: metagen.Bool(false),
 		},
 	}
+	meta = metagen.MergeManagedStylesheets(r.Context(), meta)
 	switch routeID {
 	default:
 		component := r_not_found_root.NotFound(view, pathValue)

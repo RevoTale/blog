@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine AS builder
+FROM golang:1.26.3-alpine3.23 AS builder
 
 WORKDIR /src
 
@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
     -trimpath \
     -ldflags='-s -w' -o /out/blog ./cmd/server
 
-FROM gcr.io/distroless/static-debian12 AS runtime
+FROM gcr.io/distroless/static-debian13:nonroot AS runtime
 
 WORKDIR /app
 

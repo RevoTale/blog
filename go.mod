@@ -1,10 +1,12 @@
 module blog
 
-go 1.25.0
+go 1.26.0
+
+toolchain go1.26.3
 
 require (
 	github.com/Khan/genqlient v0.8.1
-	github.com/RevoTale/no-js v1.0.0
+	github.com/RevoTale/no-js v1.3.0
 	github.com/a-h/templ v0.3.1001
 	github.com/alecthomas/chroma/v2 v2.23.1
 	github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df
@@ -14,10 +16,17 @@ require (
 
 require (
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
+	github.com/agnivade/levenshtein v1.2.1 // indirect
+	github.com/alexflint/go-arg v1.5.1 // indirect
+	github.com/alexflint/go-scalar v1.2.0 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/evanw/esbuild v0.28.0 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.6.1 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/tools v0.43.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 require (
@@ -31,6 +40,7 @@ require (
 )
 
 tool (
+	github.com/Khan/genqlient
 	github.com/RevoTale/no-js/cmd/no-js
 	github.com/RevoTale/no-js/cmd/templgen
 )

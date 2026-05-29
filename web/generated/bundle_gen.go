@@ -23,6 +23,7 @@ func Bundle(appContext *runtime.Context) httpserver.AppBundle[*runtime.Context] 
 		I18n:                          i18nConfig,
 		ResolveRoot:                   appContext.ResolveRoot,
 		NotFoundPage:                  NotFoundPage,
+		TemplCSSClasses:               TemplCSSClasses,
 		OnStaticAssetBasePathResolved: runtime.SetStaticAssetBasePath,
 	}
 }
