@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/RevoTale/blog/compare/v1.0.1...v1.0.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([01f5c75](https://github.com/RevoTale/blog/commit/01f5c75ae77675c9ee1df13636d1967f267e64ca))
+* **deps:** update all non-major dependencies ([86af2ad](https://github.com/RevoTale/blog/commit/86af2ad1177cc29b6f7a17d0c79b0e1583d81e0b))
+* **markdown:** preserve system theme code highlighting ([935a8a9](https://github.com/RevoTale/blog/commit/935a8a9649c60d72fefc587386e71f8c91245b8d))
+
 ## [1.0.1](https://github.com/RevoTale/blog/compare/v1.0.0...v1.0.1) (2026-04-26)
 
 
