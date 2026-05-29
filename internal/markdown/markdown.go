@@ -34,6 +34,7 @@ const (
 	codeCopyLabel        = "copy"
 	codeCopiedLabel      = "copied"
 	plainTextLabel       = "plain text"
+	chromaWrapperClass   = "chroma"
 )
 
 type Options struct {
@@ -413,10 +414,31 @@ func renderHighlightedCodeBlock(writer io.Writer, language string, code string) 
 		return
 	}
 
-	formatter := chromahtml.New(chromahtml.WithClasses(true))
+	formatter := chromahtml.New(
+		chromahtml.WithClasses(true),
+		chromahtml.WithPreWrapper(chromaMediaPreWrapper{}),
+	)
 	if err := formatter.Format(writer, styles.Fallback, iterator); err != nil {
 		renderPlainCodeBlock(writer, code)
 	}
+}
+
+type chromaMediaPreWrapper struct{}
+
+func (chromaMediaPreWrapper) Start(code bool, _ string) string {
+	if code {
+		return `<pre class="` + chromaWrapperClass + `"><code>`
+	}
+
+	return `<pre class="` + chromaWrapperClass + `">`
+}
+
+func (chromaMediaPreWrapper) End(code bool) string {
+	if code {
+		return `</code></pre>`
+	}
+
+	return `</pre>`
 }
 
 func renderImage(writer io.Writer, image *ast.Image, opts Options) {
@@ -494,7 +516,7 @@ func renderInlineCode(writer io.Writer, code *ast.Code) {
 }
 
 func renderPlainCodeBlock(writer io.Writer, code string) {
-	_, _ = io.WriteString(writer, `<pre class="chroma"><code>`)
+	_, _ = io.WriteString(writer, `<pre class="`+chromaWrapperClass+`"><code>`)
 	_, _ = io.WriteString(writer, stdhtml.EscapeString(code))
 	_, _ = io.WriteString(writer, `</code></pre>`)
 }
