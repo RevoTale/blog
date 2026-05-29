@@ -59,5 +59,16 @@ func buildSingleStyleCSS(styleName string) string {
 		return ""
 	}
 
-	return buffer.String()
+	return normalizeChromaModeSelectors(buffer.String(), style.Mode().String())
+}
+
+func normalizeChromaModeSelectors(css string, mode string) string {
+	mode = strings.TrimSpace(mode)
+	if mode == "" {
+		return css
+	}
+
+	css = strings.ReplaceAll(css, "."+chromaWrapperClass+"."+mode, "."+chromaWrapperClass)
+	css = strings.ReplaceAll(css, ".bg."+mode, ".bg")
+	return css
 }

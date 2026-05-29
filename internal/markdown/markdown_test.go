@@ -52,11 +52,25 @@ func TestToHTML_HighlightsCodeBlocks(t *testing.T) {
 	source := "```go\nfmt.Println(\"hello\")\n```"
 	html := string(ToHTML(source, Options{}))
 
-	require.Contains(t, html, `class="chroma"`)
+	require.Contains(t, html, `<pre class="chroma"><code>`)
+	require.NotContains(t, html, `class="chroma dark"`)
+	require.NotContains(t, html, `class="chroma light"`)
 	require.Contains(t, html, `class="code-copy-button"`)
 	require.Contains(t, html, `class="code-block-language">go</p>`)
 	require.Contains(t, html, `class="code-copy-source"`)
 	require.Contains(t, html, "Println")
+}
+
+func TestChromaCSSUsesMediaQueriesWithoutModeClassLeakage(t *testing.T) {
+	css := string(ChromaCSS())
+
+	require.Contains(t, css, "@media (prefers-color-scheme: light)")
+	require.Contains(t, css, "@media (prefers-color-scheme: dark)")
+	require.Contains(t, css, ".chroma {")
+	require.NotContains(t, css, ".chroma.light")
+	require.NotContains(t, css, ".chroma.dark")
+	require.NotContains(t, css, ".bg.light")
+	require.NotContains(t, css, ".bg.dark")
 }
 
 func TestToHTML_UsesPlainTextLabelWhenCodeLanguageIsMissing(t *testing.T) {
