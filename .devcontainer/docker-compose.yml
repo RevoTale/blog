@@ -21,7 +21,7 @@ services:
     working_dir: /workspaces/blog
 
   cms_postgres:
-    image: postgres:18.4
+    image: postgres:18.4-trixie
     command:
       - postgres
       - -c
