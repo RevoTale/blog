@@ -9,7 +9,7 @@ require (
 	github.com/RevoTale/no-js v1.3.0
 	github.com/a-h/templ v0.3.1020
 	github.com/alecthomas/chroma/v2 v2.26.1
-	github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df
+	github.com/gomarkdown/markdown v0.0.0-20260614204949-e08cff860f76
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/mod v0.36.0
 )
