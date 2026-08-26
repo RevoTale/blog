@@ -10,7 +10,7 @@ require (
 	github.com/a-h/templ v0.3.1020
 	github.com/alecthomas/chroma/v2 v2.26.1
 	github.com/gomarkdown/markdown v0.0.0-20260824154242-13c5cf49db8d
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.1
 	golang.org/x/mod v0.36.0
 )
 
@@ -23,6 +23,7 @@ require (
 	github.com/dlclark/regexp2/v2 v2.1.1 // indirect
 	github.com/evanw/esbuild v0.28.0 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.6.1 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
