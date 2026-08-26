@@ -1,4 +1,4 @@
-FROM golang:1.26.3-alpine3.23 AS builder
+FROM golang:1.27.0-alpine3.23@sha256:3747dcba41c8b0db3211fda4db61638b980e17ac5bb3c94460a975a9cfe19395 AS builder
 
 WORKDIR /src
 
