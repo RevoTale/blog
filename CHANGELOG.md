@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.4](https://github.com/RevoTale/blog/compare/v1.0.3...v1.0.4) (2026-08-27)
+
+
+### Bug Fixes
+
+* **deps:** update github.com/gomarkdown/markdown digest to 13c5cf4 ([a2c969b](https://github.com/RevoTale/blog/commit/a2c969baf246eae5f37b3cdafee6fa8974d09a12))
+* **deps:** update github.com/gomarkdown/markdown digest to 13c5cf4 ([83601ff](https://github.com/RevoTale/blog/commit/83601ff583bca11c6f58954e285db51347de2a29))
+* **deps:** update github.com/gomarkdown/markdown digest to 6d1f24f ([d3ca234](https://github.com/RevoTale/blog/commit/d3ca234a143db53130f24ee46bc1d231906ffb0f))
+* **deps:** update github.com/gomarkdown/markdown digest to 6d1f24f ([a90cb20](https://github.com/RevoTale/blog/commit/a90cb20d91051ed60572d1aeedafba06c8475979))
+* **deps:** update github.com/gomarkdown/markdown digest to 8435af3 ([3f3525e](https://github.com/RevoTale/blog/commit/3f3525e90a8e5674b3f86a50864eb309aa9df1d7))
+* **deps:** update github.com/gomarkdown/markdown digest to 8435af3 ([150af16](https://github.com/RevoTale/blog/commit/150af16cdad7b6616937d4d1fe3a124beed93e27))
+* **deps:** update module github.com/alecthomas/chroma/v2 to v2.27.0 ([afefab5](https://github.com/RevoTale/blog/commit/afefab590afdfda1e2db58dc4b685d71d1669062))
+* **deps:** update module github.com/alecthomas/chroma/v2 to v2.27.0 ([dd08583](https://github.com/RevoTale/blog/commit/dd085834eb0bedcbac39e57ed843fa5073aebddb))
+* **deps:** update module github.com/stretchr/testify to v1.12.1 ([d7f21d5](https://github.com/RevoTale/blog/commit/d7f21d520c5d3bc050b64bcd7c3e2ab382c0408f))
+* **deps:** update module github.com/stretchr/testify to v1.12.1 ([c636488](https://github.com/RevoTale/blog/commit/c636488591cac3a94c8148ca165f56f25d878fdd))
+
 ## [1.0.3](https://github.com/RevoTale/blog/compare/v1.0.2...v1.0.3) (2026-06-15)
 
 
