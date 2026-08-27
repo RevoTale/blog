@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
     -trimpath \
     -ldflags='-s -w' -o /out/blog ./cmd/server
 
-FROM gcr.io/distroless/static-debian13:nonroot AS runtime
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:1c2c046bc09ed40fad370b599a0b1ae7987f55b01e247cf27a7c27cd97e5bbc7 AS runtime
 
 WORKDIR /app
 

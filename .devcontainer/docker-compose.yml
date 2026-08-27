@@ -37,7 +37,7 @@ services:
       - cms_postgres_data:/var/lib/postgresql
 
   rustfs:
-    image: rustfs/rustfs:1.0.0-beta.5
+    image: rustfs/rustfs:1.0.0-beta.5@sha256:1ad63dd600df9fc18e23ab6b0b365ad1117a10a27479388edf4aaa9eb6bc6cee
     environment:
       RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID}
       RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY}
@@ -52,7 +52,7 @@ services:
       - rustfs_logs:/logs
 
   setup-rustfs:
-    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
     depends_on:
       rustfs:
         condition: service_started
@@ -100,7 +100,7 @@ services:
     restart: unless-stopped
 
   imgproxy:
-    image: ghcr.io/revotale/infrastructure-imgproxy:latest
+    image: ghcr.io/revotale/infrastructure-imgproxy:latest@sha256:124452ce761082ccde610c0ad3ad27e6faf3327890cd1f5301fa67d97d260f56
     environment:
       IMGPROXY_ALLOWED_SOURCES: http://devcontainer:8081/,http://cms:3000/,http://rustfs:9000/
     networks:
