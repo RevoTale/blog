@@ -56,6 +56,8 @@ github.com/gomarkdown/markdown v0.0.0-20260818103853-6d1f24fc3a11 h1:ot6/Kp6yjts
 github.com/gomarkdown/markdown v0.0.0-20260818103853-6d1f24fc3a11/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
 github.com/gomarkdown/markdown v0.0.0-20260824154242-13c5cf49db8d h1:8VtgBGEPLZ2Yn0Fuh6Pwmy3qF6indeaqy8mrBMbUKRQ=
 github.com/gomarkdown/markdown v0.0.0-20260824154242-13c5cf49db8d/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
+github.com/gomarkdown/markdown v0.0.0-20260923180740-94fc73f6b1a3 h1:tTy9EC3uLxFeMrYCOf+T4cS86imMT6kGMl7htiU907o=
+github.com/gomarkdown/markdown v0.0.0-20260923180740-94fc73f6b1a3/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
