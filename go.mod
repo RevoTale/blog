@@ -7,6 +7,7 @@ toolchain go1.27.0
 require (
 	github.com/Khan/genqlient v0.8.1
 	github.com/RevoTale/no-js v1.3.0
+	github.com/RevoTale/no-js/v2 v2.1.1
 	github.com/a-h/templ v0.3.1020
 	github.com/alecthomas/chroma/v2 v2.27.0
 	github.com/gomarkdown/markdown v0.0.0-20260824154242-13c5cf49db8d

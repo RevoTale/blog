@@ -4,6 +4,7 @@ github.com/Khan/genqlient v0.8.1 h1:wtOCc8N9rNynRLXN3k3CnfzheCUNKBcvXmVv5zt6WCs=
 github.com/Khan/genqlient v0.8.1/go.mod h1:R2G6DzjBvCbhjsEajfRjbWdVglSH/73kSivC9TLWVjU=
 github.com/RevoTale/no-js v1.3.0 h1:y39jq+dtt4LM4yPDiha4wLbHEtDPdMsSIhdN2YpVy2Y=
 github.com/RevoTale/no-js v1.3.0/go.mod h1:IvAG4hx2FD5YgBEq2hagfP7bQGkHMk6TMBfEYDJA15Q=
+github.com/RevoTale/no-js/v2 v2.1.1/go.mod h1:GMluMRHfqYYamS1XdG9BHuD1x7OewXJV7+Tbv12D5tQ=
 github.com/a-h/parse v0.0.0-20250122154542-74294addb73e h1:HjVbSQHy+dnlS6C3XajZ69NYAb5jbGNfHanvm1+iYlo=
 github.com/a-h/parse v0.0.0-20250122154542-74294addb73e/go.mod h1:3mnrkvGpurZ4ZrTDbYU84xhwXW2TjTKShSwjRi2ihfQ=
 github.com/a-h/templ v0.3.1001 h1:yHDTgexACdJttyiyamcTHXr2QkIeVF1MukLy44EAhMY=
