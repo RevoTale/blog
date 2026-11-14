@@ -1,0 +1,41 @@
+when:
+  - event: [push, pull_request]
+    branch: main
+  - event: [manual, release]
+
+variables:
+  - &image-settings
+    context: .
+    dockerfile: Dockerfile
+    repo: ghcr.io/revotale/blog
+    title: RevoTale Blog
+    description: RevoTale blog web application
+    authors: Liakhovskyi Vladyslav
+    licenses: LicenseRef-All-Rights-Reserved
+
+steps:
+  - name: build
+    image: ghcr.io/revotale/ci/buildx:v0.1.8@sha256:bbd7e0a849e2e87c6e1bbecc6f8caf7fae0849b84b7e6abab34af07f9b1657b9
+    when:
+      - event: [push, pull_request, manual]
+    settings:
+      <<: *image-settings
+      dry_run: true
+
+  - name: publish
+    image: ghcr.io/revotale/ci/buildx:v0.1.8@sha256:bbd7e0a849e2e87c6e1bbecc6f8caf7fae0849b84b7e6abab34af07f9b1657b9
+    when:
+      - event: release
+    settings:
+      <<: *image-settings
+      registry: ghcr.io
+      platforms: linux/amd64,linux/arm64
+      tags:
+        - ${CI_COMMIT_TAG}
+        - latest
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+
+depends_on: [test]
