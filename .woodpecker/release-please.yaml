@@ -1,0 +1,19 @@
+when:
+  - event: [push, manual]
+    branch: main
+
+depends_on: [image]
+
+concurrency:
+  group: release-please
+  limit: 1
+
+steps:
+  - name: release-please
+    image: node:24-bookworm@sha256:9d266751ca3d7fdbe651c878ffd5ad0a42fed49a18c283509267c97f025b7496
+    environment:
+      GITHUB_TOKEN:
+        from_secret: release_please_token
+    commands:
+      - npx --yes release-please@17.11.2 github-release --repo-url="$CI_REPO" --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token="$GITHUB_TOKEN"
+      - npx --yes release-please@17.11.2 release-pr --repo-url="$CI_REPO" --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token="$GITHUB_TOKEN"
